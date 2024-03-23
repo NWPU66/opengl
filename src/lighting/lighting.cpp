@@ -27,6 +27,7 @@ float lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
 
 /**NOTE - 高级渲染设置
  */
+/* 上面的代码在 C++ 程序中为简单的照明设置定义常量。它指定对象颜色、光强度、光颜色、光位置、环境强度和环境颜色。这些常量可用于渲染或着色算法来计算场景中对象的光照效果。 */
 const vec3  objectColor     = vec3(1.0f, 0.4f, 0.3f);
 const float lightIntensity  = 3.5f;
 const vec3  lightColor      = vec3(1.0f, 1.0f, 1.0f);
