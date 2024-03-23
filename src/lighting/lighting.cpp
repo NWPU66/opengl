@@ -29,7 +29,7 @@ float lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
 /**NOTE - 高级渲染设置
  */
 const Material
-    material(vec3(0.05f, 0.1f, 0.5f), vec3(1.0f, 0.4f, 0.3f), vec3(1.0f));
+    material(vec3(0.05f, 0.1f, 0.5f), vec3(1.0f, 0.4f, 0.3f));
 const Light light(vec3(1.0f, 1.2f, 2.0f), 3.5f);
 
 /**NOTE - 几何体元数据

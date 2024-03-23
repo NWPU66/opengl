@@ -34,7 +34,7 @@ void main(){
     float lightDistance=distance(lightDir,vec3(0.f));
     float diffusionFac=max(dot(normalize(lightDir),normalize(normal)),0.f);
     float lightDropOff=1.f/pow(lightDistance,2.f);
-    vec3 diffusion=light.intensity*light.diffuse*material.diffuse*diffusionFac*lightDropOff;
+    vec3 diffusion=light.intensity*light.diffuse*diffusionFac*lightDropOff;
     
     //ambient
     vec3 ambient=light.ambient*material.ambient;
@@ -47,5 +47,5 @@ void main(){
     
     //final color
     fragColor=vec4((ambient+specular+diffusion)*material.diffuse,1.f);
-    // fragColor=vec4(vec3(intensity),1.f);
+    // fragColor=vec4(ambient,1.f);
 }
