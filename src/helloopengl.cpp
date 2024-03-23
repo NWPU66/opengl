@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <string>
-//123123123123123
+
 int main(void) {
     GLFWwindow* window;
 
