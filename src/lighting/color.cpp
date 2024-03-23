@@ -131,12 +131,12 @@ int main(int argc, char** argv)
         /**NOTE - 绘制立方体
          */
         objShader->use();
-        objShader->setVec3("objectColor", vec3(1.0f, 0.5f, 0.31f));
-        objShader->setVec3("lightColor", vec3(1.0f, 1.0f, 1.0f));
-        objShader->setVec3("lightPos", lightPos);
-        objShader->setMat4("model", model_obj);
-        objShader->setMat4("view", view);
-        objShader->setMat4("projection", projection);
+        objShader->setParameter("objectColor", vec3(1.0f, 0.5f, 0.31f));
+        objShader->setParameter("lightColor", vec3(1.0f, 1.0f, 1.0f));
+        objShader->setParameter("lightPos", lightPos);
+        objShader->setParameter("model", model_obj);
+        objShader->setParameter("view", view);
+        objShader->setParameter("projection", projection);
         glBindVertexArray(objVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         /**FIXME - 错题本
@@ -147,9 +147,9 @@ int main(int argc, char** argv)
         /**NOTE - 绘制灯光
          */
         lightShader->use();
-        lightShader->setMat4("model", model_light);
-        lightShader->setMat4("view", view);
-        lightShader->setMat4("projection", projection);
+        lightShader->setParameter("model", model_light);
+        lightShader->setParameter("view", view);
+        lightShader->setParameter("projection", projection);
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         //~SECTION

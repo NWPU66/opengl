@@ -8,6 +8,7 @@
 
 #include "util/class_camera.hpp"
 #include "util/class_shader.hpp"
+#include "util/structure.cpp"
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -27,12 +28,9 @@ float lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
 
 /**NOTE - 高级渲染设置
  */
-const vec3  objectColor     = vec3(1.0f, 0.4f, 0.3f);
-const float lightIntensity  = 3.5f;
-const vec3  lightColor      = vec3(1.0f, 1.0f, 1.0f);
-const vec3  lightPos        = vec3(1.0f, 1.2f, 2.0f);
-const float ambientStrength = 0.5f;
-const vec3  ambientColor    = vec3(0.1f, 0.2f, 1.0f);
+const Material
+    material(vec3(0.05f, 0.1f, 0.5f), vec3(1.0f, 0.4f, 0.3f), vec3(1.0f));
+const Light light(vec3(1.0f, 1.2f, 2.0f), 3.5f);
 
 /**NOTE - 几何体元数据
  */
@@ -148,7 +146,7 @@ int main(int argc, char** argv)
         /**NOTE - 更新视图变换
          */
         mat4 model_obj   = mat4(1.0f);
-        mat4 model_light = translate(mat4(1.0f), lightPos);
+        mat4 model_light = translate(mat4(1.0f), light.position);
         model_light      = scale(model_light, vec3(0.1f));
         mat4 view        = camera->GetViewMatrix();
         mat4 projection =
@@ -161,28 +159,26 @@ int main(int argc, char** argv)
         /**NOTE - 绘制立方体
          */
         objShader->use();
-        objShader->setVec3("objectColor", objectColor);
-        objShader->setVec3("lightColor", lightIntensity * lightColor);
-        objShader->setVec3("lightPos", lightPos);
-        objShader->setVec3("cameraPos", camera->Position);
-        objShader->setVec3("ambientLighting", ambientColor * ambientStrength);
+        objShader->setParameter("cameraPos", camera->Position);
+        objShader->setParameter("material", material);
+        objShader->setParameter("light", light);
         // objShader->setMat4("model", model_obj);
-        objShader->setMat4("view", view);
-        objShader->setMat4("projection", projection);
+        objShader->setParameter("view", view);
+        objShader->setParameter("projection", projection);
         glBindVertexArray(objVAO);
         for (int i = 0; i < 5; i++)
         {
             model_obj = translate(mat4(1.0f), 2.5f * positions[i]);
-            objShader->setMat4("model", model_obj);
+            objShader->setParameter("model", model_obj);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
         /**NOTE - 绘制灯光
          */
         lightShader->use();
-        lightShader->setMat4("model", model_light);
-        lightShader->setMat4("view", view);
-        lightShader->setMat4("projection", projection);
+        lightShader->setParameter("model", model_light);
+        lightShader->setParameter("view", view);
+        lightShader->setParameter("projection", projection);
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         //~SECTION
@@ -462,4 +458,29 @@ int createImageObjrct(const char* imagePath)
  * 在顶点着色器中实现的冯氏光照模型叫做Gouraud着色(Gouraud Shading)，
  * 而不是冯氏着色(Phong Shading)。记住，由于插值，这种光照看起来有点逊色。
  * 冯氏着色能产生更平滑的光照效果。
+ */
+
+/**REVIEW - 材质
+ * 在现实世界里，每个物体会对光产生不同的反应。比如，钢制物体看起来通常会比陶土花瓶更
+ * 闪闪发光，一个木头箱子也不会与一个钢制箱子反射同样程度的光。有些物体反射光的时候\
+ * 不会有太多的散射(Scatter)，因而产生较小的高光点，而有些物体则会散射很多，产生一个有
+ * 着更大半径的高光点。如果我们想要在OpenGL中模拟多种类型的物体，
+ * 我们必须针对每种表面定义不同的材质(Material)属性。
+ *
+ * 当描述一个表面时，我们可以分别为三个光照分量定义一个材质颜色(Material
+ * Color)： 环境光照(Ambient Lighting)、漫反射光照(Diffuse
+ * Lighting)和镜面光照(Specular Lighting)。
+ * 通过为每个分量指定一个颜色，我们就能够对表面的颜色输出有细粒度的控制了。
+ * 现在，我们再添加一个反光度(Shininess)分量，结合上述的三个颜色，
+ * 我们就有了全部所需的材质属性了.
+ *
+ * ambient材质向量定义了在环境光照下这个表面反射的是什么颜色，通常与表面的颜色相同。
+ * diffuse材质向量定义了在漫反射光照下表面的颜色。漫反射颜色（和环境光照一样）
+ * 也被设置为我们期望的物体颜色。specular材质向量设置的是表面上镜面高光的颜色（
+ * 或者甚至可能反映一个特定表面的颜色）。最后，shininess影响镜面高光的散射/半径。
+ *
+ * 物体过亮的原因是环境光、漫反射和镜面光这三个颜色对任何一个光源都全力反射。
+ * 光源对环境光、漫反射和镜面光分量也分别具有不同的强度。前面的章节中，我们通过使用
+ * 一个强度值改变环境光和镜面光强度的方式解决了这个问题。我们想做类似的事情，
+ * 但是这次是要为每个光照分量分别指定一个强度向量。
  */

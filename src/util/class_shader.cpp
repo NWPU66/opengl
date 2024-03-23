@@ -1,5 +1,16 @@
 #include "class_shader.hpp"
 
+/**
+ * C++中的Shader构造函数从文件中读取并编译顶点和片段着色器源代码，创建着色器对象，将它们链接到着色器程序中，然后激活着色器程序。
+ *
+ * @param vertexPath “Shader::Shader”构造函数中的“vertexPath”参数是一个 C
+ * 风格的字符串，表示顶点着色器源代码文件的文件路径。该文件包含定义图形管道中顶点着色器行为的
+ * GLSL 代码。构造函数读取该文件的内容
+ * @param fragmentPath “Shader::Shader”构造函数中的“fragmentPath”参数是一个
+ * const char
+ * 指针，表示片段着色器源代码文件的文件路径。该文件包含定义图形管道中片段着色器行为的
+ * GLSL 代码。构造函数读取该文件的内容
+ */
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
 {
     // 1. 从文件路径中获取顶点/片元着色器源码
@@ -71,32 +82,55 @@ void Shader::use()
     glUseProgram(this->ID);
 }
 
-void Shader::setBool(const std::string& name, bool value) const
+void Shader::setParameter(const std::string& name, bool value) const
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
 
-void Shader::setFloat(const std::string& name, float value) const
-{
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
-}
-
-void Shader::setInt(const std::string& name, int value) const
+void Shader::setParameter(const std::string& name, int value) const
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setVec3(const std::string& name, vec3 value) const
+void Shader::setParameter(const std::string& name, float value) const
+{
+    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+void Shader::setParameter(const std::string& name, vec3 value) const
 {
     glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, value_ptr(value));
 }
 
-void Shader::setMat4(const std::string& name, mat4 value) const
+void Shader::setParameter(const std::string& name, mat4 value) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE,
                        value_ptr(value));
 }
 
+void Shader::setParameter(const std::string& name, Material value) const
+{
+    Shader::setParameter(name + ".ambient", value.ambient);
+    Shader::setParameter(name + ".diffuse", value.diffuse);
+    Shader::setParameter(name + ".specular", value.specular);
+    Shader::setParameter(name + ".shininess", value.shininess);
+}
+
+void Shader::setParameter(const std::string& name, Light value) const
+{
+    Shader::setParameter(name + ".position", value.position);
+    Shader::setParameter(name + ".intensity", value.intensity);
+    Shader::setParameter(name + ".diffuse", value.diffuse);
+    Shader::setParameter(name + ".ambient", value.ambient);
+    Shader::setParameter(name + ".specular", value.specular);
+}
+
+/**
+ * 函数“checkShaderCompiling”检查着色器是否已成功编译，如果编译失败则打印错误消息。
+ *
+ * @param shader
+ * checkShaderCompiling函数中的shader参数为GLuint类型，表示需要检查编译状态的shader对象的句柄。
+ */
 void Shader::checkShaderCompiling(GLuint shader)
 {
     int  success;
@@ -111,6 +145,13 @@ void Shader::checkShaderCompiling(GLuint shader)
     else { std::cout << "Shader Compile success!\n" << std::endl; }
 }
 
+/**
+ * 函数“checkShaderProgramCompiling”检查着色器程序是否已成功编译，如果失败则打印错误消息。
+ *
+ * @param shaderProgram `shaderProgram`
+ * 参数是要检查编译是否成功的着色器程序对象的
+ * ID。该函数检索着色器程序的链接状态，并在编译失败时打印出任何相关的错误信息。
+ */
 void Shader::checkShaderProgramCompiling(GLuint shaderProgram)
 {
     int  success;

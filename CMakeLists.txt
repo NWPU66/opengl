@@ -41,7 +41,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 # link library
 add_library(class_shader STATIC ${CMAKE_SOURCE_DIR}/src/util/class_shader.cpp)
 add_library(class_camera STATIC ${CMAKE_SOURCE_DIR}/src/util/class_camera.cpp)
-set(LIBS ${LIBS} class_shader class_camera)
+add_library(structure STATIC ${CMAKE_SOURCE_DIR}/src/util/structure.cpp)
+set(LIBS ${LIBS} class_shader class_camera structure)
 link_libraries(${LIBS})
 
 # create helloworld program

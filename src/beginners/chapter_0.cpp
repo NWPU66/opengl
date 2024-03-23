@@ -83,8 +83,8 @@ int main(int argc, char** argv)
     GLuint texture1 = createImageObjrct("wall.jpg");
     GLuint texture2 = createImageObjrct("awesomeface.png");
     // 设置纹理对应的采样器插槽号
-    shader->setInt("myTexture1", 0);
-    shader->setInt("myTexture2", 1);
+    shader->setParameter("myTexture1", 0);
+    shader->setParameter("myTexture2", 1);
     // 绑定时激活OpenGL的纹理槽
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture1);
@@ -157,9 +157,9 @@ int main(int argc, char** argv)
         mat4 projection = perspective(radians(camera->Zoom),
                                       (float)CAMERA_WIDTH / (float)CAMERA_HEIGH,
                                       0.1f, 100.0f);
-        shader->setMat4("model", model);
-        shader->setMat4("view", view);
-        shader->setMat4("projection", projection);
+        shader->setParameter("model", model);
+        shader->setParameter("view", view);
+        shader->setParameter("projection", projection);
         //~SECTION
 
         /**NOTE -绘制图形
@@ -171,7 +171,7 @@ int main(int argc, char** argv)
         {
             model = translate(mat4(1.0f), cubePositions[i]);
             model = rotate(model, radians(20.0f * i), vec3(1.0f, 0.3f, 0.5f));
-            shader->setMat4("model", model);
+            shader->setParameter("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
         //~SECTION
