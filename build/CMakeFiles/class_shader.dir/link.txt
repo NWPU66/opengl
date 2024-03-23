@@ -1,0 +1,2 @@
+E:\mingw64\bin\ar.exe qc libclass_shader.a CMakeFiles/class_shader.dir/src/util/class_shader.cpp.obj
+E:\mingw64\bin\ranlib.exe libclass_shader.a

@@ -1,0 +1,8 @@
+E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw3.a
+E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/include/GLFW/glfw3.h
+E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/include/GLFW/glfw3native.h
+E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/cmake/glfw3/glfw3Config.cmake
+E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/cmake/glfw3/glfw3ConfigVersion.cmake
+E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/cmake/glfw3/glfw3Targets.cmake
+E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/cmake/glfw3/glfw3Targets-noconfig.cmake
+E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/pkgconfig/glfw3.pc

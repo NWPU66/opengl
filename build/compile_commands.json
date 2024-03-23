@@ -1,0 +1,38 @@
+[
+{
+  "directory": "E:/Study/CodeProj/opengl/build",
+  "command": "E:\\mingw64\\bin\\gcc.exe  @CMakeFiles/GLAD.dir/includes_C.rsp -g -o CMakeFiles\\GLAD.dir\\3rdparty\\glad\\src\\glad.c.obj -c E:\\Study\\CodeProj\\opengl\\3rdparty\\glad\\src\\glad.c",
+  "file": "E:/Study/CodeProj/opengl/3rdparty/glad/src/glad.c",
+  "output": "CMakeFiles/GLAD.dir/3rdparty/glad/src/glad.c.obj"
+},
+{
+  "directory": "E:/Study/CodeProj/opengl/build",
+  "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/class_shader.dir/includes_CXX.rsp -g -o CMakeFiles\\class_shader.dir\\src\\util\\class_shader.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\util\\class_shader.cpp",
+  "file": "E:/Study/CodeProj/opengl/src/util/class_shader.cpp",
+  "output": "CMakeFiles/class_shader.dir/src/util/class_shader.cpp.obj"
+},
+{
+  "directory": "E:/Study/CodeProj/opengl/build",
+  "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/class_camera.dir/includes_CXX.rsp -g -o CMakeFiles\\class_camera.dir\\src\\util\\class_camera.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\util\\class_camera.cpp",
+  "file": "E:/Study/CodeProj/opengl/src/util/class_camera.cpp",
+  "output": "CMakeFiles/class_camera.dir/src/util/class_camera.cpp.obj"
+},
+{
+  "directory": "E:/Study/CodeProj/opengl/build",
+  "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/chapter_0.dir/includes_CXX.rsp -g -o CMakeFiles\\chapter_0.dir\\src\\beginners\\chapter_0.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\beginners\\chapter_0.cpp",
+  "file": "E:/Study/CodeProj/opengl/src/beginners/chapter_0.cpp",
+  "output": "CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj"
+},
+{
+  "directory": "E:/Study/CodeProj/opengl/build",
+  "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/color.dir/includes_CXX.rsp -g -o CMakeFiles\\color.dir\\src\\lighting\\color.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\lighting\\color.cpp",
+  "file": "E:/Study/CodeProj/opengl/src/lighting/color.cpp",
+  "output": "CMakeFiles/color.dir/src/lighting/color.cpp.obj"
+},
+{
+  "directory": "E:/Study/CodeProj/opengl/build",
+  "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/lighting.dir/includes_CXX.rsp -g -o CMakeFiles\\lighting.dir\\src\\lighting\\lighting.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\lighting\\lighting.cpp",
+  "file": "E:/Study/CodeProj/opengl/src/lighting/lighting.cpp",
+  "output": "CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj"
+}
+]

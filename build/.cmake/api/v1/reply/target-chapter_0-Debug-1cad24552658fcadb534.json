@@ -1,0 +1,179 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "chapter_0.exe"
+		},
+		{
+			"path" : "chapter_0.pdb"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 55,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 39,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 40,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 2,
+					"path" : "E:/Study/CodeProj/opengl/3rdparty/glm-1.0.1/install/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "E:/Study/CodeProj/opengl/3rdparty/glad/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "E:/Study/CodeProj/opengl/3rdparty/stb-master"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "E:/Study/CodeProj/opengl/src"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 1,
+			"id" : "GLAD::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 1,
+			"id" : "class_shader::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 1,
+			"id" : "class_camera::@6890427a1f51a3e7e1df"
+		}
+	],
+	"id" : "chapter_0::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-g",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 1,
+				"fragment" : "C:\\Windows\\System32\\opengl32.dll",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 1,
+				"fragment" : "E:\\Study\\CodeProj\\opengl\\3rdparty\\glm-1.0.1\\install\\lib\\libglm.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 1,
+				"fragment" : "E:\\Study\\CodeProj\\opengl\\3rdparty\\glfw-master\\install\\lib\\libglfw3.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 1,
+				"fragment" : "libGLAD.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 1,
+				"fragment" : "libclass_shader.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 1,
+				"fragment" : "libclass_camera.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "chapter_0",
+	"nameOnDisk" : "chapter_0.exe",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/beginners/chapter_0.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "EXECUTABLE"
+}
