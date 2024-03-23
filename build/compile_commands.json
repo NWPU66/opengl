@@ -19,6 +19,12 @@
 },
 {
   "directory": "E:/Study/CodeProj/opengl/build",
+  "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/structure.dir/includes_CXX.rsp -g -o CMakeFiles\\structure.dir\\src\\util\\structure.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\util\\structure.cpp",
+  "file": "E:/Study/CodeProj/opengl/src/util/structure.cpp",
+  "output": "CMakeFiles/structure.dir/src/util/structure.cpp.obj"
+},
+{
+  "directory": "E:/Study/CodeProj/opengl/build",
   "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/chapter_0.dir/includes_CXX.rsp -g -o CMakeFiles\\chapter_0.dir\\src\\beginners\\chapter_0.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\beginners\\chapter_0.cpp",
   "file": "E:/Study/CodeProj/opengl/src/beginners/chapter_0.cpp",
   "output": "CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj"

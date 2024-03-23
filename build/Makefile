@@ -155,6 +155,19 @@ class_camera/fast:
 .PHONY : class_camera/fast
 
 #=============================================================================
+# Target rules for targets named structure
+
+# Build rule for target.
+structure: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 structure
+.PHONY : structure
+
+# fast build rule for target.
+structure/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/build
+.PHONY : structure/fast
+
+#=============================================================================
 # Target rules for targets named chapter_0
 
 # Build rule for target.
@@ -337,6 +350,30 @@ src/util/class_shader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_shader.dir\build.make CMakeFiles/class_shader.dir/src/util/class_shader.cpp.s
 .PHONY : src/util/class_shader.cpp.s
 
+src/util/structure.obj: src/util/structure.cpp.obj
+.PHONY : src/util/structure.obj
+
+# target to build an object file
+src/util/structure.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/src/util/structure.cpp.obj
+.PHONY : src/util/structure.cpp.obj
+
+src/util/structure.i: src/util/structure.cpp.i
+.PHONY : src/util/structure.i
+
+# target to preprocess a source file
+src/util/structure.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/src/util/structure.cpp.i
+.PHONY : src/util/structure.cpp.i
+
+src/util/structure.s: src/util/structure.cpp.s
+.PHONY : src/util/structure.s
+
+# target to generate assembly for a file
+src/util/structure.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/src/util/structure.cpp.s
+.PHONY : src/util/structure.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -351,6 +388,7 @@ help:
 	@echo ... class_shader
 	@echo ... color
 	@echo ... lighting
+	@echo ... structure
 	@echo ... 3rdparty/glad/src/glad.obj
 	@echo ... 3rdparty/glad/src/glad.i
 	@echo ... 3rdparty/glad/src/glad.s
@@ -369,6 +407,9 @@ help:
 	@echo ... src/util/class_shader.obj
 	@echo ... src/util/class_shader.i
 	@echo ... src/util/class_shader.s
+	@echo ... src/util/structure.obj
+	@echo ... src/util/structure.i
+	@echo ... src/util/structure.s
 .PHONY : help
 
 

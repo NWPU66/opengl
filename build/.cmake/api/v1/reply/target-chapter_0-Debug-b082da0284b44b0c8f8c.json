@@ -2,10 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "lighting.exe"
+			"path" : "chapter_0.exe"
 		},
 		{
-			"path" : "lighting.pdb"
+			"path" : "chapter_0.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -28,7 +28,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 58,
+				"line" : 56,
 				"parent" : 0
 			},
 			{
@@ -97,9 +97,13 @@
 		{
 			"backtrace" : 1,
 			"id" : "class_camera::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 1,
+			"id" : "structure::@6890427a1f51a3e7e1df"
 		}
 	],
-	"id" : "lighting::@6890427a1f51a3e7e1df",
+	"id" : "chapter_0::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -143,14 +147,19 @@
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 1,
+				"fragment" : "libstructure.a",
+				"role" : "libraries"
+			},
+			{
 				"fragment" : "-lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
 				"role" : "libraries"
 			}
 		],
 		"language" : "CXX"
 	},
-	"name" : "lighting",
-	"nameOnDisk" : "lighting.exe",
+	"name" : "chapter_0",
+	"nameOnDisk" : "chapter_0.exe",
 	"paths" : 
 	{
 		"build" : ".",
@@ -171,7 +180,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/lighting/lighting.cpp",
+			"path" : "src/beginners/chapter_0.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

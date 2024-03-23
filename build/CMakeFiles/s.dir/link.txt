@@ -1,0 +1,2 @@
+E:\mingw64\bin\ar.exe qc libs.a CMakeFiles/s.dir/src/util/class_camera.cpp.obj
+E:\mingw64\bin\ranlib.exe libs.a

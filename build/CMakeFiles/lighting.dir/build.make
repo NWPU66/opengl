@@ -98,6 +98,7 @@ lighting.exe: E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw3
 lighting.exe: libGLAD.a
 lighting.exe: libclass_shader.a
 lighting.exe: libclass_camera.a
+lighting.exe: libstructure.a
 lighting.exe: CMakeFiles/lighting.dir/linkLibs.rsp
 lighting.exe: CMakeFiles/lighting.dir/objects1.rsp
 lighting.exe: CMakeFiles/lighting.dir/link.txt

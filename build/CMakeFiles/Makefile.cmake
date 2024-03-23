@@ -52,6 +52,7 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/GLAD.dir/DependInfo.cmake"
   "CMakeFiles/class_shader.dir/DependInfo.cmake"
   "CMakeFiles/class_camera.dir/DependInfo.cmake"
+  "CMakeFiles/structure.dir/DependInfo.cmake"
   "CMakeFiles/chapter_0.dir/DependInfo.cmake"
   "CMakeFiles/color.dir/DependInfo.cmake"
   "CMakeFiles/lighting.dir/DependInfo.cmake"

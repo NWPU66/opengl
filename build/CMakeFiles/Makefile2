@@ -65,6 +65,7 @@ CMAKE_BINARY_DIR = E:\Study\CodeProj\opengl\build
 all: CMakeFiles/GLAD.dir/all
 all: CMakeFiles/class_shader.dir/all
 all: CMakeFiles/class_camera.dir/all
+all: CMakeFiles/structure.dir/all
 all: CMakeFiles/chapter_0.dir/all
 all: CMakeFiles/color.dir/all
 all: CMakeFiles/lighting.dir/all
@@ -78,6 +79,7 @@ preinstall:
 clean: CMakeFiles/GLAD.dir/clean
 clean: CMakeFiles/class_shader.dir/clean
 clean: CMakeFiles/class_camera.dir/clean
+clean: CMakeFiles/structure.dir/clean
 clean: CMakeFiles/chapter_0.dir/clean
 clean: CMakeFiles/color.dir/clean
 clean: CMakeFiles/lighting.dir/clean
@@ -162,12 +164,39 @@ CMakeFiles/class_camera.dir/clean:
 .PHONY : CMakeFiles/class_camera.dir/clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/structure.dir
+
+# All Build rule for target.
+CMakeFiles/structure.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=13,14 "Built target structure"
+.PHONY : CMakeFiles/structure.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/structure.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/structure.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
+.PHONY : CMakeFiles/structure.dir/rule
+
+# Convenience name for target.
+structure: CMakeFiles/structure.dir/rule
+.PHONY : structure
+
+# clean rule for target.
+CMakeFiles/structure.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/clean
+.PHONY : CMakeFiles/structure.dir/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/chapter_0.dir
 
 # All Build rule for target.
 CMakeFiles/chapter_0.dir/all: CMakeFiles/GLAD.dir/all
 CMakeFiles/chapter_0.dir/all: CMakeFiles/class_shader.dir/all
 CMakeFiles/chapter_0.dir/all: CMakeFiles/class_camera.dir/all
+CMakeFiles/chapter_0.dir/all: CMakeFiles/structure.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=3,4 "Built target chapter_0"
@@ -175,7 +204,7 @@ CMakeFiles/chapter_0.dir/all: CMakeFiles/class_camera.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/chapter_0.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 10
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/chapter_0.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/chapter_0.dir/rule
@@ -196,6 +225,7 @@ CMakeFiles/chapter_0.dir/clean:
 CMakeFiles/color.dir/all: CMakeFiles/GLAD.dir/all
 CMakeFiles/color.dir/all: CMakeFiles/class_shader.dir/all
 CMakeFiles/color.dir/all: CMakeFiles/class_camera.dir/all
+CMakeFiles/color.dir/all: CMakeFiles/structure.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=9,10 "Built target color"
@@ -203,7 +233,7 @@ CMakeFiles/color.dir/all: CMakeFiles/class_camera.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/color.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 10
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/color.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/color.dir/rule
@@ -224,6 +254,7 @@ CMakeFiles/color.dir/clean:
 CMakeFiles/lighting.dir/all: CMakeFiles/GLAD.dir/all
 CMakeFiles/lighting.dir/all: CMakeFiles/class_shader.dir/all
 CMakeFiles/lighting.dir/all: CMakeFiles/class_camera.dir/all
+CMakeFiles/lighting.dir/all: CMakeFiles/structure.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=11,12 "Built target lighting"
@@ -231,7 +262,7 @@ CMakeFiles/lighting.dir/all: CMakeFiles/class_camera.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/lighting.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 10
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/lighting.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/lighting.dir/rule

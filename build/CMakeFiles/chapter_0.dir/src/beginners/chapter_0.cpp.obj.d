@@ -261,8 +261,11 @@ CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj: \
  E:/mingw64/x86_64-w64-mingw32/include/string.h \
  E:/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h \
  E:/Study/CodeProj/opengl/3rdparty/glm-1.0.1/install/include/glm/gtc/type_ptr.inl \
- E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/iostream \
- E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/ostream \
+ E:/Study/CodeProj/opengl/src/util/class_camera.hpp \
+ E:/Study/CodeProj/opengl/src/util/class_shader.hpp \
+ E:/Study/CodeProj/opengl/src/util/structure.cpp \
+ E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/fstream \
+ E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/istream \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/ios \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/iosfwd \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/bits/stringfwd.h \
@@ -343,16 +346,14 @@ CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj: \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/x86_64-w64-mingw32/bits/ctype_inline.h \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/bits/locale_facets.tcc \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/bits/basic_ios.tcc \
+ E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/ostream \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/bits/ostream.tcc \
- E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/istream \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/bits/istream.tcc \
- E:/Study/CodeProj/opengl/src/util/class_camera.hpp \
- E:/Study/CodeProj/opengl/src/util/class_shader.hpp \
- E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/fstream \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/bits/codecvt.h \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/x86_64-w64-mingw32/bits/basic_file.h \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/x86_64-w64-mingw32/bits/c++io.h \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/bits/fstream.tcc \
+ E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/iostream \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/sstream \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/bits/sstream.tcc \
  E:/Study/CodeProj/opengl/3rdparty/stb-master/stb_image.h \

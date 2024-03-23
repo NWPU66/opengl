@@ -98,6 +98,7 @@ chapter_0.exe: E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw
 chapter_0.exe: libGLAD.a
 chapter_0.exe: libclass_shader.a
 chapter_0.exe: libclass_camera.a
+chapter_0.exe: libstructure.a
 chapter_0.exe: CMakeFiles/chapter_0.dir/linkLibs.rsp
 chapter_0.exe: CMakeFiles/chapter_0.dir/objects1.rsp
 chapter_0.exe: CMakeFiles/chapter_0.dir/link.txt

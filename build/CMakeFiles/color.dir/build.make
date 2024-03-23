@@ -98,6 +98,7 @@ color.exe: E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw3.a
 color.exe: libGLAD.a
 color.exe: libclass_shader.a
 color.exe: libclass_camera.a
+color.exe: libstructure.a
 color.exe: CMakeFiles/color.dir/linkLibs.rsp
 color.exe: CMakeFiles/color.dir/objects1.rsp
 color.exe: CMakeFiles/color.dir/link.txt
