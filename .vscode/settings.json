@@ -80,5 +80,7 @@
     "docwriter.language": "Chinese",
     "docwriter.style": "Auto-detect",
     "docwriter.hotkey.windows": "Alt + .",
-    "docwriter.progress.trackFunctions": true
+    "docwriter.progress.trackFunctions": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true
 }

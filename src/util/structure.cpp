@@ -28,7 +28,7 @@ struct Material
     Material(vec3  ambient   = vec3(1.0f),
              vec3  diffuse   = vec3(1.0f),
              vec3  specular  = vec3(1.0f),
-             float shininess = 32.0f)
+             float shininess = 128.0f)
     {
         this->ambient   = ambient;
         this->diffuse   = diffuse;
