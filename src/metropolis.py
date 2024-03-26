@@ -1,13 +1,9 @@
 import random
-from turtle import color
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-import seaborn
-from sympy import true
 from tqdm.auto import tqdm
 
-seaborn.set_theme()
 
 m = 10000  # 燃烧期样本数目
 M = 100000  # 实际保留的有效样本数
