@@ -53,6 +53,7 @@
 
 # # local build(s)
 build*
+/build
 
 # /.vs
 # /.vscode
