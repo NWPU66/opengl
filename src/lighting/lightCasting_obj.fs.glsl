@@ -17,6 +17,7 @@ struct Light
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+    vec3 dropOffFac;
 };
 
 //input
@@ -35,7 +36,8 @@ void main(){
     vec3 lightDir=light.position-position;
     float lightDistance=distance(lightDir,vec3(0.f));
     float diffusionFac=max(dot(normalize(lightDir),normalize(normal)),0.f);
-    float lightDropOff=1.f/pow(lightDistance,2.f);
+    vec3 lightDistVec=vec3(1.f,lightDistance,pow(lightDistance,2));
+    float lightDropOff=1.f/dot(lightDistVec,light.dropOffFac);
     //combine
     vec3 diffColor=light.diffuse*texture(material.diffuseMap,uv).xyz;
     vec3 diffusion=light.intensity*diffColor*diffusionFac*lightDropOff;
@@ -49,9 +51,9 @@ void main(){
     float specularFac=pow(max(dot(halfVec,normalize(normal)),0.f),material.shininess);
     //combine
     vec3 specularColor=texture(material.specularMap,uv).xyz*light.specular*material.specular;
-    vec3 specular=light.intensity*specularFac*specularColor;
+    vec3 specular=light.intensity*specularFac*specularColor*lightDropOff;
     
     //final color
     fragColor=vec4((ambient+specular+diffusion),1.f);
-    // fragColor=texture(material.specularMap,uv);
+    // fragColor=vec4(lightDropOff);
 }

@@ -108,6 +108,12 @@ void Shader::setParameter(const std::string& name, mat4 value) const
                        value_ptr(value));
 }
 
+/**
+ * 该函数设置着色器中材质的环境光、漫反射、镜面反射和光泽度值的参数。
+ *
+ * @param name “name”参数是一个字符串，表示着色器程序中设置的参数名称。
+ * @param value 环境光、漫反射、镜面反射、光泽度
+ */
 void Shader::setParameter(const std::string& name, Material value) const
 {
     Shader::setParameter(name + ".ambient", value.ambient);
@@ -116,6 +122,12 @@ void Shader::setParameter(const std::string& name, Material value) const
     Shader::setParameter(name + ".shininess", value.shininess);
 }
 
+/**
+ * 该函数为着色器程序中的 Light 对象设置参数。
+ *
+ * @param name “name”参数是一个字符串，表示为着色器设置的参数名称。
+ * @param value 位置、强度、漫反射、环境光、镜面反射
+ */
 void Shader::setParameter(const std::string& name, Light value) const
 {
     Shader::setParameter(name + ".position", value.position);
@@ -123,6 +135,7 @@ void Shader::setParameter(const std::string& name, Light value) const
     Shader::setParameter(name + ".diffuse", value.diffuse);
     Shader::setParameter(name + ".ambient", value.ambient);
     Shader::setParameter(name + ".specular", value.specular);
+    Shader::setParameter(name + ".dropOffFac", value.dropOffFac);
 }
 
 /**

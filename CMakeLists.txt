@@ -68,5 +68,7 @@ file(COPY ${SHADER_SRC} DESTINATION ${CMAKE_SOURCE_DIR}/build/shader)
 file(COPY 
     ${CMAKE_SOURCE_DIR}/src/beginners/wall.jpg 
     ${CMAKE_SOURCE_DIR}/src/beginners/awesomeface.png
+    ${CMAKE_SOURCE_DIR}/src/lighting/container2.png
+    ${CMAKE_SOURCE_DIR}/src/lighting/container2_specular.png
     DESTINATION 
     ${CMAKE_SOURCE_DIR}/build)

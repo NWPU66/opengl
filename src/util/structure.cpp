@@ -58,19 +58,21 @@ struct Light
     vec3  ambient;
     vec3  diffuse;
     vec3  specular;
-    Light(vec3  position  = vec3(0.0f),
-          float intensity = 1.0f,
-          vec3  ambient   = vec3(1.0f),
-          vec3  diffuse   = vec3(1.0f),
-          vec3  specular  = vec3(1.0f))
+    vec3  dropOffFac;
+    Light(vec3  position   = vec3(0.0f),
+          float intensity  = 1.0f,
+          vec3  ambient    = vec3(1.0f),
+          vec3  diffuse    = vec3(1.0f),
+          vec3  specular   = vec3(1.0f),
+          vec3  dropOffFac = vec3(1.0f, 0.09f, 0.032f))
     {
-        this->position  = position;
-        this->ambient   = ambient;
-        this->diffuse   = diffuse;
-        this->specular  = specular;
-        this->intensity = intensity;
+        this->position   = position;
+        this->ambient    = ambient;
+        this->diffuse    = diffuse;
+        this->specular   = specular;
+        this->intensity  = intensity;
+        this->dropOffFac = dropOffFac;
     }
 };
-
 
 #endif
