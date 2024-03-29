@@ -18,6 +18,11 @@ struct Light
     vec3 diffuse;
     vec3 specular;
     vec3 dropOffFac;
+    
+    //聚光灯设置
+    vec3 lightDir;
+    float innerCutOff;
+    float outerCutOff;
 };
 
 //input
@@ -33,9 +38,16 @@ uniform Light light;
 
 void main(){
     //diffusion
-    vec3 lightDir=light.position-position;
-    float lightDistance=distance(lightDir,vec3(0.f));
-    float diffusionFac=max(dot(normalize(lightDir),normalize(normal)),0.f);
+    vec3 vecToLight=light.position-position;
+    // 聚光灯裁切
+    float spotLightCutOff=dot(-light.lightDir,normalize(vecToLight));
+    if(spotLightCutOff>light.innerCutOff){
+        spotLightCutOff=1.f;
+    }else{
+        spotLightCutOff=0.f;
+    }
+    float lightDistance=distance(vecToLight,vec3(0.f));
+    float diffusionFac=max(dot(normalize(vecToLight),normalize(normal)),0.f);
     vec3 lightDistVec=vec3(1.f,lightDistance,pow(lightDistance,2));
     float lightDropOff=1.f/dot(lightDistVec,light.dropOffFac);
     //combine
@@ -47,13 +59,13 @@ void main(){
     
     //specular
     vec3 viewDir=normalize(cameraPos-position);
-    vec3 halfVec=normalize(normalize(lightDir)+viewDir);
+    vec3 halfVec=normalize(normalize(vecToLight)+viewDir);
     float specularFac=pow(max(dot(halfVec,normalize(normal)),0.f),material.shininess);
     //combine
     vec3 specularColor=texture(material.specularMap,uv).xyz*light.specular*material.specular;
     vec3 specular=light.intensity*specularFac*specularColor*lightDropOff;
     
     //final color
-    fragColor=vec4((ambient+specular+diffusion),1.f);
-    // fragColor=vec4(lightDropOff);
+    fragColor=vec4((ambient+(specular+diffusion)*spotLightCutOff),1.f);
+    // fragColor=vec4(vec3(spotLightCutOff),1.f);
 }

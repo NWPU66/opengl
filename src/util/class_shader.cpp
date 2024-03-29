@@ -136,6 +136,10 @@ void Shader::setParameter(const std::string& name, Light value) const
     Shader::setParameter(name + ".ambient", value.ambient);
     Shader::setParameter(name + ".specular", value.specular);
     Shader::setParameter(name + ".dropOffFac", value.dropOffFac);
+    // 聚光灯设置
+    Shader::setParameter(name + ".lightDir", value.lightDir);
+    Shader::setParameter(name + ".innerCutOff", value.innerCutOff);
+    Shader::setParameter(name + ".outerCutOff", value.outerCutOff);
 }
 
 /**

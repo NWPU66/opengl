@@ -55,5 +55,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/structure.dir/DependInfo.cmake"
   "CMakeFiles/chapter_0.dir/DependInfo.cmake"
   "CMakeFiles/color.dir/DependInfo.cmake"
+  "CMakeFiles/lightCasting.dir/DependInfo.cmake"
   "CMakeFiles/lighting.dir/DependInfo.cmake"
   )

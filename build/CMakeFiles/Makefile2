@@ -68,6 +68,7 @@ all: CMakeFiles/class_camera.dir/all
 all: CMakeFiles/structure.dir/all
 all: CMakeFiles/chapter_0.dir/all
 all: CMakeFiles/color.dir/all
+all: CMakeFiles/lightCasting.dir/all
 all: CMakeFiles/lighting.dir/all
 .PHONY : all
 
@@ -82,6 +83,7 @@ clean: CMakeFiles/class_camera.dir/clean
 clean: CMakeFiles/structure.dir/clean
 clean: CMakeFiles/chapter_0.dir/clean
 clean: CMakeFiles/color.dir/clean
+clean: CMakeFiles/lightCasting.dir/clean
 clean: CMakeFiles/lighting.dir/clean
 .PHONY : clean
 
@@ -170,7 +172,7 @@ CMakeFiles/class_camera.dir/clean:
 CMakeFiles/structure.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=13,14 "Built target structure"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=15,16 "Built target structure"
 .PHONY : CMakeFiles/structure.dir/all
 
 # Build rule for subdir invocation for target.
@@ -248,6 +250,35 @@ CMakeFiles/color.dir/clean:
 .PHONY : CMakeFiles/color.dir/clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/lightCasting.dir
+
+# All Build rule for target.
+CMakeFiles/lightCasting.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/lightCasting.dir/all: CMakeFiles/class_shader.dir/all
+CMakeFiles/lightCasting.dir/all: CMakeFiles/class_camera.dir/all
+CMakeFiles/lightCasting.dir/all: CMakeFiles/structure.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=11,12 "Built target lightCasting"
+.PHONY : CMakeFiles/lightCasting.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/lightCasting.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 10
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/lightCasting.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
+.PHONY : CMakeFiles/lightCasting.dir/rule
+
+# Convenience name for target.
+lightCasting: CMakeFiles/lightCasting.dir/rule
+.PHONY : lightCasting
+
+# clean rule for target.
+CMakeFiles/lightCasting.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/clean
+.PHONY : CMakeFiles/lightCasting.dir/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/lighting.dir
 
 # All Build rule for target.
@@ -257,7 +288,7 @@ CMakeFiles/lighting.dir/all: CMakeFiles/class_camera.dir/all
 CMakeFiles/lighting.dir/all: CMakeFiles/structure.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=11,12 "Built target lighting"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=13,14 "Built target lighting"
 .PHONY : CMakeFiles/lighting.dir/all
 
 # Build rule for subdir invocation for target.

@@ -6,6 +6,8 @@ struct Material
     vec3 diffuse;
     vec3 specular;
     float shininess;
+    sampler2D diffuseMap;
+    sampler2D specularMap;
 };
 
 struct Light
@@ -34,18 +36,22 @@ void main(){
     float lightDistance=distance(lightDir,vec3(0.f));
     float diffusionFac=max(dot(normalize(lightDir),normalize(normal)),0.f);
     float lightDropOff=1.f/pow(lightDistance,2.f);
-    vec3 diffusion=light.intensity*light.diffuse*diffusionFac*lightDropOff;
+    //combine
+    vec3 diffColor=light.diffuse*texture(material.diffuseMap,uv).xyz;
+    vec3 diffusion=light.intensity*diffColor*diffusionFac*lightDropOff;
     
     //ambient
-    vec3 ambient=light.ambient*material.ambient;
+    vec3 ambient=light.ambient*material.ambient*texture(material.diffuseMap,uv).xyz;
     
     //specular
     vec3 viewDir=normalize(cameraPos-position);
     vec3 halfVec=normalize(normalize(lightDir)+viewDir);
     float specularFac=pow(max(dot(halfVec,normalize(normal)),0.f),material.shininess);
-    vec3 specular=.5f*light.specular*light.intensity*material.specular*specularFac;
+    //combine
+    vec3 specularColor=texture(material.specularMap,uv).xyz*light.specular*material.specular;
+    vec3 specular=light.intensity*specularFac*specularColor;
     
     //final color
-    fragColor=vec4((ambient+specular+diffusion)*material.diffuse,1.f);
-    // fragColor=vec4(ambient,1.f);
+    fragColor=vec4((ambient+specular+diffusion),1.f);
+    // fragColor=texture(material.specularMap,uv);
 }

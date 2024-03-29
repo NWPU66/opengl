@@ -59,6 +59,12 @@ struct Light
     vec3  diffuse;
     vec3  specular;
     vec3  dropOffFac;
+
+    // 聚光灯设置
+    vec3 lightDir;
+    float innerCutOff = cos(radians(12.5f));  // 余弦值
+    float outerCutOff = cos(radians(17.5f));
+
     Light(vec3  position   = vec3(0.0f),
           float intensity  = 1.0f,
           vec3  ambient    = vec3(1.0f),

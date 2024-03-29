@@ -194,6 +194,19 @@ color/fast:
 .PHONY : color/fast
 
 #=============================================================================
+# Target rules for targets named lightCasting
+
+# Build rule for target.
+lightCasting: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 lightCasting
+.PHONY : lightCasting
+
+# fast build rule for target.
+lightCasting/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/build
+.PHONY : lightCasting/fast
+
+#=============================================================================
 # Target rules for targets named lighting
 
 # Build rule for target.
@@ -277,6 +290,30 @@ src/lighting/color.s: src/lighting/color.cpp.s
 src/lighting/color.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/src/lighting/color.cpp.s
 .PHONY : src/lighting/color.cpp.s
+
+src/lighting/lightCasting.obj: src/lighting/lightCasting.cpp.obj
+.PHONY : src/lighting/lightCasting.obj
+
+# target to build an object file
+src/lighting/lightCasting.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/src/lighting/lightCasting.cpp.obj
+.PHONY : src/lighting/lightCasting.cpp.obj
+
+src/lighting/lightCasting.i: src/lighting/lightCasting.cpp.i
+.PHONY : src/lighting/lightCasting.i
+
+# target to preprocess a source file
+src/lighting/lightCasting.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/src/lighting/lightCasting.cpp.i
+.PHONY : src/lighting/lightCasting.cpp.i
+
+src/lighting/lightCasting.s: src/lighting/lightCasting.cpp.s
+.PHONY : src/lighting/lightCasting.s
+
+# target to generate assembly for a file
+src/lighting/lightCasting.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/src/lighting/lightCasting.cpp.s
+.PHONY : src/lighting/lightCasting.cpp.s
 
 src/lighting/lighting.obj: src/lighting/lighting.cpp.obj
 .PHONY : src/lighting/lighting.obj
@@ -387,6 +424,7 @@ help:
 	@echo ... class_camera
 	@echo ... class_shader
 	@echo ... color
+	@echo ... lightCasting
 	@echo ... lighting
 	@echo ... structure
 	@echo ... 3rdparty/glad/src/glad.obj
@@ -398,6 +436,9 @@ help:
 	@echo ... src/lighting/color.obj
 	@echo ... src/lighting/color.i
 	@echo ... src/lighting/color.s
+	@echo ... src/lighting/lightCasting.obj
+	@echo ... src/lighting/lightCasting.i
+	@echo ... src/lighting/lightCasting.s
 	@echo ... src/lighting/lighting.obj
 	@echo ... src/lighting/lighting.i
 	@echo ... src/lighting/lighting.s

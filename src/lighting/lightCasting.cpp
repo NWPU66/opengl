@@ -28,8 +28,8 @@ float lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
 
 /**NOTE - 高级渲染设置
  */
-const Material material(vec3(0.05f, 0.1f, 0.5f), vec3(1.0f, 0.4f, 0.3f));
-const Light    light(vec3(1.0f, 1.2f, 2.0f), 2.0f);
+Material material(vec3(0.05f, 0.1f, 0.5f), vec3(1.0f, 0.4f, 0.3f));
+Light    light(vec3(1.0f, 1.2f, 2.0f), 2.0f);
 
 /**NOTE - 几何体元数据
  */
@@ -169,7 +169,10 @@ int main(int argc, char** argv)
         objShader->use();
         objShader->setParameter("cameraPos", camera->Position);
         objShader->setParameter("material", material);
+        // 将聚光灯绑定在摄像机上
+        light.position = camera->Position;
         objShader->setParameter("light", light);
+        objShader->setParameter("light.lightDir", camera->Front);
         // objShader->setMat4("model", model_obj);
         objShader->setParameter("view", view);
         objShader->setParameter("projection", projection);
@@ -188,7 +191,7 @@ int main(int argc, char** argv)
         lightShader->setParameter("view", view);
         lightShader->setParameter("projection", projection);
         glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // glDrawArrays(GL_TRIANGLES, 0, 36);
         //~SECTION
 
         // 处理事件、交换缓冲区
@@ -439,19 +442,29 @@ int createImageObjrct(const char* imagePath)
  * 聚光是位于环境中某个位置的光源，它只朝一个特定方向而不是所有方向照射光线。
  * 这样的结果就是只有在聚光方向的特定半径内的物体才会被照亮，其它的物体都会保持黑暗。
  * 聚光很好的例子就是路灯或手电筒。
- * 
- * OpenGL中聚光是用一个世界空间位置、一个方向和一个切光角(Cutoff Angle)来表示的，
+ *
+ * OpenGL中聚光是用一个世界空间位置、一个方向和一个切光角(Cutoff
+ Angle)来表示的，
  * 切光角指定了聚光的半径（译注：是圆锥的半径不是距光源距离那个半径）。对于每个片段，
  * 我们会计算片段是否位于聚光的切光方向之间（也就是在锥形内），
  * 如果是的话，我们就会相应地照亮片段。
  *
  * ![](https://learnopengl-cn.github.io/img/02/05/light_casters_spotlight_angles.png)
- * 
+ *
  * 所以我们要做的就是计算LightDir向量和SpotDir向量之间的点积
  * （还记得它会返回两个单位向量夹角的余弦值吗？），并将它与切光角ϕ值对比。
- * 
+ *
  * NOTE - 手电筒 Flashlight
  * 手电筒(Flashlight)是一个位于观察者位置的聚光，通常它都会瞄准玩家视角的正前方。
  * 基本上说，手电筒就是普通的聚光，但它的位置和方向会随着玩家的位置和朝向不断更新。
- * 
+ *
+ * 你可以看到，我们并没有给切光角设置一个角度值，反而是用角度值计算了一个余弦值，
+ * 将余弦结果传递到片段着色器中。这样做的原因是在片段着色器中，我们会计算LightDir
+ * 和SpotDir向量的点积，这个点积返回的将是一个余弦值而不是角度值，所以我们不能
+ * 直接使用角度值和余弦值进行比较。为了获取角度值我们需要计算点积结果的反余弦，
+ * 这是一个开销很大的计算。所以为了节约一点性能开销，我们将会计算切光角对应的余弦值，
+ * 并将它的结果传入片段着色器中。由于这两个角度现在都由余弦角来表示了，
+ * 我们可以直接对它们进行比较而不用进行任何开销高昂的计算。
+ *
+ *
  */

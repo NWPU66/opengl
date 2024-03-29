@@ -37,6 +37,12 @@
 },
 {
   "directory": "E:/Study/CodeProj/opengl/build",
+  "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/lightCasting.dir/includes_CXX.rsp -g -o CMakeFiles\\lightCasting.dir\\src\\lighting\\lightCasting.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\lighting\\lightCasting.cpp",
+  "file": "E:/Study/CodeProj/opengl/src/lighting/lightCasting.cpp",
+  "output": "CMakeFiles/lightCasting.dir/src/lighting/lightCasting.cpp.obj"
+},
+{
+  "directory": "E:/Study/CodeProj/opengl/build",
   "command": "E:\\mingw64\\bin\\g++.exe  @CMakeFiles/lighting.dir/includes_CXX.rsp -g -o CMakeFiles\\lighting.dir\\src\\lighting\\lighting.cpp.obj -c E:\\Study\\CodeProj\\opengl\\src\\lighting\\lighting.cpp",
   "file": "E:/Study/CodeProj/opengl/src/lighting/lighting.cpp",
   "output": "CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj"
