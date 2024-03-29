@@ -96,6 +96,7 @@ lighting.exe: C:/Windows/System32/opengl32.dll
 lighting.exe: E:/Study/CodeProj/opengl/3rdparty/glm-1.0.1/install/lib/libglm.a
 lighting.exe: E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw3.a
 lighting.exe: libGLAD.a
+lighting.exe: E:/Study/CodeProj/opengl/3rdparty/assimp/assimp_install/lib/libzlibstatic.a
 lighting.exe: libclass_shader.a
 lighting.exe: libclass_camera.a
 lighting.exe: libstructure.a

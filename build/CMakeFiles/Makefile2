@@ -195,10 +195,10 @@ CMakeFiles/structure.dir/clean:
 # Target rules for target CMakeFiles/chapter_0.dir
 
 # All Build rule for target.
-CMakeFiles/chapter_0.dir/all: CMakeFiles/GLAD.dir/all
-CMakeFiles/chapter_0.dir/all: CMakeFiles/class_shader.dir/all
 CMakeFiles/chapter_0.dir/all: CMakeFiles/class_camera.dir/all
 CMakeFiles/chapter_0.dir/all: CMakeFiles/structure.dir/all
+CMakeFiles/chapter_0.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/chapter_0.dir/all: CMakeFiles/class_shader.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=3,4 "Built target chapter_0"
@@ -224,10 +224,10 @@ CMakeFiles/chapter_0.dir/clean:
 # Target rules for target CMakeFiles/color.dir
 
 # All Build rule for target.
-CMakeFiles/color.dir/all: CMakeFiles/GLAD.dir/all
-CMakeFiles/color.dir/all: CMakeFiles/class_shader.dir/all
 CMakeFiles/color.dir/all: CMakeFiles/class_camera.dir/all
 CMakeFiles/color.dir/all: CMakeFiles/structure.dir/all
+CMakeFiles/color.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/color.dir/all: CMakeFiles/class_shader.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=9,10 "Built target color"
@@ -253,10 +253,10 @@ CMakeFiles/color.dir/clean:
 # Target rules for target CMakeFiles/lightCasting.dir
 
 # All Build rule for target.
-CMakeFiles/lightCasting.dir/all: CMakeFiles/GLAD.dir/all
-CMakeFiles/lightCasting.dir/all: CMakeFiles/class_shader.dir/all
 CMakeFiles/lightCasting.dir/all: CMakeFiles/class_camera.dir/all
 CMakeFiles/lightCasting.dir/all: CMakeFiles/structure.dir/all
+CMakeFiles/lightCasting.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/lightCasting.dir/all: CMakeFiles/class_shader.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=11,12 "Built target lightCasting"
@@ -282,10 +282,10 @@ CMakeFiles/lightCasting.dir/clean:
 # Target rules for target CMakeFiles/lighting.dir
 
 # All Build rule for target.
-CMakeFiles/lighting.dir/all: CMakeFiles/GLAD.dir/all
-CMakeFiles/lighting.dir/all: CMakeFiles/class_shader.dir/all
 CMakeFiles/lighting.dir/all: CMakeFiles/class_camera.dir/all
 CMakeFiles/lighting.dir/all: CMakeFiles/structure.dir/all
+CMakeFiles/lighting.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/lighting.dir/all: CMakeFiles/class_shader.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=13,14 "Built target lighting"

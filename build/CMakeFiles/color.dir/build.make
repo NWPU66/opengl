@@ -96,6 +96,7 @@ color.exe: C:/Windows/System32/opengl32.dll
 color.exe: E:/Study/CodeProj/opengl/3rdparty/glm-1.0.1/install/lib/libglm.a
 color.exe: E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw3.a
 color.exe: libGLAD.a
+color.exe: E:/Study/CodeProj/opengl/3rdparty/assimp/assimp_install/lib/libzlibstatic.a
 color.exe: libclass_shader.a
 color.exe: libclass_camera.a
 color.exe: libstructure.a

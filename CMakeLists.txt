@@ -35,6 +35,11 @@ set(LIBS ${LIBS} GLAD)
 set(STD_LIB_PATH ${CMAKE_SOURCE_DIR}/3rdparty/stb-master)
 set(INCLUDES ${INCLUDES} ${STD_LIB_PATH})
 
+# assimp
+set(ASSIMP_PATH ${CMAKE_SOURCE_DIR}/3rdparty/assimp/assimp_install)
+set(INCLUDES ${INCLUDES} ${ASSIMP_PATH}/include)
+set(LIBS ${LIBS} ${ASSIMP_PATH}/lib/libzlibstatic.a)
+
 # include directory
 include_directories(${INCLUDES})
 include_directories(${CMAKE_SOURCE_DIR}/src)
