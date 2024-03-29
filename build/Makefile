@@ -167,6 +167,19 @@ chapter_1/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/build
 .PHONY : chapter_1/fast
 
+#=============================================================================
+# Target rules for targets named mesh
+
+# Build rule for target.
+mesh: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 mesh
+.PHONY : mesh
+
+# fast build rule for target.
+mesh/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/build
+.PHONY : mesh/fast
+
 3rdparty/glad/src/glad.obj: 3rdparty/glad/src/glad.c.obj
 .PHONY : 3rdparty/glad/src/glad.obj
 
@@ -239,6 +252,30 @@ src/lighting/chapter_1.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/src/lighting/chapter_1.cpp.s
 .PHONY : src/lighting/chapter_1.cpp.s
 
+src/model_loading/mesh.obj: src/model_loading/mesh.cpp.obj
+.PHONY : src/model_loading/mesh.obj
+
+# target to build an object file
+src/model_loading/mesh.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/src/model_loading/mesh.cpp.obj
+.PHONY : src/model_loading/mesh.cpp.obj
+
+src/model_loading/mesh.i: src/model_loading/mesh.cpp.i
+.PHONY : src/model_loading/mesh.i
+
+# target to preprocess a source file
+src/model_loading/mesh.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/src/model_loading/mesh.cpp.i
+.PHONY : src/model_loading/mesh.cpp.i
+
+src/model_loading/mesh.s: src/model_loading/mesh.cpp.s
+.PHONY : src/model_loading/mesh.s
+
+# target to generate assembly for a file
+src/model_loading/mesh.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/src/model_loading/mesh.cpp.s
+.PHONY : src/model_loading/mesh.cpp.s
+
 src/util/class_camera.obj: src/util/class_camera.cpp.obj
 .PHONY : src/util/class_camera.obj
 
@@ -262,6 +299,54 @@ src/util/class_camera.s: src/util/class_camera.cpp.s
 src/util/class_camera.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_camera.cpp.s
 .PHONY : src/util/class_camera.cpp.s
+
+src/util/class_mesh.obj: src/util/class_mesh.cpp.obj
+.PHONY : src/util/class_mesh.obj
+
+# target to build an object file
+src/util/class_mesh.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_mesh.cpp.obj
+.PHONY : src/util/class_mesh.cpp.obj
+
+src/util/class_mesh.i: src/util/class_mesh.cpp.i
+.PHONY : src/util/class_mesh.i
+
+# target to preprocess a source file
+src/util/class_mesh.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_mesh.cpp.i
+.PHONY : src/util/class_mesh.cpp.i
+
+src/util/class_mesh.s: src/util/class_mesh.cpp.s
+.PHONY : src/util/class_mesh.s
+
+# target to generate assembly for a file
+src/util/class_mesh.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_mesh.cpp.s
+.PHONY : src/util/class_mesh.cpp.s
+
+src/util/class_model.obj: src/util/class_model.cpp.obj
+.PHONY : src/util/class_model.obj
+
+# target to build an object file
+src/util/class_model.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_model.cpp.obj
+.PHONY : src/util/class_model.cpp.obj
+
+src/util/class_model.i: src/util/class_model.cpp.i
+.PHONY : src/util/class_model.i
+
+# target to preprocess a source file
+src/util/class_model.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_model.cpp.i
+.PHONY : src/util/class_model.cpp.i
+
+src/util/class_model.s: src/util/class_model.cpp.s
+.PHONY : src/util/class_model.s
+
+# target to generate assembly for a file
+src/util/class_model.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_model.cpp.s
+.PHONY : src/util/class_model.cpp.s
 
 src/util/class_shader.obj: src/util/class_shader.cpp.obj
 .PHONY : src/util/class_shader.obj
@@ -298,6 +383,7 @@ help:
 	@echo ... GLAD
 	@echo ... chapter_0
 	@echo ... chapter_1
+	@echo ... mesh
 	@echo ... utilTool
 	@echo ... 3rdparty/glad/src/glad.obj
 	@echo ... 3rdparty/glad/src/glad.i
@@ -308,9 +394,18 @@ help:
 	@echo ... src/lighting/chapter_1.obj
 	@echo ... src/lighting/chapter_1.i
 	@echo ... src/lighting/chapter_1.s
+	@echo ... src/model_loading/mesh.obj
+	@echo ... src/model_loading/mesh.i
+	@echo ... src/model_loading/mesh.s
 	@echo ... src/util/class_camera.obj
 	@echo ... src/util/class_camera.i
 	@echo ... src/util/class_camera.s
+	@echo ... src/util/class_mesh.obj
+	@echo ... src/util/class_mesh.i
+	@echo ... src/util/class_mesh.s
+	@echo ... src/util/class_model.obj
+	@echo ... src/util/class_model.i
+	@echo ... src/util/class_model.s
 	@echo ... src/util/class_shader.obj
 	@echo ... src/util/class_shader.i
 	@echo ... src/util/class_shader.s

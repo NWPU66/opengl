@@ -66,6 +66,7 @@ all: CMakeFiles/GLAD.dir/all
 all: CMakeFiles/utilTool.dir/all
 all: CMakeFiles/chapter_0.dir/all
 all: CMakeFiles/chapter_1.dir/all
+all: CMakeFiles/mesh.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -77,6 +78,7 @@ clean: CMakeFiles/GLAD.dir/clean
 clean: CMakeFiles/utilTool.dir/clean
 clean: CMakeFiles/chapter_0.dir/clean
 clean: CMakeFiles/chapter_1.dir/clean
+clean: CMakeFiles/mesh.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -112,12 +114,12 @@ CMakeFiles/GLAD.dir/clean:
 CMakeFiles/utilTool.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=7,8,9 "Built target utilTool"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=9,10,11,12,13 "Built target utilTool"
 .PHONY : CMakeFiles/utilTool.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/utilTool.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/utilTool.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/utilTool.dir/rule
@@ -135,8 +137,8 @@ CMakeFiles/utilTool.dir/clean:
 # Target rules for target CMakeFiles/chapter_0.dir
 
 # All Build rule for target.
-CMakeFiles/chapter_0.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/chapter_0.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/chapter_0.dir/all: CMakeFiles/utilTool.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=3,4 "Built target chapter_0"
@@ -144,7 +146,7 @@ CMakeFiles/chapter_0.dir/all: CMakeFiles/GLAD.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/chapter_0.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 9
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/chapter_0.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/chapter_0.dir/rule
@@ -162,8 +164,8 @@ CMakeFiles/chapter_0.dir/clean:
 # Target rules for target CMakeFiles/chapter_1.dir
 
 # All Build rule for target.
-CMakeFiles/chapter_1.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/chapter_1.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/chapter_1.dir/all: CMakeFiles/utilTool.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=5,6 "Built target chapter_1"
@@ -171,7 +173,7 @@ CMakeFiles/chapter_1.dir/all: CMakeFiles/GLAD.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/chapter_1.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 9
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/chapter_1.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/chapter_1.dir/rule
@@ -184,6 +186,33 @@ chapter_1: CMakeFiles/chapter_1.dir/rule
 CMakeFiles/chapter_1.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/clean
 .PHONY : CMakeFiles/chapter_1.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/mesh.dir
+
+# All Build rule for target.
+CMakeFiles/mesh.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/mesh.dir/all: CMakeFiles/utilTool.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=7,8 "Built target mesh"
+.PHONY : CMakeFiles/mesh.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/mesh.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 9
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/mesh.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
+.PHONY : CMakeFiles/mesh.dir/rule
+
+# Convenience name for target.
+mesh: CMakeFiles/mesh.dir/rule
+.PHONY : mesh
+
+# clean rule for target.
+CMakeFiles/mesh.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/clean
+.PHONY : CMakeFiles/mesh.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

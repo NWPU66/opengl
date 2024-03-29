@@ -73,15 +73,15 @@ CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj: CMakeFiles/chapter_0.d
 CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj: E:/Study/CodeProj/opengl/src/beginners/chapter_0.cpp
 CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj: CMakeFiles/chapter_0.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj"
-	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj -MF CMakeFiles\chapter_0.dir\src\beginners\chapter_0.cpp.obj.d -o CMakeFiles\chapter_0.dir\src\beginners\chapter_0.cpp.obj -c E:\Study\CodeProj\opengl\src\beginners\chapter_0.cpp
+	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj -MF CMakeFiles\chapter_0.dir\src\beginners\chapter_0.cpp.obj.d -o CMakeFiles\chapter_0.dir\src\beginners\chapter_0.cpp.obj -c E:\Study\CodeProj\opengl\src\beginners\chapter_0.cpp
 
 CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.i"
-	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\Study\CodeProj\opengl\src\beginners\chapter_0.cpp > CMakeFiles\chapter_0.dir\src\beginners\chapter_0.cpp.i
+	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\Study\CodeProj\opengl\src\beginners\chapter_0.cpp > CMakeFiles\chapter_0.dir\src\beginners\chapter_0.cpp.i
 
 CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.s"
-	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\Study\CodeProj\opengl\src\beginners\chapter_0.cpp -o CMakeFiles\chapter_0.dir\src\beginners\chapter_0.cpp.s
+	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\Study\CodeProj\opengl\src\beginners\chapter_0.cpp -o CMakeFiles\chapter_0.dir\src\beginners\chapter_0.cpp.s
 
 # Object files for target chapter_0
 chapter_0_OBJECTS = \

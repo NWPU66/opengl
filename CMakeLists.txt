@@ -47,7 +47,9 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 add_library(utilTool STATIC 
     ${CMAKE_SOURCE_DIR}/src/util/class_shader.cpp
     ${CMAKE_SOURCE_DIR}/src/util/class_camera.cpp
-    ${CMAKE_SOURCE_DIR}/src/util/structure.hpp)
+    ${CMAKE_SOURCE_DIR}/src/util/structure.hpp
+    ${CMAKE_SOURCE_DIR}/src/util/class_mesh.cpp
+    ${CMAKE_SOURCE_DIR}/src/util/class_model.cpp)
 set(LIBS ${LIBS} utilTool)
 link_libraries(${LIBS})
 
@@ -69,9 +71,7 @@ endforeach()
 
 # install
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
-file(GLOB SHADER_SRC 
-    "${CMAKE_SOURCE_DIR}/src/beginners/*.glsl"
-    "${CMAKE_SOURCE_DIR}/src/lighting/*.glsl")
+file(GLOB_RECURSE SHADER_SRC "${CMAKE_SOURCE_DIR}/src/*.glsl")
 file(COPY ${SHADER_SRC} DESTINATION ${CMAKE_SOURCE_DIR}/build/shader)
 file(COPY 
     ${CMAKE_SOURCE_DIR}/src/beginners/wall.jpg 
