@@ -12,6 +12,7 @@
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define MAX_NUM_LIGHTS_SPUUORT 16
 using namespace glm;
 using namespace std;
 
@@ -28,8 +29,9 @@ float lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
 
 /**NOTE - 高级渲染设置
  */
-Material material(vec3(0.05f, 0.1f, 0.5f), vec3(1.0f, 0.4f, 0.3f));
-Light    light(vec3(1.0f, 1.2f, 2.0f), 2.0f);
+Material material(vec3(0.05f, 0.1f, 0.2f), vec3(1.0f, 0.4f, 0.3f));
+// lightGroup中的第一盏灯是绑定在摄像机上的手电筒
+int n_light = 5;
 
 /**NOTE - 几何体元数据
  */
@@ -71,12 +73,18 @@ float vertices[] = {
     -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
 };
 
-glm::vec3 cubePositions[] = {
+vec3 cubePositions[] = {
     glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
     glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
     glm::vec3(2.4f, -0.4f, -3.5f),  glm::vec3(-1.7f, 3.0f, -7.5f),
     glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
     glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
+
+Light lightGroup[] = {Light(2, vec3(0.0f), 1.0f, vec3(0.0f, 0.0f, 1.0f)),
+                      Light(1, vec3(0.7f, 0.2f, 2.0f), 0.25f),
+                      Light(1, vec3(2.3f, -3.3f, -4.0f), 0.25f),
+                      Light(1, vec3(-4.0f, 2.0f, -12.0f), 0.25f),
+                      Light(1, vec3(0.0f, 0.0f, -3.0f), 0.25f)};
 
 void framebuffer_size_callback(GLFWwindow* window, int w, int h);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -103,14 +111,32 @@ int main(int argc, char** argv)
     objShader->use();  // 启动物体着色器
     GLuint boxDiffTex = createImageObjrct("container2.png");
     GLuint boxSpecTex = createImageObjrct("container2_specular.png");
+    GLuint boxNormTex = createImageObjrct("container2_normal.png");
     // 设置纹理槽
     objShader->setParameter("material.diffuseMap", 0);
     objShader->setParameter("material.specularMap", 1);
+    objShader->setParameter("material.normalMap", 2);
     // 激活纹理单元
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, boxDiffTex);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, boxSpecTex);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, boxNormTex);
+
+    /**NOTE - 向Shader写入静态光的数据
+     */
+    int idx = 0;
+    objShader->use();
+    while (idx < MAX_NUM_LIGHTS_SPUUORT)
+    {
+        string shaderVarName = "light[" + to_string(idx) + "]";
+        if (idx < n_light)
+            objShader->setParameter(shaderVarName, lightGroup[idx]);
+        else  // 向shader填充无效的灯光
+            objShader->setParameter(shaderVarName, Light(-1, vec3(0.0f), 0.0f));
+        idx++;
+    }
 
     /**NOTE - 创建顶点数据
      */
@@ -158,28 +184,28 @@ int main(int argc, char** argv)
 
         /**NOTE - 更新视图变换
          */
-        mat4 model_obj   = mat4(1.0f);
-        mat4 model_light = translate(mat4(1.0f), light.position);
-        model_light      = scale(model_light, vec3(0.1f));
-        mat4 view        = camera->GetViewMatrix();
+        mat4 view = camera->GetViewMatrix();
         mat4 projection =
             perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
+
+        /**NOTE - 将聚光灯绑定在摄像机上
+         */
+        objShader->use();
+        lightGroup[0].position = camera->Position;
+        lightGroup[0].lightDir = camera->Front;
+        objShader->setParameter("light[0]", lightGroup[0]);
+
         /**NOTE - 绘制立方体
          */
         objShader->use();
         objShader->setParameter("cameraPos", camera->Position);
         objShader->setParameter("material", material);
-        // 将聚光灯绑定在摄像机上
-        light.position = camera->Position;
-        objShader->setParameter("light", light);
-        objShader->setParameter("light.lightDir", camera->Front);
-        // objShader->setMat4("model", model_obj);
         objShader->setParameter("view", view);
         objShader->setParameter("projection", projection);
         glBindVertexArray(objVAO);
         for (int i = 0; i < 10; i++)
         {
-            model_obj = translate(mat4(1.0f), cubePositions[i]);
+            mat4 model_obj = translate(mat4(1.0f), cubePositions[i]);
             objShader->setParameter("model", model_obj);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
@@ -187,11 +213,17 @@ int main(int argc, char** argv)
         /**NOTE - 绘制灯光
          */
         lightShader->use();
-        lightShader->setParameter("model", model_light);
-        lightShader->setParameter("view", view);
-        lightShader->setParameter("projection", projection);
-        glBindVertexArray(lightVAO);
-        // glDrawArrays(GL_TRIANGLES, 0, 36);
+        // 第0盏灯是摄像机上的聚光灯，无需渲染实体
+        for (int i = 1; i < n_light; i++)
+        {
+            mat4 model_light = translate(mat4(1.0f), lightGroup[i].position);
+            model_light      = scale(model_light, vec3(0.1f));
+            lightShader->setParameter("model", model_light);
+            lightShader->setParameter("view", view);
+            lightShader->setParameter("projection", projection);
+            glBindVertexArray(lightVAO);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         //~SECTION
 
         // 处理事件、交换缓冲区
@@ -472,11 +504,11 @@ int createImageObjrct(const char* imagePath)
  * 这样做的原因是，每一种光源都需要一种不同的计算方法，而一旦我们想对多个光源进行光照计算时
  * ，代码很快就会变得非常复杂。如果我们只在main函数中进行所有的这些计算，
  * 代码很快就会变得难以理解。
- * 
+ *
  * GLSL中的函数和C函数很相似，它有一个函数名、一个返回值类型，
  * 如果函数不是在main函数之前声明的，我们还必须在代码文件顶部声明一个原型。
  * 我们对每个光照类型都创建一个不同的函数：定向光、点光源和聚光。
- * 
+ *
  * 当我们在场景中使用多个光源时，通常使用以下方法：我们需要有一个单独的颜色向量代表片段
  * 的输出颜色。对于每一个光源，它对片段的贡献颜色将会加到片段的输出颜色向量上。
  * 所以场景中的每个光源都会计算它们各自对片段的影响，并结合为一个最终的输出颜色。

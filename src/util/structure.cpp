@@ -53,15 +53,18 @@ struct Material
  */
 struct Light
 {
-    vec3  position;
-    float intensity;
-    vec3  ambient;
-    vec3  diffuse;
-    vec3  specular;
-    vec3  dropOffFac;
+    int type = -1;  // 灯光的类型：-1-无效灯，0-平行光，1-点光源，2-聚光灯
 
-    // 聚光灯设置
-    vec3 lightDir;
+    // 基本属性
+    vec3  position   = vec3(0.0f);
+    float intensity  = 1.0f;
+    vec3  ambient    = vec3(1.0f);
+    vec3  diffuse    = vec3(1.0f);
+    vec3  specular   = vec3(2.0f);
+    vec3  dropOffFac = vec3(1.0f, 0.09f, 0.032f);
+
+    // 方向光和聚光灯设置
+    vec3  lightDir    = vec3(0.0f, 0.0f, 1.0f);
     float innerCutOff = cos(radians(12.5f));  // 余弦值
     float outerCutOff = cos(radians(17.5f));
 
@@ -78,6 +81,16 @@ struct Light
         this->specular   = specular;
         this->intensity  = intensity;
         this->dropOffFac = dropOffFac;
+    }
+    Light(int   type,
+          vec3  position,
+          float intensity,
+          vec3  lightDir = vec3(0.0f, 0.0f, 1.0f))
+    {
+        this->type      = type;
+        this->position  = position;
+        this->intensity = intensity;
+        this->lightDir  = lightDir;
     }
 };
 

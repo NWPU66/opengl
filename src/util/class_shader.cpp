@@ -130,13 +130,17 @@ void Shader::setParameter(const std::string& name, Material value) const
  */
 void Shader::setParameter(const std::string& name, Light value) const
 {
+    Shader::setParameter(name + ".type", value.type);  // 灯光类型
+
+    //基本属性
     Shader::setParameter(name + ".position", value.position);
     Shader::setParameter(name + ".intensity", value.intensity);
     Shader::setParameter(name + ".diffuse", value.diffuse);
     Shader::setParameter(name + ".ambient", value.ambient);
     Shader::setParameter(name + ".specular", value.specular);
     Shader::setParameter(name + ".dropOffFac", value.dropOffFac);
-    // 聚光灯设置
+
+    // 方向光和聚光灯设置
     Shader::setParameter(name + ".lightDir", value.lightDir);
     Shader::setParameter(name + ".innerCutOff", value.innerCutOff);
     Shader::setParameter(name + ".outerCutOff", value.outerCutOff);
