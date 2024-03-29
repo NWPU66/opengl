@@ -73,15 +73,15 @@ CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj: CMakeFiles/lighting.dir/i
 CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj: E:/Study/CodeProj/opengl/src/lighting/lighting.cpp
 CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj: CMakeFiles/lighting.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj"
-	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj -MF CMakeFiles\lighting.dir\src\lighting\lighting.cpp.obj.d -o CMakeFiles\lighting.dir\src\lighting\lighting.cpp.obj -c E:\Study\CodeProj\opengl\src\lighting\lighting.cpp
+	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj -MF CMakeFiles\lighting.dir\src\lighting\lighting.cpp.obj.d -o CMakeFiles\lighting.dir\src\lighting\lighting.cpp.obj -c E:\Study\CodeProj\opengl\src\lighting\lighting.cpp
 
 CMakeFiles/lighting.dir/src/lighting/lighting.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/lighting.dir/src/lighting/lighting.cpp.i"
-	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\Study\CodeProj\opengl\src\lighting\lighting.cpp > CMakeFiles\lighting.dir\src\lighting\lighting.cpp.i
+	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\Study\CodeProj\opengl\src\lighting\lighting.cpp > CMakeFiles\lighting.dir\src\lighting\lighting.cpp.i
 
 CMakeFiles/lighting.dir/src/lighting/lighting.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/lighting.dir/src/lighting/lighting.cpp.s"
-	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\Study\CodeProj\opengl\src\lighting\lighting.cpp -o CMakeFiles\lighting.dir\src\lighting\lighting.cpp.s
+	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\Study\CodeProj\opengl\src\lighting\lighting.cpp -o CMakeFiles\lighting.dir\src\lighting\lighting.cpp.s
 
 # Object files for target lighting
 lighting_OBJECTS = \
@@ -97,9 +97,7 @@ lighting.exe: E:/Study/CodeProj/opengl/3rdparty/glm-1.0.1/install/lib/libglm.a
 lighting.exe: E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw3.a
 lighting.exe: libGLAD.a
 lighting.exe: E:/Study/CodeProj/opengl/3rdparty/assimp/assimp_install/lib/libzlibstatic.a
-lighting.exe: libclass_shader.a
-lighting.exe: libclass_camera.a
-lighting.exe: libstructure.a
+lighting.exe: libutilTool.a
 lighting.exe: CMakeFiles/lighting.dir/linkLibs.rsp
 lighting.exe: CMakeFiles/lighting.dir/objects1.rsp
 lighting.exe: CMakeFiles/lighting.dir/link.txt

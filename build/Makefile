@@ -129,43 +129,17 @@ GLAD/fast:
 .PHONY : GLAD/fast
 
 #=============================================================================
-# Target rules for targets named class_shader
+# Target rules for targets named utilTool
 
 # Build rule for target.
-class_shader: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 class_shader
-.PHONY : class_shader
+utilTool: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 utilTool
+.PHONY : utilTool
 
 # fast build rule for target.
-class_shader/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_shader.dir\build.make CMakeFiles/class_shader.dir/build
-.PHONY : class_shader/fast
-
-#=============================================================================
-# Target rules for targets named class_camera
-
-# Build rule for target.
-class_camera: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 class_camera
-.PHONY : class_camera
-
-# fast build rule for target.
-class_camera/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_camera.dir\build.make CMakeFiles/class_camera.dir/build
-.PHONY : class_camera/fast
-
-#=============================================================================
-# Target rules for targets named structure
-
-# Build rule for target.
-structure: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 structure
-.PHONY : structure
-
-# fast build rule for target.
-structure/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/build
-.PHONY : structure/fast
+utilTool/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/build
+.PHONY : utilTool/fast
 
 #=============================================================================
 # Target rules for targets named chapter_0
@@ -344,7 +318,7 @@ src/util/class_camera.obj: src/util/class_camera.cpp.obj
 
 # target to build an object file
 src/util/class_camera.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_camera.dir\build.make CMakeFiles/class_camera.dir/src/util/class_camera.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_camera.cpp.obj
 .PHONY : src/util/class_camera.cpp.obj
 
 src/util/class_camera.i: src/util/class_camera.cpp.i
@@ -352,7 +326,7 @@ src/util/class_camera.i: src/util/class_camera.cpp.i
 
 # target to preprocess a source file
 src/util/class_camera.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_camera.dir\build.make CMakeFiles/class_camera.dir/src/util/class_camera.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_camera.cpp.i
 .PHONY : src/util/class_camera.cpp.i
 
 src/util/class_camera.s: src/util/class_camera.cpp.s
@@ -360,7 +334,7 @@ src/util/class_camera.s: src/util/class_camera.cpp.s
 
 # target to generate assembly for a file
 src/util/class_camera.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_camera.dir\build.make CMakeFiles/class_camera.dir/src/util/class_camera.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_camera.cpp.s
 .PHONY : src/util/class_camera.cpp.s
 
 src/util/class_shader.obj: src/util/class_shader.cpp.obj
@@ -368,7 +342,7 @@ src/util/class_shader.obj: src/util/class_shader.cpp.obj
 
 # target to build an object file
 src/util/class_shader.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_shader.dir\build.make CMakeFiles/class_shader.dir/src/util/class_shader.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_shader.cpp.obj
 .PHONY : src/util/class_shader.cpp.obj
 
 src/util/class_shader.i: src/util/class_shader.cpp.i
@@ -376,7 +350,7 @@ src/util/class_shader.i: src/util/class_shader.cpp.i
 
 # target to preprocess a source file
 src/util/class_shader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_shader.dir\build.make CMakeFiles/class_shader.dir/src/util/class_shader.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_shader.cpp.i
 .PHONY : src/util/class_shader.cpp.i
 
 src/util/class_shader.s: src/util/class_shader.cpp.s
@@ -384,7 +358,7 @@ src/util/class_shader.s: src/util/class_shader.cpp.s
 
 # target to generate assembly for a file
 src/util/class_shader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\class_shader.dir\build.make CMakeFiles/class_shader.dir/src/util/class_shader.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_shader.cpp.s
 .PHONY : src/util/class_shader.cpp.s
 
 src/util/structure.obj: src/util/structure.cpp.obj
@@ -392,7 +366,7 @@ src/util/structure.obj: src/util/structure.cpp.obj
 
 # target to build an object file
 src/util/structure.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/src/util/structure.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/structure.cpp.obj
 .PHONY : src/util/structure.cpp.obj
 
 src/util/structure.i: src/util/structure.cpp.i
@@ -400,7 +374,7 @@ src/util/structure.i: src/util/structure.cpp.i
 
 # target to preprocess a source file
 src/util/structure.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/src/util/structure.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/structure.cpp.i
 .PHONY : src/util/structure.cpp.i
 
 src/util/structure.s: src/util/structure.cpp.s
@@ -408,7 +382,7 @@ src/util/structure.s: src/util/structure.cpp.s
 
 # target to generate assembly for a file
 src/util/structure.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\structure.dir\build.make CMakeFiles/structure.dir/src/util/structure.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/structure.cpp.s
 .PHONY : src/util/structure.cpp.s
 
 # Help Target
@@ -421,12 +395,10 @@ help:
 	@echo ... rebuild_cache
 	@echo ... GLAD
 	@echo ... chapter_0
-	@echo ... class_camera
-	@echo ... class_shader
 	@echo ... color
 	@echo ... lightCasting
 	@echo ... lighting
-	@echo ... structure
+	@echo ... utilTool
 	@echo ... 3rdparty/glad/src/glad.obj
 	@echo ... 3rdparty/glad/src/glad.i
 	@echo ... 3rdparty/glad/src/glad.s

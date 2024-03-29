@@ -44,10 +44,11 @@ set(LIBS ${LIBS} ${ASSIMP_PATH}/lib/libzlibstatic.a)
 include_directories(${INCLUDES})
 include_directories(${CMAKE_SOURCE_DIR}/src)
 # link library
-add_library(class_shader STATIC ${CMAKE_SOURCE_DIR}/src/util/class_shader.cpp)
-add_library(class_camera STATIC ${CMAKE_SOURCE_DIR}/src/util/class_camera.cpp)
-add_library(structure STATIC ${CMAKE_SOURCE_DIR}/src/util/structure.cpp)
-set(LIBS ${LIBS} class_shader class_camera structure)
+add_library(utilTool STATIC 
+    ${CMAKE_SOURCE_DIR}/src/util/class_shader.cpp
+    ${CMAKE_SOURCE_DIR}/src/util/class_camera.cpp
+    ${CMAKE_SOURCE_DIR}/src/util/structure.cpp)
+set(LIBS ${LIBS} utilTool)
 link_libraries(${LIBS})
 
 # create helloworld program

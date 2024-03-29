@@ -73,15 +73,15 @@ CMakeFiles/color.dir/src/lighting/color.cpp.obj: CMakeFiles/color.dir/includes_C
 CMakeFiles/color.dir/src/lighting/color.cpp.obj: E:/Study/CodeProj/opengl/src/lighting/color.cpp
 CMakeFiles/color.dir/src/lighting/color.cpp.obj: CMakeFiles/color.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/color.dir/src/lighting/color.cpp.obj"
-	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/color.dir/src/lighting/color.cpp.obj -MF CMakeFiles\color.dir\src\lighting\color.cpp.obj.d -o CMakeFiles\color.dir\src\lighting\color.cpp.obj -c E:\Study\CodeProj\opengl\src\lighting\color.cpp
+	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/color.dir/src/lighting/color.cpp.obj -MF CMakeFiles\color.dir\src\lighting\color.cpp.obj.d -o CMakeFiles\color.dir\src\lighting\color.cpp.obj -c E:\Study\CodeProj\opengl\src\lighting\color.cpp
 
 CMakeFiles/color.dir/src/lighting/color.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/color.dir/src/lighting/color.cpp.i"
-	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\Study\CodeProj\opengl\src\lighting\color.cpp > CMakeFiles\color.dir\src\lighting\color.cpp.i
+	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\Study\CodeProj\opengl\src\lighting\color.cpp > CMakeFiles\color.dir\src\lighting\color.cpp.i
 
 CMakeFiles/color.dir/src/lighting/color.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/color.dir/src/lighting/color.cpp.s"
-	E:\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\Study\CodeProj\opengl\src\lighting\color.cpp -o CMakeFiles\color.dir\src\lighting\color.cpp.s
+	E:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\Study\CodeProj\opengl\src\lighting\color.cpp -o CMakeFiles\color.dir\src\lighting\color.cpp.s
 
 # Object files for target color
 color_OBJECTS = \
@@ -97,9 +97,7 @@ color.exe: E:/Study/CodeProj/opengl/3rdparty/glm-1.0.1/install/lib/libglm.a
 color.exe: E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw3.a
 color.exe: libGLAD.a
 color.exe: E:/Study/CodeProj/opengl/3rdparty/assimp/assimp_install/lib/libzlibstatic.a
-color.exe: libclass_shader.a
-color.exe: libclass_camera.a
-color.exe: libstructure.a
+color.exe: libutilTool.a
 color.exe: CMakeFiles/color.dir/linkLibs.rsp
 color.exe: CMakeFiles/color.dir/objects1.rsp
 color.exe: CMakeFiles/color.dir/link.txt
