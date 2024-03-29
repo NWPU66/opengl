@@ -1,8 +1,6 @@
 E:/Study/CodeProj/opengl/build/CMakeFiles/GLAD.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/utilTool.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/chapter_0.dir
-E:/Study/CodeProj/opengl/build/CMakeFiles/color.dir
-E:/Study/CodeProj/opengl/build/CMakeFiles/lightCasting.dir
-E:/Study/CodeProj/opengl/build/CMakeFiles/lighting.dir
+E:/Study/CodeProj/opengl/build/CMakeFiles/chapter_1.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/edit_cache.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/rebuild_cache.dir

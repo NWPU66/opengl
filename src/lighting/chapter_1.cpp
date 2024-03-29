@@ -10,6 +10,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define MAX_NUM_LIGHTS_SPUUORT 16
+
 using namespace glm;
 
 /**NOTE - 全局变量、摄像机、全局时钟

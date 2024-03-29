@@ -155,43 +155,17 @@ chapter_0/fast:
 .PHONY : chapter_0/fast
 
 #=============================================================================
-# Target rules for targets named color
+# Target rules for targets named chapter_1
 
 # Build rule for target.
-color: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 color
-.PHONY : color
+chapter_1: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 chapter_1
+.PHONY : chapter_1
 
 # fast build rule for target.
-color/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/build
-.PHONY : color/fast
-
-#=============================================================================
-# Target rules for targets named lightCasting
-
-# Build rule for target.
-lightCasting: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 lightCasting
-.PHONY : lightCasting
-
-# fast build rule for target.
-lightCasting/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/build
-.PHONY : lightCasting/fast
-
-#=============================================================================
-# Target rules for targets named lighting
-
-# Build rule for target.
-lighting: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 lighting
-.PHONY : lighting
-
-# fast build rule for target.
-lighting/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/build
-.PHONY : lighting/fast
+chapter_1/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/build
+.PHONY : chapter_1/fast
 
 3rdparty/glad/src/glad.obj: 3rdparty/glad/src/glad.c.obj
 .PHONY : 3rdparty/glad/src/glad.obj
@@ -241,77 +215,29 @@ src/beginners/chapter_0.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.s
 .PHONY : src/beginners/chapter_0.cpp.s
 
-src/lighting/color.obj: src/lighting/color.cpp.obj
-.PHONY : src/lighting/color.obj
+src/lighting/chapter_1.obj: src/lighting/chapter_1.cpp.obj
+.PHONY : src/lighting/chapter_1.obj
 
 # target to build an object file
-src/lighting/color.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/src/lighting/color.cpp.obj
-.PHONY : src/lighting/color.cpp.obj
+src/lighting/chapter_1.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/src/lighting/chapter_1.cpp.obj
+.PHONY : src/lighting/chapter_1.cpp.obj
 
-src/lighting/color.i: src/lighting/color.cpp.i
-.PHONY : src/lighting/color.i
-
-# target to preprocess a source file
-src/lighting/color.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/src/lighting/color.cpp.i
-.PHONY : src/lighting/color.cpp.i
-
-src/lighting/color.s: src/lighting/color.cpp.s
-.PHONY : src/lighting/color.s
-
-# target to generate assembly for a file
-src/lighting/color.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\color.dir\build.make CMakeFiles/color.dir/src/lighting/color.cpp.s
-.PHONY : src/lighting/color.cpp.s
-
-src/lighting/lightCasting.obj: src/lighting/lightCasting.cpp.obj
-.PHONY : src/lighting/lightCasting.obj
-
-# target to build an object file
-src/lighting/lightCasting.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/src/lighting/lightCasting.cpp.obj
-.PHONY : src/lighting/lightCasting.cpp.obj
-
-src/lighting/lightCasting.i: src/lighting/lightCasting.cpp.i
-.PHONY : src/lighting/lightCasting.i
+src/lighting/chapter_1.i: src/lighting/chapter_1.cpp.i
+.PHONY : src/lighting/chapter_1.i
 
 # target to preprocess a source file
-src/lighting/lightCasting.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/src/lighting/lightCasting.cpp.i
-.PHONY : src/lighting/lightCasting.cpp.i
+src/lighting/chapter_1.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/src/lighting/chapter_1.cpp.i
+.PHONY : src/lighting/chapter_1.cpp.i
 
-src/lighting/lightCasting.s: src/lighting/lightCasting.cpp.s
-.PHONY : src/lighting/lightCasting.s
-
-# target to generate assembly for a file
-src/lighting/lightCasting.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lightCasting.dir\build.make CMakeFiles/lightCasting.dir/src/lighting/lightCasting.cpp.s
-.PHONY : src/lighting/lightCasting.cpp.s
-
-src/lighting/lighting.obj: src/lighting/lighting.cpp.obj
-.PHONY : src/lighting/lighting.obj
-
-# target to build an object file
-src/lighting/lighting.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj
-.PHONY : src/lighting/lighting.cpp.obj
-
-src/lighting/lighting.i: src/lighting/lighting.cpp.i
-.PHONY : src/lighting/lighting.i
-
-# target to preprocess a source file
-src/lighting/lighting.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/src/lighting/lighting.cpp.i
-.PHONY : src/lighting/lighting.cpp.i
-
-src/lighting/lighting.s: src/lighting/lighting.cpp.s
-.PHONY : src/lighting/lighting.s
+src/lighting/chapter_1.s: src/lighting/chapter_1.cpp.s
+.PHONY : src/lighting/chapter_1.s
 
 # target to generate assembly for a file
-src/lighting/lighting.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\lighting.dir\build.make CMakeFiles/lighting.dir/src/lighting/lighting.cpp.s
-.PHONY : src/lighting/lighting.cpp.s
+src/lighting/chapter_1.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/src/lighting/chapter_1.cpp.s
+.PHONY : src/lighting/chapter_1.cpp.s
 
 src/util/class_camera.obj: src/util/class_camera.cpp.obj
 .PHONY : src/util/class_camera.obj
@@ -371,9 +297,7 @@ help:
 	@echo ... rebuild_cache
 	@echo ... GLAD
 	@echo ... chapter_0
-	@echo ... color
-	@echo ... lightCasting
-	@echo ... lighting
+	@echo ... chapter_1
 	@echo ... utilTool
 	@echo ... 3rdparty/glad/src/glad.obj
 	@echo ... 3rdparty/glad/src/glad.i
@@ -381,15 +305,9 @@ help:
 	@echo ... src/beginners/chapter_0.obj
 	@echo ... src/beginners/chapter_0.i
 	@echo ... src/beginners/chapter_0.s
-	@echo ... src/lighting/color.obj
-	@echo ... src/lighting/color.i
-	@echo ... src/lighting/color.s
-	@echo ... src/lighting/lightCasting.obj
-	@echo ... src/lighting/lightCasting.i
-	@echo ... src/lighting/lightCasting.s
-	@echo ... src/lighting/lighting.obj
-	@echo ... src/lighting/lighting.i
-	@echo ... src/lighting/lighting.s
+	@echo ... src/lighting/chapter_1.obj
+	@echo ... src/lighting/chapter_1.i
+	@echo ... src/lighting/chapter_1.s
 	@echo ... src/util/class_camera.obj
 	@echo ... src/util/class_camera.i
 	@echo ... src/util/class_camera.s
