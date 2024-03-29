@@ -3,7 +3,7 @@
 #define SHADER_H
 #include <glad/glad.h>
 
-#include "util/structure.cpp"
+#include "util/structure.hpp"
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

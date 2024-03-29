@@ -361,30 +361,6 @@ src/util/class_shader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_shader.cpp.s
 .PHONY : src/util/class_shader.cpp.s
 
-src/util/structure.obj: src/util/structure.cpp.obj
-.PHONY : src/util/structure.obj
-
-# target to build an object file
-src/util/structure.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/structure.cpp.obj
-.PHONY : src/util/structure.cpp.obj
-
-src/util/structure.i: src/util/structure.cpp.i
-.PHONY : src/util/structure.i
-
-# target to preprocess a source file
-src/util/structure.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/structure.cpp.i
-.PHONY : src/util/structure.cpp.i
-
-src/util/structure.s: src/util/structure.cpp.s
-.PHONY : src/util/structure.s
-
-# target to generate assembly for a file
-src/util/structure.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/structure.cpp.s
-.PHONY : src/util/structure.cpp.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -420,9 +396,6 @@ help:
 	@echo ... src/util/class_shader.obj
 	@echo ... src/util/class_shader.i
 	@echo ... src/util/class_shader.s
-	@echo ... src/util/structure.obj
-	@echo ... src/util/structure.i
-	@echo ... src/util/structure.s
 .PHONY : help
 
 

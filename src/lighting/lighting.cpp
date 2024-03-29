@@ -8,7 +8,7 @@
 
 #include "util/class_camera.hpp"
 #include "util/class_shader.hpp"
-#include "util/structure.cpp"
+#include "util/structure.hpp"
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"

@@ -116,12 +116,12 @@ CMakeFiles/GLAD.dir/clean:
 CMakeFiles/utilTool.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=11,12,13,14 "Built target utilTool"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=11,12,13 "Built target utilTool"
 .PHONY : CMakeFiles/utilTool.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/utilTool.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/utilTool.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/utilTool.dir/rule
@@ -148,7 +148,7 @@ CMakeFiles/chapter_0.dir/all: CMakeFiles/utilTool.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/chapter_0.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/chapter_0.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/chapter_0.dir/rule
@@ -175,7 +175,7 @@ CMakeFiles/color.dir/all: CMakeFiles/utilTool.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/color.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/color.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/color.dir/rule
@@ -202,7 +202,7 @@ CMakeFiles/lightCasting.dir/all: CMakeFiles/utilTool.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/lightCasting.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/lightCasting.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/lightCasting.dir/rule
@@ -229,7 +229,7 @@ CMakeFiles/lighting.dir/all: CMakeFiles/utilTool.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/lighting.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 8
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/lighting.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
 .PHONY : CMakeFiles/lighting.dir/rule

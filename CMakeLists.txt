@@ -47,7 +47,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 add_library(utilTool STATIC 
     ${CMAKE_SOURCE_DIR}/src/util/class_shader.cpp
     ${CMAKE_SOURCE_DIR}/src/util/class_camera.cpp
-    ${CMAKE_SOURCE_DIR}/src/util/structure.cpp)
+    ${CMAKE_SOURCE_DIR}/src/util/structure.hpp)
 set(LIBS ${LIBS} utilTool)
 link_libraries(${LIBS})
 

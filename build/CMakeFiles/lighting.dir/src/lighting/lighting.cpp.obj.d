@@ -263,7 +263,7 @@ CMakeFiles/lighting.dir/src/lighting/lighting.cpp.obj: \
  E:/Study/CodeProj/opengl/3rdparty/glm-1.0.1/install/include/glm/gtc/type_ptr.inl \
  E:/Study/CodeProj/opengl/src/util/class_camera.hpp \
  E:/Study/CodeProj/opengl/src/util/class_shader.hpp \
- E:/Study/CodeProj/opengl/src/util/structure.cpp \
+ E:/Study/CodeProj/opengl/src/util/structure.hpp \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/fstream \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/istream \
  E:/mingw64/lib/gcc/x86_64-w64-mingw32/13.2.0/include/c++/ios \
