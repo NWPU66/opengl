@@ -7,8 +7,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "util/util.hpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+// #define STB_IMAGE_IMPLEMENTATION
+// #include "stb_image.h"
 #define MAX_NUM_LIGHTS_SPUUORT 16
 
 using namespace glm;

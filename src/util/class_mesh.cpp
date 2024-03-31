@@ -35,9 +35,9 @@ void Mesh::setupMesh()
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
     // 绑定
+    glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBindVertexArray(VAO);
     // 生成顶点数据，并填充
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
                  vertices.data(), GL_STATIC_DRAW);
@@ -62,23 +62,30 @@ void Mesh::Draw(Shader* shader)
 {
     GLuint diffuseNr  = 1;
     GLuint specularNr = 1;
+    GLuint normalNr   = 1;
     for (int i = 0; i < textures.size(); i++)
     {
         glActiveTexture(GL_TEXTURE0 + i);  // 在绑定纹理之前激活相应的纹理单元
-        // 获取纹理序号（diffuse_textureN 中的 N）
+        glBindTexture(GL_TEXTURE_2D,
+                      textures[i].id);  // FIXME - 启动槽之后记得要绑定纹理啊
+
+        string number;  //  获取纹理序号（diffuse_textureN 中的 N）
         string name = textures[i].type;
-        string number;
         if (name == "texture_diffuse")
             number = to_string(diffuseNr++);
         else if (name == "texture_specular")
             number = to_string(specularNr++);
+        else if (name == "texture_normal")
+            number = to_string(normalNr++);
 
         shader->setParameter("material." + name + number, i);
     }
-    glActiveTexture(GL_TEXTURE0);
 
     // 绘制
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+
+    // always good practice to set everything back to defaults once configured.
+    glActiveTexture(GL_TEXTURE0);
 }

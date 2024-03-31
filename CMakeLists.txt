@@ -38,7 +38,7 @@ set(INCLUDES ${INCLUDES} ${STD_LIB_PATH})
 # assimp
 set(ASSIMP_PATH ${CMAKE_SOURCE_DIR}/3rdparty/assimp/assimp_install)
 set(INCLUDES ${INCLUDES} ${ASSIMP_PATH}/include)
-set(LIBS ${LIBS} ${ASSIMP_PATH}/lib/libzlibstatic.a)
+set(LIBS ${LIBS} ${ASSIMP_PATH}/bin/libassimp-5.dll)  #bin/libassimp-5.dll lib/libzlibstatic.a
 
 # include directory
 include_directories(${INCLUDES})

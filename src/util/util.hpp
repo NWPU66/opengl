@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 
+#define STB_IMAGE_IMPLEMENTATION
+
 #include "class_camera.hpp"
 #include "class_shader.hpp"
 #include "class_mesh.hpp"

@@ -96,7 +96,7 @@ chapter_0.exe: C:/Windows/System32/opengl32.dll
 chapter_0.exe: E:/Study/CodeProj/opengl/3rdparty/glm-1.0.1/install/lib/libglm.a
 chapter_0.exe: E:/Study/CodeProj/opengl/3rdparty/glfw-master/install/lib/libglfw3.a
 chapter_0.exe: libGLAD.a
-chapter_0.exe: E:/Study/CodeProj/opengl/3rdparty/assimp/assimp_install/lib/libzlibstatic.a
+chapter_0.exe: E:/Study/CodeProj/opengl/3rdparty/assimp/assimp_install/bin/libassimp-5.dll
 chapter_0.exe: libutilTool.a
 chapter_0.exe: CMakeFiles/chapter_0.dir/linkLibs.rsp
 chapter_0.exe: CMakeFiles/chapter_0.dir/objects1.rsp

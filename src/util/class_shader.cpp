@@ -160,10 +160,10 @@ void Shader::checkShaderCompiling(GLuint shader)
     if (!success)
     {
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED"
                   << infoLog << std::endl;
     }
-    else { std::cout << "Shader Compile success!\n" << std::endl; }
+    else { std::cout << "Shader Compile success!" << std::endl; }
 }
 
 /**
@@ -181,8 +181,8 @@ void Shader::checkShaderProgramCompiling(GLuint shaderProgram)
     if (!success)
     {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED"
                   << infoLog << std::endl;
     }
-    else { std::cout << "Shader Program Compile success!\n" << std::endl; }
+    else { std::cout << "Shader Program Compile success!" << std::endl; }
 }

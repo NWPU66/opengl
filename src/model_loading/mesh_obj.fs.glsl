@@ -1,14 +1,11 @@
 #version 460 core
+#define MAX_NUM_LIGHTS_SPUUORT 16
 
 struct Material
 {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    float shininess;
-    sampler2D diffuseMap;
-    sampler2D specularMap;
-    sampler2D normalMap;
+    sampler2D texture_diffuse1;
+    sampler2D texture_specular1;
+    sampler2D texture_normal1;
 };
 
 struct Light
@@ -29,111 +26,97 @@ struct Light
     float outerCutOff;
 };
 
+struct GeomtryInfo{
+    vec3 normal;
+    vec3 fragPos;
+    vec3 viewDir;
+    vec3 diffuseTexCol;
+    vec3 specularTexCol;
+};
+
 //input
 in vec3 position;
 in vec2 uv;
 in vec3 normal;
 //output
 out vec4 fragColor;
-//uniform
+//uniforms
 uniform vec3 cameraPos;
 uniform Material material;
-#define MAX_NUM_LIGHTS_SPUUORT 16
 uniform Light light[MAX_NUM_LIGHTS_SPUUORT];
-//function
-vec3 dirLighting(Light light,vec3 normal,vec3 viewDir);
-vec3 pointLighting(Light light,vec3 normal,vec3 fragPos,vec3 viewDir);
-vec3 spotLighting(Light light,vec3 normal,vec3 fragPos,vec3 viewDir);
+//functions
+GeomtryInfo perapreGeomtryInfo();
+vec3 Lighting(Light light,GeomtryInfo geom);
 
 void main(){
-    // vec3 normTex=texture(material.normalMap,uv).xyz;
-    // vec3 normTexInverse=vec3(normTex.x,-normTex.y,normTex.z);
-    // vec3 norm=normalize(normal+normTexInverse);
-    vec3 norm=normalize(normal);
-    vec3 viewDir=normalize(cameraPos-position);
+    //准备数据
+    GeomtryInfo geom=perapreGeomtryInfo();
+    
     vec3 outputColor=vec3(0.f);
     for(int i=0;i<MAX_NUM_LIGHTS_SPUUORT;i++){
-        switch(light[i].type){
-            case-1:break;
-            case 0:outputColor+=dirLighting(light[i],norm,viewDir);break;
-            case 1:outputColor+=pointLighting(light[i],norm,position,viewDir);break;
-            case 2:outputColor+=spotLighting(light[i],norm,position,viewDir);break;
-            
+        if(light[i].type!=-1){
+            outputColor+=Lighting(light[i],geom);
         }
     }
+    
     fragColor=vec4(outputColor,1.f);
-    // fragColor=vec4(normal,1.f);
+    // fragColor=vec4(texture(material.texture_diffuse1,uv).xyz,1.f);
 }
 
-vec3 dirLighting(Light light,vec3 normal,vec3 viewDir){
-    vec3 lightDir=normalize(-light.lightDir);
+GeomtryInfo perapreGeomtryInfo(){
+    GeomtryInfo geom;
     
-    //diffusion
-    float diffusionFac=max(dot(lightDir,normal),0.f);
-    vec3 diffColor=light.diffuse*texture(material.diffuseMap,uv).xyz;
-    vec3 diffuse=light.intensity*diffColor*diffusionFac;
+    geom.diffuseTexCol=texture(material.texture_diffuse1,uv).xyz;
+    geom.specularTexCol=texture(material.texture_specular1,uv).xyz;
+    geom.normal=normalize(normal);
+    geom.fragPos=position;
+    geom.viewDir=normalize(cameraPos-position);
     
-    //specular
-    vec3 halfVec=normalize(lightDir+viewDir);
-    float specularFac=pow(max(dot(halfVec,normal),0.f),material.shininess);
-    vec3 specularColor=texture(material.specularMap,uv).xyz*light.specular;
-    vec3 specular=light.intensity*specularFac*specularColor;
-    
-    //ambient
-    vec3 ambient=light.ambient*material.ambient*texture(material.diffuseMap,uv).xyz;
-    
-    //combine
-    return(diffuse+specular+ambient);
+    return geom;
 }
 
-vec3 pointLighting(Light light,vec3 normal,vec3 fragPos,vec3 viewDir){
-    vec3 lightDir=normalize(light.position-fragPos);
+vec3 Lighting(Light light,GeomtryInfo geom){
+    //light direction
+    vec3 lightDir;
+    if(light.type!=0){
+        lightDir=normalize(light.position-geom.fragPos);//点状光源
+    }else{
+        lightDir=normalize(-light.lightDir);//方向光源
+    }
+    
+    //attenuation with light distance
+    float lightDropOff;
+    if(light.type!=0){
+        //点状光源
+        float lightDistance=distance(light.position,geom.fragPos);
+        vec3 lightDistVec=vec3(1.f,lightDistance,pow(lightDistance,2));
+        lightDropOff=1.f/dot(lightDistVec,light.dropOffFac);
+    }else{
+        lightDropOff=1.f;//方向光源
+    }
     
     //diffuse
-    float lightDistance=distance(lightDir,vec3(0.f));
-    float diffusionFac=max(dot(lightDir,normal),0.f);
-    vec3 lightDistVec=vec3(1.f,lightDistance,pow(lightDistance,2));
-    float lightDropOff=1.f/dot(lightDistVec,light.dropOffFac);
-    vec3 diffColor=light.diffuse*texture(material.diffuseMap,uv).xyz;
+    float diffusionFac=max(dot(lightDir,geom.normal),0.f);
+    vec3 diffColor=light.diffuse*geom.diffuseTexCol;
     vec3 diffuse=light.intensity*diffColor*diffusionFac*lightDropOff;
     
     //specular
-    vec3 halfVec=normalize(lightDir+viewDir);
-    float specularFac=pow(max(dot(halfVec,normal),0.f),material.shininess);
-    vec3 specularColor=texture(material.specularMap,uv).xyz*light.specular;
+    vec3 halfVec=normalize(lightDir+geom.viewDir);
+    float specularFac=pow(max(dot(halfVec,geom.normal),0.f),128.f);
+    vec3 specularColor=geom.specularTexCol*light.specular;
     vec3 specular=light.intensity*specularFac*specularColor*lightDropOff;
     
     //ambient
-    vec3 ambient=light.ambient*material.ambient*texture(material.diffuseMap,uv).xyz;
+    vec3 ambient=light.ambient*geom.diffuseTexCol*.1f;
     
     //combine
-    return(diffuse+specular+ambient);
-}
-
-vec3 spotLighting(Light light,vec3 normal,vec3 fragPos,vec3 viewDir){
-    vec3 lightDir=normalize(light.position-fragPos);
-    // 聚光灯裁切
-    float spotLightCutOff=dot(-light.lightDir,lightDir);
-    float cutOffRange=light.innerCutOff-light.outerCutOff;
-    spotLightCutOff=clamp((spotLightCutOff-light.outerCutOff)/cutOffRange,0.f,1.f);
-    
-    //diffuse
-    float lightDistance=distance(lightDir,vec3(0.f));
-    float diffusionFac=max(dot(lightDir,normal),0.f);
-    vec3 lightDistVec=vec3(1.f,lightDistance,pow(lightDistance,2));
-    float lightDropOff=1.f/dot(lightDistVec,light.dropOffFac);
-    vec3 diffColor=light.diffuse*texture(material.diffuseMap,uv).xyz;
-    vec3 diffuse=light.intensity*diffColor*diffusionFac*lightDropOff*spotLightCutOff;
-    
-    //specular
-    vec3 halfVec=normalize(lightDir+viewDir);
-    float specularFac=pow(max(dot(halfVec,normal),0.f),material.shininess);
-    vec3 specularColor=texture(material.specularMap,uv).xyz*light.specular;
-    vec3 specular=light.intensity*specularFac*specularColor*lightDropOff*spotLightCutOff;
-    
-    //ambient
-    vec3 ambient=light.ambient*material.ambient*texture(material.diffuseMap,uv).xyz;
-    
-    //combine
-    return(diffuse+specular+ambient);
+    if(light.type!=2){
+        return(diffuse+specular+ambient);
+    }else{
+        // 聚光灯裁切
+        float spotLightCutOff=dot(-light.lightDir,lightDir);
+        float cutOffRange=light.innerCutOff-light.outerCutOff;
+        spotLightCutOff=clamp((spotLightCutOff-light.outerCutOff)/cutOffRange,0.f,1.f);
+        return((diffuse+specular)*spotLightCutOff+ambient);
+    }
 }

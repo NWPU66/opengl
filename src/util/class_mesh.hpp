@@ -18,12 +18,23 @@ struct Vertex
     vec3 Position;
     vec3 Normal;
     vec2 TexCoords;
+    Vertex(){};
+    Vertex(vec3 Position, vec3 Normal, vec2 TexCoords)
+        : Position(Position), Normal(Normal), TexCoords(TexCoords)
+    {
+    }
 };
 
 struct Texture
 {
     GLuint id;
     string type;
+    string path;
+    Texture(){};
+    Texture(GLuint id, string type, string path)
+        : id(id), type(type), path(path)
+    {
+    }
 };
 
 class Mesh {
