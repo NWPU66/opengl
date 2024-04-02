@@ -49,18 +49,31 @@ GeomtryInfo perapreGeomtryInfo();
 vec3 Lighting(Light light,GeomtryInfo geom);
 
 void main(){
-    //准备数据
-    GeomtryInfo geom=perapreGeomtryInfo();
+    // //准备数据
+    // GeomtryInfo geom=perapreGeomtryInfo();
     
-    vec3 outputColor=vec3(0.f);
-    for(int i=0;i<MAX_NUM_LIGHTS_SPUUORT;i++){
-        if(light[i].type!=-1){
-            outputColor+=Lighting(light[i],geom);
-        }
+    // vec3 outputColor=vec3(0.f);
+    // for(int i=0;i<MAX_NUM_LIGHTS_SPUUORT;i++){
+        //     if(light[i].type!=-1){
+            //         outputColor+=Lighting(light[i],geom);
+        //     }
+    // }
+    
+    // fragColor=vec4(outputColor,1.f);
+    // fragColor=vec4(texture(material.texture_specular1,uv).xyz,1.f);
+    
+    vec3 lightDir=normalize(-light[1].lightDir);
+    float diffuseFac=dot(lightDir,normalize(normal));
+    vec3 diffuseColor=texture(material.texture_diffuse1,uv).xyz;
+    
+    if(diffuseFac>.25f){
+        diffuseFac=1.f;
+    }else{
+        diffuseFac=.5f;
     }
     
-    fragColor=vec4(outputColor,1.f);
-    // fragColor=vec4(texture(material.texture_specular1,uv).xyz,1.f);
+    fragColor=vec4(diffuseColor*diffuseFac,1.f);
+    // fragColor=vec4(normal,1.f);
 }
 
 GeomtryInfo perapreGeomtryInfo(){

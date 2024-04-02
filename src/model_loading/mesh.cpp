@@ -42,7 +42,7 @@ int  initGLFWWindow(GLFWwindow*& window);
 
 int main(int argc, char** argv)
 {
-    GLFWwindow* window;  // 创建GLFW窗口
+    GLFWwindow* window;  // 创建GLFW窗口，初始化GLAD
     if (!initGLFWWindow(window)) return -1;
 
     // SECTION - 准备数据
@@ -70,7 +70,6 @@ int main(int argc, char** argv)
 
     /**NOTE - OpenGL基本设置
      */
-
     //~SECTION
 
     // 渲染循环
