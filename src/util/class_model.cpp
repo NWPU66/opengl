@@ -107,7 +107,6 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial*   mat,
                                             string        typeName)
 {
     vector<Texture> textures;
-    cout << "texture num" << mat->GetTextureCount(type) << endl;
     for (int i = 0; i < mat->GetTextureCount(type); i++)
     {
         aiString texturePath;

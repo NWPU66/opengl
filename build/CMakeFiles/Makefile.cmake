@@ -54,6 +54,7 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/chapter_0.dir/DependInfo.cmake"
   "CMakeFiles/chapter_1.dir/DependInfo.cmake"
   "CMakeFiles/chapter_2.dir/DependInfo.cmake"
+  "CMakeFiles/blending.dir/DependInfo.cmake"
   "CMakeFiles/depthTest.dir/DependInfo.cmake"
   "CMakeFiles/outliner.dir/DependInfo.cmake"
   "CMakeFiles/stencilTest.dir/DependInfo.cmake"

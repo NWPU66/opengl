@@ -67,6 +67,7 @@ all: CMakeFiles/utilTool.dir/all
 all: CMakeFiles/chapter_0.dir/all
 all: CMakeFiles/chapter_1.dir/all
 all: CMakeFiles/chapter_2.dir/all
+all: CMakeFiles/blending.dir/all
 all: CMakeFiles/depthTest.dir/all
 all: CMakeFiles/outliner.dir/all
 all: CMakeFiles/stencilTest.dir/all
@@ -82,6 +83,7 @@ clean: CMakeFiles/utilTool.dir/clean
 clean: CMakeFiles/chapter_0.dir/clean
 clean: CMakeFiles/chapter_1.dir/clean
 clean: CMakeFiles/chapter_2.dir/clean
+clean: CMakeFiles/blending.dir/clean
 clean: CMakeFiles/depthTest.dir/clean
 clean: CMakeFiles/outliner.dir/clean
 clean: CMakeFiles/stencilTest.dir/clean
@@ -120,7 +122,7 @@ CMakeFiles/GLAD.dir/clean:
 CMakeFiles/utilTool.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=15,16,17,18,19 "Built target utilTool"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=17,18,19,20,21 "Built target utilTool"
 .PHONY : CMakeFiles/utilTool.dir/all
 
 # Build rule for subdir invocation for target.
@@ -147,7 +149,7 @@ CMakeFiles/chapter_0.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/chapter_0.dir/all: CMakeFiles/GLAD.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=3,4 "Built target chapter_0"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=5,6 "Built target chapter_0"
 .PHONY : CMakeFiles/chapter_0.dir/all
 
 # Build rule for subdir invocation for target.
@@ -174,7 +176,7 @@ CMakeFiles/chapter_1.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/chapter_1.dir/all: CMakeFiles/GLAD.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=5,6 "Built target chapter_1"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=7,8 "Built target chapter_1"
 .PHONY : CMakeFiles/chapter_1.dir/all
 
 # Build rule for subdir invocation for target.
@@ -201,7 +203,7 @@ CMakeFiles/chapter_2.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/chapter_2.dir/all: CMakeFiles/GLAD.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=7,8 "Built target chapter_2"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=9,10 "Built target chapter_2"
 .PHONY : CMakeFiles/chapter_2.dir/all
 
 # Build rule for subdir invocation for target.
@@ -221,6 +223,33 @@ CMakeFiles/chapter_2.dir/clean:
 .PHONY : CMakeFiles/chapter_2.dir/clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/blending.dir
+
+# All Build rule for target.
+CMakeFiles/blending.dir/all: CMakeFiles/utilTool.dir/all
+CMakeFiles/blending.dir/all: CMakeFiles/GLAD.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\blending.dir\build.make CMakeFiles/blending.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\blending.dir\build.make CMakeFiles/blending.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=3,4 "Built target blending"
+.PHONY : CMakeFiles/blending.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/blending.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 9
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/blending.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Study\CodeProj\opengl\build\CMakeFiles 0
+.PHONY : CMakeFiles/blending.dir/rule
+
+# Convenience name for target.
+blending: CMakeFiles/blending.dir/rule
+.PHONY : blending
+
+# clean rule for target.
+CMakeFiles/blending.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\blending.dir\build.make CMakeFiles/blending.dir/clean
+.PHONY : CMakeFiles/blending.dir/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/depthTest.dir
 
 # All Build rule for target.
@@ -228,7 +257,7 @@ CMakeFiles/depthTest.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/depthTest.dir/all: CMakeFiles/GLAD.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\depthTest.dir\build.make CMakeFiles/depthTest.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\depthTest.dir\build.make CMakeFiles/depthTest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=9,10 "Built target depthTest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=11,12 "Built target depthTest"
 .PHONY : CMakeFiles/depthTest.dir/all
 
 # Build rule for subdir invocation for target.
@@ -255,7 +284,7 @@ CMakeFiles/outliner.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/outliner.dir/all: CMakeFiles/GLAD.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\outliner.dir\build.make CMakeFiles/outliner.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\outliner.dir\build.make CMakeFiles/outliner.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=11,12 "Built target outliner"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=13,14 "Built target outliner"
 .PHONY : CMakeFiles/outliner.dir/all
 
 # Build rule for subdir invocation for target.
@@ -282,7 +311,7 @@ CMakeFiles/stencilTest.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/stencilTest.dir/all: CMakeFiles/GLAD.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\stencilTest.dir\build.make CMakeFiles/stencilTest.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\stencilTest.dir\build.make CMakeFiles/stencilTest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=13,14 "Built target stencilTest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=15,16 "Built target stencilTest"
 .PHONY : CMakeFiles/stencilTest.dir/all
 
 # Build rule for subdir invocation for target.

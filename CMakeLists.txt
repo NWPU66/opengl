@@ -81,6 +81,7 @@ file(COPY
     ${CMAKE_SOURCE_DIR}/src/lighting/container2.png
     ${CMAKE_SOURCE_DIR}/src/lighting/container2_specular.png
     ${CMAKE_SOURCE_DIR}/src/lighting/container2_normal.png
+    ${CMAKE_SOURCE_DIR}/src/advancedOpenGL/grass.png
     DESTINATION 
     ${CMAKE_SOURCE_DIR}/build)
 file(COPY ${ASSIMP_PATH}/bin/libassimp-5.dll DESTINATION ${CMAKE_SOURCE_DIR}/build)

@@ -132,7 +132,7 @@ void Shader::setParameter(const std::string& name, Light value) const
 {
     Shader::setParameter(name + ".type", value.type);  // 灯光类型
 
-    //基本属性
+    // 基本属性
     Shader::setParameter(name + ".position", value.position);
     Shader::setParameter(name + ".intensity", value.intensity);
     Shader::setParameter(name + ".diffuse", value.diffuse);
@@ -160,8 +160,8 @@ void Shader::checkShaderCompiling(GLuint shader)
     if (!success)
     {
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED"
-                  << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED" << infoLog
+                  << std::endl;
     }
     else { std::cout << "Shader Compile success!" << std::endl; }
 }
@@ -181,8 +181,8 @@ void Shader::checkShaderProgramCompiling(GLuint shaderProgram)
     if (!success)
     {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED"
-                  << infoLog << std::endl;
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED" << infoLog
+                  << std::endl;
     }
     else { std::cout << "Shader Program Compile success!" << std::endl; }
 }

@@ -181,6 +181,19 @@ chapter_2/fast:
 .PHONY : chapter_2/fast
 
 #=============================================================================
+# Target rules for targets named blending
+
+# Build rule for target.
+blending: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 blending
+.PHONY : blending
+
+# fast build rule for target.
+blending/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\blending.dir\build.make CMakeFiles/blending.dir/build
+.PHONY : blending/fast
+
+#=============================================================================
 # Target rules for targets named depthTest
 
 # Build rule for target.
@@ -242,6 +255,30 @@ stencilTest/fast:
 3rdparty/glad/src/glad.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\GLAD.dir\build.make CMakeFiles/GLAD.dir/3rdparty/glad/src/glad.c.s
 .PHONY : 3rdparty/glad/src/glad.c.s
+
+src/advancedOpenGL/blending.obj: src/advancedOpenGL/blending.cpp.obj
+.PHONY : src/advancedOpenGL/blending.obj
+
+# target to build an object file
+src/advancedOpenGL/blending.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\blending.dir\build.make CMakeFiles/blending.dir/src/advancedOpenGL/blending.cpp.obj
+.PHONY : src/advancedOpenGL/blending.cpp.obj
+
+src/advancedOpenGL/blending.i: src/advancedOpenGL/blending.cpp.i
+.PHONY : src/advancedOpenGL/blending.i
+
+# target to preprocess a source file
+src/advancedOpenGL/blending.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\blending.dir\build.make CMakeFiles/blending.dir/src/advancedOpenGL/blending.cpp.i
+.PHONY : src/advancedOpenGL/blending.cpp.i
+
+src/advancedOpenGL/blending.s: src/advancedOpenGL/blending.cpp.s
+.PHONY : src/advancedOpenGL/blending.s
+
+# target to generate assembly for a file
+src/advancedOpenGL/blending.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\blending.dir\build.make CMakeFiles/blending.dir/src/advancedOpenGL/blending.cpp.s
+.PHONY : src/advancedOpenGL/blending.cpp.s
 
 src/advancedOpenGL/depthTest.obj: src/advancedOpenGL/depthTest.cpp.obj
 .PHONY : src/advancedOpenGL/depthTest.obj
@@ -492,6 +529,7 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... GLAD
+	@echo ... blending
 	@echo ... chapter_0
 	@echo ... chapter_1
 	@echo ... chapter_2
@@ -502,6 +540,9 @@ help:
 	@echo ... 3rdparty/glad/src/glad.obj
 	@echo ... 3rdparty/glad/src/glad.i
 	@echo ... 3rdparty/glad/src/glad.s
+	@echo ... src/advancedOpenGL/blending.obj
+	@echo ... src/advancedOpenGL/blending.i
+	@echo ... src/advancedOpenGL/blending.s
 	@echo ... src/advancedOpenGL/depthTest.obj
 	@echo ... src/advancedOpenGL/depthTest.i
 	@echo ... src/advancedOpenGL/depthTest.s
