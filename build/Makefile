@@ -168,17 +168,43 @@ chapter_1/fast:
 .PHONY : chapter_1/fast
 
 #=============================================================================
-# Target rules for targets named mesh
+# Target rules for targets named chapter_2
 
 # Build rule for target.
-mesh: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 mesh
-.PHONY : mesh
+chapter_2: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 chapter_2
+.PHONY : chapter_2
 
 # fast build rule for target.
-mesh/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/build
-.PHONY : mesh/fast
+chapter_2/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/build
+.PHONY : chapter_2/fast
+
+#=============================================================================
+# Target rules for targets named depthTest
+
+# Build rule for target.
+depthTest: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 depthTest
+.PHONY : depthTest
+
+# fast build rule for target.
+depthTest/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\depthTest.dir\build.make CMakeFiles/depthTest.dir/build
+.PHONY : depthTest/fast
+
+#=============================================================================
+# Target rules for targets named stencilTest
+
+# Build rule for target.
+stencilTest: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 stencilTest
+.PHONY : stencilTest
+
+# fast build rule for target.
+stencilTest/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\stencilTest.dir\build.make CMakeFiles/stencilTest.dir/build
+.PHONY : stencilTest/fast
 
 3rdparty/glad/src/glad.obj: 3rdparty/glad/src/glad.c.obj
 .PHONY : 3rdparty/glad/src/glad.obj
@@ -203,6 +229,54 @@ mesh/fast:
 3rdparty/glad/src/glad.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\GLAD.dir\build.make CMakeFiles/GLAD.dir/3rdparty/glad/src/glad.c.s
 .PHONY : 3rdparty/glad/src/glad.c.s
+
+src/advancedOpenGL/depthTest.obj: src/advancedOpenGL/depthTest.cpp.obj
+.PHONY : src/advancedOpenGL/depthTest.obj
+
+# target to build an object file
+src/advancedOpenGL/depthTest.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\depthTest.dir\build.make CMakeFiles/depthTest.dir/src/advancedOpenGL/depthTest.cpp.obj
+.PHONY : src/advancedOpenGL/depthTest.cpp.obj
+
+src/advancedOpenGL/depthTest.i: src/advancedOpenGL/depthTest.cpp.i
+.PHONY : src/advancedOpenGL/depthTest.i
+
+# target to preprocess a source file
+src/advancedOpenGL/depthTest.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\depthTest.dir\build.make CMakeFiles/depthTest.dir/src/advancedOpenGL/depthTest.cpp.i
+.PHONY : src/advancedOpenGL/depthTest.cpp.i
+
+src/advancedOpenGL/depthTest.s: src/advancedOpenGL/depthTest.cpp.s
+.PHONY : src/advancedOpenGL/depthTest.s
+
+# target to generate assembly for a file
+src/advancedOpenGL/depthTest.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\depthTest.dir\build.make CMakeFiles/depthTest.dir/src/advancedOpenGL/depthTest.cpp.s
+.PHONY : src/advancedOpenGL/depthTest.cpp.s
+
+src/advancedOpenGL/stencilTest.obj: src/advancedOpenGL/stencilTest.cpp.obj
+.PHONY : src/advancedOpenGL/stencilTest.obj
+
+# target to build an object file
+src/advancedOpenGL/stencilTest.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\stencilTest.dir\build.make CMakeFiles/stencilTest.dir/src/advancedOpenGL/stencilTest.cpp.obj
+.PHONY : src/advancedOpenGL/stencilTest.cpp.obj
+
+src/advancedOpenGL/stencilTest.i: src/advancedOpenGL/stencilTest.cpp.i
+.PHONY : src/advancedOpenGL/stencilTest.i
+
+# target to preprocess a source file
+src/advancedOpenGL/stencilTest.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\stencilTest.dir\build.make CMakeFiles/stencilTest.dir/src/advancedOpenGL/stencilTest.cpp.i
+.PHONY : src/advancedOpenGL/stencilTest.cpp.i
+
+src/advancedOpenGL/stencilTest.s: src/advancedOpenGL/stencilTest.cpp.s
+.PHONY : src/advancedOpenGL/stencilTest.s
+
+# target to generate assembly for a file
+src/advancedOpenGL/stencilTest.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\stencilTest.dir\build.make CMakeFiles/stencilTest.dir/src/advancedOpenGL/stencilTest.cpp.s
+.PHONY : src/advancedOpenGL/stencilTest.cpp.s
 
 src/beginners/chapter_0.obj: src/beginners/chapter_0.cpp.obj
 .PHONY : src/beginners/chapter_0.obj
@@ -257,7 +331,7 @@ src/model_loading/mesh.obj: src/model_loading/mesh.cpp.obj
 
 # target to build an object file
 src/model_loading/mesh.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/src/model_loading/mesh.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/src/model_loading/mesh.cpp.obj
 .PHONY : src/model_loading/mesh.cpp.obj
 
 src/model_loading/mesh.i: src/model_loading/mesh.cpp.i
@@ -265,7 +339,7 @@ src/model_loading/mesh.i: src/model_loading/mesh.cpp.i
 
 # target to preprocess a source file
 src/model_loading/mesh.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/src/model_loading/mesh.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/src/model_loading/mesh.cpp.i
 .PHONY : src/model_loading/mesh.cpp.i
 
 src/model_loading/mesh.s: src/model_loading/mesh.cpp.s
@@ -273,7 +347,7 @@ src/model_loading/mesh.s: src/model_loading/mesh.cpp.s
 
 # target to generate assembly for a file
 src/model_loading/mesh.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/src/model_loading/mesh.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/src/model_loading/mesh.cpp.s
 .PHONY : src/model_loading/mesh.cpp.s
 
 src/util/class_camera.obj: src/util/class_camera.cpp.obj
@@ -383,11 +457,19 @@ help:
 	@echo ... GLAD
 	@echo ... chapter_0
 	@echo ... chapter_1
-	@echo ... mesh
+	@echo ... chapter_2
+	@echo ... depthTest
+	@echo ... stencilTest
 	@echo ... utilTool
 	@echo ... 3rdparty/glad/src/glad.obj
 	@echo ... 3rdparty/glad/src/glad.i
 	@echo ... 3rdparty/glad/src/glad.s
+	@echo ... src/advancedOpenGL/depthTest.obj
+	@echo ... src/advancedOpenGL/depthTest.i
+	@echo ... src/advancedOpenGL/depthTest.s
+	@echo ... src/advancedOpenGL/stencilTest.obj
+	@echo ... src/advancedOpenGL/stencilTest.i
+	@echo ... src/advancedOpenGL/stencilTest.s
 	@echo ... src/beginners/chapter_0.obj
 	@echo ... src/beginners/chapter_0.i
 	@echo ... src/beginners/chapter_0.s

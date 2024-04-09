@@ -61,10 +61,12 @@ link_libraries(${LIBS})
 file(GLOB BEGINNERS__SRC "${CMAKE_SOURCE_DIR}/src/beginners/*.cpp")
 file(GLOB LIGHTING__SRC "${CMAKE_SOURCE_DIR}/src/lighting/*.cpp")
 file(GLOB MODEL_LOADING__SRC "${CMAKE_SOURCE_DIR}/src/model_loading/*.cpp")
+file(GLOB ADVANCED_OPENGL_DRC "${CMAKE_SOURCE_DIR}/src/advancedOpenGL/*.cpp")
 # create program
 add_executable(chapter_0 ${CMAKE_SOURCE_DIR}/src/beginners/chapter_0.cpp)
 add_executable(chapter_1 ${CMAKE_SOURCE_DIR}/src/lighting/chapter_1.cpp)
-foreach(SRC_FILE ${MODEL_LOADING__SRC})
+add_executable(chapter_2 ${CMAKE_SOURCE_DIR}/src/model_loading/mesh.cpp)
+foreach(SRC_FILE ${ADVANCED_OPENGL_DRC})
     get_filename_component(SRC_NAME ${SRC_FILE} NAME_WE)
     add_executable(${SRC_NAME} ${SRC_FILE})
 endforeach()
@@ -81,3 +83,4 @@ file(COPY
     ${CMAKE_SOURCE_DIR}/src/lighting/container2_normal.png
     DESTINATION 
     ${CMAKE_SOURCE_DIR}/build)
+file(COPY ${ASSIMP_PATH}/bin/libassimp-5.dll DESTINATION ${CMAKE_SOURCE_DIR}/build)
