@@ -358,3 +358,7 @@ int initGLFWWindow(GLFWwindow*& window)
  * 首先去检查它有没有被加载过。如果有的话，我们会直接使用那个纹理，并跳过整个加载流程，
  * 来为我们省下很多处理能力。
  */
+
+/**FIXME - 错题本：VAO和绑定、解绑顺序有关
+ * [](https://blog.csdn.net/xiji333/article/details/114934590)
+ */

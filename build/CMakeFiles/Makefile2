@@ -137,8 +137,8 @@ CMakeFiles/utilTool.dir/clean:
 # Target rules for target CMakeFiles/chapter_0.dir
 
 # All Build rule for target.
-CMakeFiles/chapter_0.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/chapter_0.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/chapter_0.dir/all: CMakeFiles/utilTool.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=3,4 "Built target chapter_0"
@@ -164,8 +164,8 @@ CMakeFiles/chapter_0.dir/clean:
 # Target rules for target CMakeFiles/chapter_1.dir
 
 # All Build rule for target.
-CMakeFiles/chapter_1.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/chapter_1.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/chapter_1.dir/all: CMakeFiles/utilTool.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=5,6 "Built target chapter_1"
@@ -191,8 +191,8 @@ CMakeFiles/chapter_1.dir/clean:
 # Target rules for target CMakeFiles/mesh.dir
 
 # All Build rule for target.
-CMakeFiles/mesh.dir/all: CMakeFiles/utilTool.dir/all
 CMakeFiles/mesh.dir/all: CMakeFiles/GLAD.dir/all
+CMakeFiles/mesh.dir/all: CMakeFiles/utilTool.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\mesh.dir\build.make CMakeFiles/mesh.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Study\CodeProj\opengl\build\CMakeFiles --progress-num=7,8 "Built target mesh"
