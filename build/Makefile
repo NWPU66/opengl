@@ -194,6 +194,19 @@ depthTest/fast:
 .PHONY : depthTest/fast
 
 #=============================================================================
+# Target rules for targets named outliner
+
+# Build rule for target.
+outliner: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 outliner
+.PHONY : outliner
+
+# fast build rule for target.
+outliner/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\outliner.dir\build.make CMakeFiles/outliner.dir/build
+.PHONY : outliner/fast
+
+#=============================================================================
 # Target rules for targets named stencilTest
 
 # Build rule for target.
@@ -253,6 +266,30 @@ src/advancedOpenGL/depthTest.s: src/advancedOpenGL/depthTest.cpp.s
 src/advancedOpenGL/depthTest.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\depthTest.dir\build.make CMakeFiles/depthTest.dir/src/advancedOpenGL/depthTest.cpp.s
 .PHONY : src/advancedOpenGL/depthTest.cpp.s
+
+src/advancedOpenGL/outliner.obj: src/advancedOpenGL/outliner.cpp.obj
+.PHONY : src/advancedOpenGL/outliner.obj
+
+# target to build an object file
+src/advancedOpenGL/outliner.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\outliner.dir\build.make CMakeFiles/outliner.dir/src/advancedOpenGL/outliner.cpp.obj
+.PHONY : src/advancedOpenGL/outliner.cpp.obj
+
+src/advancedOpenGL/outliner.i: src/advancedOpenGL/outliner.cpp.i
+.PHONY : src/advancedOpenGL/outliner.i
+
+# target to preprocess a source file
+src/advancedOpenGL/outliner.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\outliner.dir\build.make CMakeFiles/outliner.dir/src/advancedOpenGL/outliner.cpp.i
+.PHONY : src/advancedOpenGL/outliner.cpp.i
+
+src/advancedOpenGL/outliner.s: src/advancedOpenGL/outliner.cpp.s
+.PHONY : src/advancedOpenGL/outliner.s
+
+# target to generate assembly for a file
+src/advancedOpenGL/outliner.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\outliner.dir\build.make CMakeFiles/outliner.dir/src/advancedOpenGL/outliner.cpp.s
+.PHONY : src/advancedOpenGL/outliner.cpp.s
 
 src/advancedOpenGL/stencilTest.obj: src/advancedOpenGL/stencilTest.cpp.obj
 .PHONY : src/advancedOpenGL/stencilTest.obj
@@ -459,6 +496,7 @@ help:
 	@echo ... chapter_1
 	@echo ... chapter_2
 	@echo ... depthTest
+	@echo ... outliner
 	@echo ... stencilTest
 	@echo ... utilTool
 	@echo ... 3rdparty/glad/src/glad.obj
@@ -467,6 +505,9 @@ help:
 	@echo ... src/advancedOpenGL/depthTest.obj
 	@echo ... src/advancedOpenGL/depthTest.i
 	@echo ... src/advancedOpenGL/depthTest.s
+	@echo ... src/advancedOpenGL/outliner.obj
+	@echo ... src/advancedOpenGL/outliner.i
+	@echo ... src/advancedOpenGL/outliner.s
 	@echo ... src/advancedOpenGL/stencilTest.obj
 	@echo ... src/advancedOpenGL/stencilTest.i
 	@echo ... src/advancedOpenGL/stencilTest.s
