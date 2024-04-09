@@ -39,14 +39,15 @@ int main(int argc, char** argv)
                        "./shader/outlinerShader.fs.glsl"),
         grassShader("./shader/normalShader.vs.glsl",
                     "./shader/grassShader.fs.glsl");
-    GLuint grassTexture = createImageObjrct("./grass.png");
+    GLuint grassTexture = createImageObjrct("./texture/window.png");
 
     /**NOTE - OpenGL基本设置
      */
-    glEnable(GL_DEPTH_TEST);                       // 启用深度缓冲
-    glEnable(GL_STENCIL_TEST);                     // 启用模板缓冲
-    glEnable(GL_BLEND);                            // 启用混合
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);          // 设置清空颜色
+    glEnable(GL_DEPTH_TEST);                            // 启用深度缓冲
+    glEnable(GL_STENCIL_TEST);                          // 启用模板缓冲
+    glEnable(GL_BLEND);                                 // 启用混合
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);               // 设置清空颜色
     glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);  // 设置模板缓冲的操作
     //~SECTION
 
@@ -94,6 +95,17 @@ int main(int argc, char** argv)
         glBindTexture(GL_TEXTURE_2D, grassTexture);
         grassShader.setParameter("texture0", 0);  // 设置纹理槽位
         plane.Draw(&grassShader);
+        /**FIXME - 混合和深度测试一起使用的问题
+         * 在这个程序中，橙球，玻璃还有线框都被正确的绘制了，
+         * 但是透过玻璃看到的紫球没有被正确的绘制出来。
+         * 原因是：绘制玻璃的时候更新了深度值，导致紫色球在深度测试中被丢弃
+         *
+         * 详细分析：
+         * 1. 橙色球是首先被绘制的，没什么问题
+         * 2. 绘制玻璃的时候，更新了深度值，现在玻璃区域的深度值更小了
+         * 3.绘制紫色球时，紫色球位于玻璃之后，没能通过深度测试，被丢弃
+         * 4. 绘制轮廓，深度测试是关闭的，所以能够正常绘制
+         */
 
         /**NOTE - 绘制需要轮廓的物体
          */
@@ -365,4 +377,58 @@ int createImageObjrct(const char* imagePath)
  * 虽然直接丢弃片段很好，但它不能让我们渲染半透明的图像。我们要么渲染一个片段，
  * 要么完全丢弃它。要想渲染有多个透明度级别的图像，我们需要启用混合(Blending)。
  * 和OpenGL大多数的功能一样，我们可以启用GL_BLEND来启用混合：
+ *
+ * 片段着色器运行完成后，并且所有的测试都通过之后，这个混合方程(Blend Equation)
+ * 才会应用到片段颜色输出与当前颜色缓冲中的值（当前片段之前储存的之前片段的颜色）
+ * 上。源颜色和目标颜色将会由OpenGL自动设定，但源因子和目标因子的值可以由我们来决定。
+ *
+ * glBlendFunc(GLenum sfactor, GLenum dfactor)函数接受两个参数，
+ * 来设置源和目标因子。OpenGL为我们定义了很多个选项，我们将在下面列出大部分最常用的选项。
+ * 注意常数颜色向量C¯constant可以通过glBlendColor函数来另外设置。
+ *
+ * 为了获得之前两个方形的混合结果，我们需要使用源颜色向量的alpha作为源因子，
+ * 使用1−alpha作为目标因子。这将会产生以下的glBlendFunc：
+ * glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+ * 也可以使用glBlendFuncSeparate为RGB和alpha通道分别设置不同的选项：
+ * glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+ *
+ * 这个函数和我们之前设置的那样设置了RGB分量，
+ * 但这样只能让最终的alpha分量被源颜色向量的alpha值所影响到。
+ *
+ * OpenGL甚至给了我们更多的灵活性，允许我们改变方程中源和目标部分的运算符。
+ * 当前源和目标是相加的，但如果愿意的话，我们也可以让它们相减。
+ * glBlendEquation(GLenum mode)允许我们设置运算符，它提供了三个选项：
+ * 1. GL_FUNC_ADD：默认选项，将两个分量相加:
+ * 2. GL_FUNC_SUBTRACT：将两个分量相减：
+ * 3. GL_FUNC_REVERSE_SUBTRACT：将两个分量相减，但顺序相反：
+ * 通常我们都可以省略调用glBlendEquation，因为GL_FUNC_ADD对大部分的操作
+ * 来说都是我们希望的混合方程，但如果你真的想打破主流，其它的方程也可能符合你的要求。
+ *
+ * NOTE - 渲染半透明纹理
+ * 如果你仔细看的话，你可能会注意到有些不对劲。
+ * 最前面窗户的透明部分遮蔽了背后的窗户？这为什么会发生呢？
+ *
+ * 发生这一现象的原因是，深度测试和混合一起使用的话会产生一些麻烦。
+ * 当写入深度缓冲时，深度缓冲不会检查片段是否是透明的，
+ * 所以透明的部分会和其它值一样写入到深度缓冲中。
+ * 结果就是窗户的整个四边形不论透明度都会进行深度测试。
+ * 即使透明的部分应该显示背后的窗户，深度测试仍然丢弃了它们。
+ *
+ * 所以我们不能随意地决定如何渲染窗户，让深度缓冲解决所有的问题了。
+ * 这也是混合变得有些麻烦的部分。要想保证窗户中能够显示它们背后的窗户，
+ * 我们需要首先绘制背后的这部分窗户。这也就是说在绘制的时候，
+ * 我们必须先手动将窗户按照最远到最近来排序，再按照顺序渲染。
+ * 
+ * 排序透明物体的一种方法是，从观察者视角获取物体的距离。
+ * 这可以通过计算摄像机位置向量和物体的位置向量之间的距离所获得。
+ * 接下来我们把距离和它对应的位置向量存储到一个STL库的map数据结构中。
+ * map会自动根据键值(Key)对它的值排序，所以只要我们添加了所有的位置，
+ * 并以它的距离作为键，它们就会自动根据距离值排序了。
+ * 
+ * 在场景中排序物体是一个很困难的技术，很大程度上由你场景的类型所决定，
+ * 更别说它额外需要消耗的处理能力了。完整渲染一个包含不透明和透明物体的
+ * 场景并不是那么容易。更高级的技术还有次序无关透明度
+ * (Order Independent Transparency, OIT)，但这超出本教程的范围了。
+ * 现在，你还是必须要普通地混合你的物体，但如果你很小心，并且知道目前方法的限制的话，
+ * 你仍然能够获得一个比较不错的混合实现。
  */

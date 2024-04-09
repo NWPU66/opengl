@@ -80,8 +80,8 @@ int main(int argc, char** argv)
 
     /**NOTE - 读入并生成纹理
      */
-    GLuint texture1 = createImageObjrct("wall.jpg");
-    GLuint texture2 = createImageObjrct("awesomeface.png");
+    GLuint texture1 = createImageObjrct("./texture/wall.jpg");
+    GLuint texture2 = createImageObjrct("./texture/awesomeface.png");
     // 设置纹理对应的采样器插槽号
     shader->setParameter("myTexture1", 0);
     shader->setParameter("myTexture2", 1);

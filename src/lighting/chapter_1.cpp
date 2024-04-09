@@ -105,9 +105,9 @@ int main(int argc, char** argv)
     /**NOTE - 创建纹理对象
      */
     objShader->use();  // 启动物体着色器
-    GLuint boxDiffTex = createImageObjrct("container2.png");
-    GLuint boxSpecTex = createImageObjrct("container2_specular.png");
-    GLuint boxNormTex = createImageObjrct("container2_normal.png");
+    GLuint boxDiffTex = createImageObjrct("./texture/container2.png");
+    GLuint boxSpecTex = createImageObjrct("./texture/container2_specular.png");
+    GLuint boxNormTex = createImageObjrct("./texture/container2_normal.png");
     // 设置纹理槽
     objShader->setParameter("material.diffuseMap", 0);
     objShader->setParameter("material.specularMap", 1);

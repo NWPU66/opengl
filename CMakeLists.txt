@@ -74,14 +74,9 @@ endforeach()
 # install
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
 file(GLOB_RECURSE SHADER_SRC "${CMAKE_SOURCE_DIR}/src/*.glsl")
-file(COPY ${SHADER_SRC} DESTINATION ${CMAKE_SOURCE_DIR}/build/shader)
-file(COPY 
-    ${CMAKE_SOURCE_DIR}/src/beginners/wall.jpg 
-    ${CMAKE_SOURCE_DIR}/src/beginners/awesomeface.png
-    ${CMAKE_SOURCE_DIR}/src/lighting/container2.png
-    ${CMAKE_SOURCE_DIR}/src/lighting/container2_specular.png
-    ${CMAKE_SOURCE_DIR}/src/lighting/container2_normal.png
-    ${CMAKE_SOURCE_DIR}/src/advancedOpenGL/grass.png
-    DESTINATION 
-    ${CMAKE_SOURCE_DIR}/build)
+file(GLOB_RECURSE TEXTURE_SRC 
+    "${CMAKE_SOURCE_DIR}/src/*.jpg"
+    "${CMAKE_SOURCE_DIR}/src/*.png")
+file(COPY ${SHADER_SRC} DESTINATION  ${CMAKE_SOURCE_DIR}/build/shader)
+file(COPY ${TEXTURE_SRC} DESTINATION  ${CMAKE_SOURCE_DIR}/build/texture)
 file(COPY ${ASSIMP_PATH}/bin/libassimp-5.dll DESTINATION ${CMAKE_SOURCE_DIR}/build)
