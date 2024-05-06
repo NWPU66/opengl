@@ -40,17 +40,14 @@ set(ASSIMP_PATH ${CMAKE_SOURCE_DIR}/3rdparty/assimp/assimp_install)
 set(INCLUDES ${INCLUDES} ${ASSIMP_PATH}/include)
 set(LIBS ${LIBS} ${ASSIMP_PATH}/bin/libassimp-5.dll)  #bin/libassimp-5.dll lib/libzlibstatic.a
 
-# include directory
-include_directories(${INCLUDES})
-include_directories(${CMAKE_SOURCE_DIR}/src)
-# link library
-add_library(utilTool STATIC 
-    ${CMAKE_SOURCE_DIR}/src/util/class_shader.cpp
-    ${CMAKE_SOURCE_DIR}/src/util/class_camera.cpp
-    ${CMAKE_SOURCE_DIR}/src/util/structure.hpp
-    ${CMAKE_SOURCE_DIR}/src/util/class_mesh.cpp
-    ${CMAKE_SOURCE_DIR}/src/util/class_model.cpp)
+# util tool
+file(GLOB_RECURSE UTILTOOL_SRC "${CMAKE_SOURCE_DIR}/src/util/*")
+add_library(utilTool STATIC ${UTILTOOL_SRC})
 set(LIBS ${LIBS} utilTool)
+
+# include directory
+include_directories(${INCLUDES} ${CMAKE_SOURCE_DIR}/src)
+# link library
 link_libraries(${LIBS})
 
 # create helloworld program

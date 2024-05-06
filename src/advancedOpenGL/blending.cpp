@@ -58,7 +58,7 @@ int main(int argc, char** argv)
         deltaTime = glfwGetTime() - lastFrame;
         lastFrame = glfwGetTime();
         processInput(window);
-
+        
         // SECTION - 渲染循环
         /**NOTE - 清空屏幕
          */
