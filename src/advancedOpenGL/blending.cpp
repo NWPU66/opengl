@@ -46,6 +46,9 @@ int main(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);                            // 启用深度缓冲
     glEnable(GL_STENCIL_TEST);                          // 启用模板缓冲
     glEnable(GL_BLEND);                                 // 启用混合
+    // glEnable(GL_CULL_FACE);                             // 启用面剔除
+    // glCullFace(GL_BACK);                                // 剔除背面
+    // glFrontFace(GL_CCW);                                // 逆时针为正面
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);               // 设置清空颜色
     glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);  // 设置模板缓冲的操作
@@ -58,7 +61,7 @@ int main(int argc, char** argv)
         deltaTime = glfwGetTime() - lastFrame;
         lastFrame = glfwGetTime();
         processInput(window);
-        
+
         // SECTION - 渲染循环
         /**NOTE - 清空屏幕
          */
@@ -418,17 +421,48 @@ int createImageObjrct(const char* imagePath)
  * 这也是混合变得有些麻烦的部分。要想保证窗户中能够显示它们背后的窗户，
  * 我们需要首先绘制背后的这部分窗户。这也就是说在绘制的时候，
  * 我们必须先手动将窗户按照最远到最近来排序，再按照顺序渲染。
- * 
+ *
  * 排序透明物体的一种方法是，从观察者视角获取物体的距离。
  * 这可以通过计算摄像机位置向量和物体的位置向量之间的距离所获得。
  * 接下来我们把距离和它对应的位置向量存储到一个STL库的map数据结构中。
  * map会自动根据键值(Key)对它的值排序，所以只要我们添加了所有的位置，
  * 并以它的距离作为键，它们就会自动根据距离值排序了。
- * 
+ *
  * 在场景中排序物体是一个很困难的技术，很大程度上由你场景的类型所决定，
  * 更别说它额外需要消耗的处理能力了。完整渲染一个包含不透明和透明物体的
  * 场景并不是那么容易。更高级的技术还有次序无关透明度
  * (Order Independent Transparency, OIT)，但这超出本教程的范围了。
  * 现在，你还是必须要普通地混合你的物体，但如果你很小心，并且知道目前方法的限制的话，
  * 你仍然能够获得一个比较不错的混合实现。
+ */
+
+/**REVIEW - 面剔除
+ * 这正是面剔除(Face Culling)所做的。OpenGL能够检查所有面向(Front
+ * Facing)观察者的面， 并渲染它们，而丢弃那些背向(Back
+ * Facing)的面，节省我们很多的片段着色器调用
+ * （它们的开销很大！）。但我们仍要告诉OpenGL哪些面是正向面(Front Face)，
+ * 哪些面是背向面(Back Face)。
+ * OpenGL使用了一个很聪明的技巧，分析顶点数据的环绕顺序(Winding Order)。
+ *
+ * NOTE - 环绕顺序
+ * 当我们定义一组三角形顶点时，我们会以特定的环绕顺序来定义它们，可能是顺时针(Clockwise)的，
+ * 也可能是逆时针(Counter-clockwise)的。每个三角形由3个顶点所组成，我们会从三角形中间来看，
+ * 为这3个顶点设定一个环绕顺序。
+ * ![](https://learnopengl-cn.github.io/img/04/04/faceculling_windingorder.png)
+ *
+ * 每组组成三角形图元的三个顶点就包含了一个环绕顺序。OpenGL在渲染图元的时候将使用
+ * 这个信息来决定一个三角形是一个正向三角形还是背向三角形。
+ * 默认情况下，逆时针顶点所定义的三角形将会被处理为正向三角形。
+ *
+ * 当你定义顶点顺序的时候，你应该想象对应的三角形是面向你的，
+ * 所以你定义的三角形从正面看去应该是逆时针的。这样定义顶点很棒的一点是，
+ * 实际的环绕顺序是在光栅化阶段进行的，也就是顶点着色器运行之后。
+ * 这些顶点就是从观察者视角所见的了。
+ *
+ * 观察者所面向的所有三角形顶点就是我们所指定的正确环绕顺序了，
+ * 而立方体另一面的三角形顶点则是以相反的环绕顺序所渲染的。
+ * 这样的结果就是，我们所面向的三角形将会是正向三角形，而背面的三角形则是背向三角形。
+ * ![](https://learnopengl-cn.github.io/img/04/04/faceculling_frontback.png)
+ *
+ * NOTE - 面剔除
  */

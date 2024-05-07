@@ -207,6 +207,19 @@ depthTest/fast:
 .PHONY : depthTest/fast
 
 #=============================================================================
+# Target rules for targets named framebuffer
+
+# Build rule for target.
+framebuffer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 framebuffer
+.PHONY : framebuffer
+
+# fast build rule for target.
+framebuffer/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\framebuffer.dir\build.make CMakeFiles/framebuffer.dir/build
+.PHONY : framebuffer/fast
+
+#=============================================================================
 # Target rules for targets named outliner
 
 # Build rule for target.
@@ -303,6 +316,30 @@ src/advancedOpenGL/depthTest.s: src/advancedOpenGL/depthTest.cpp.s
 src/advancedOpenGL/depthTest.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\depthTest.dir\build.make CMakeFiles/depthTest.dir/src/advancedOpenGL/depthTest.cpp.s
 .PHONY : src/advancedOpenGL/depthTest.cpp.s
+
+src/advancedOpenGL/framebuffer.obj: src/advancedOpenGL/framebuffer.cpp.obj
+.PHONY : src/advancedOpenGL/framebuffer.obj
+
+# target to build an object file
+src/advancedOpenGL/framebuffer.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\framebuffer.dir\build.make CMakeFiles/framebuffer.dir/src/advancedOpenGL/framebuffer.cpp.obj
+.PHONY : src/advancedOpenGL/framebuffer.cpp.obj
+
+src/advancedOpenGL/framebuffer.i: src/advancedOpenGL/framebuffer.cpp.i
+.PHONY : src/advancedOpenGL/framebuffer.i
+
+# target to preprocess a source file
+src/advancedOpenGL/framebuffer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\framebuffer.dir\build.make CMakeFiles/framebuffer.dir/src/advancedOpenGL/framebuffer.cpp.i
+.PHONY : src/advancedOpenGL/framebuffer.cpp.i
+
+src/advancedOpenGL/framebuffer.s: src/advancedOpenGL/framebuffer.cpp.s
+.PHONY : src/advancedOpenGL/framebuffer.s
+
+# target to generate assembly for a file
+src/advancedOpenGL/framebuffer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\framebuffer.dir\build.make CMakeFiles/framebuffer.dir/src/advancedOpenGL/framebuffer.cpp.s
+.PHONY : src/advancedOpenGL/framebuffer.cpp.s
 
 src/advancedOpenGL/outliner.obj: src/advancedOpenGL/outliner.cpp.obj
 .PHONY : src/advancedOpenGL/outliner.obj
@@ -534,6 +571,7 @@ help:
 	@echo ... chapter_1
 	@echo ... chapter_2
 	@echo ... depthTest
+	@echo ... framebuffer
 	@echo ... outliner
 	@echo ... stencilTest
 	@echo ... utilTool
@@ -546,6 +584,9 @@ help:
 	@echo ... src/advancedOpenGL/depthTest.obj
 	@echo ... src/advancedOpenGL/depthTest.i
 	@echo ... src/advancedOpenGL/depthTest.s
+	@echo ... src/advancedOpenGL/framebuffer.obj
+	@echo ... src/advancedOpenGL/framebuffer.i
+	@echo ... src/advancedOpenGL/framebuffer.s
 	@echo ... src/advancedOpenGL/outliner.obj
 	@echo ... src/advancedOpenGL/outliner.i
 	@echo ... src/advancedOpenGL/outliner.s
