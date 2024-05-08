@@ -16,4 +16,5 @@ void main(){
     normal=(transpose(inverse(model))*vec4(aNormal,0.f)).xyz;
     
     gl_Position=projection*view*model*vec4(aPos,1.f);
+    gl_PointSize=gl_Position.z;
 }

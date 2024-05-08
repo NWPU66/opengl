@@ -181,6 +181,19 @@ chapter_2/fast:
 .PHONY : chapter_2/fast
 
 #=============================================================================
+# Target rules for targets named advancedGLSL
+
+# Build rule for target.
+advancedGLSL: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 advancedGLSL
+.PHONY : advancedGLSL
+
+# fast build rule for target.
+advancedGLSL/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedGLSL.dir\build.make CMakeFiles/advancedGLSL.dir/build
+.PHONY : advancedGLSL/fast
+
+#=============================================================================
 # Target rules for targets named blending
 
 # Build rule for target.
@@ -268,6 +281,30 @@ stencilTest/fast:
 3rdparty/glad/src/glad.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\GLAD.dir\build.make CMakeFiles/GLAD.dir/3rdparty/glad/src/glad.c.s
 .PHONY : 3rdparty/glad/src/glad.c.s
+
+src/advancedOpenGL/advancedGLSL.obj: src/advancedOpenGL/advancedGLSL.cpp.obj
+.PHONY : src/advancedOpenGL/advancedGLSL.obj
+
+# target to build an object file
+src/advancedOpenGL/advancedGLSL.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedGLSL.dir\build.make CMakeFiles/advancedGLSL.dir/src/advancedOpenGL/advancedGLSL.cpp.obj
+.PHONY : src/advancedOpenGL/advancedGLSL.cpp.obj
+
+src/advancedOpenGL/advancedGLSL.i: src/advancedOpenGL/advancedGLSL.cpp.i
+.PHONY : src/advancedOpenGL/advancedGLSL.i
+
+# target to preprocess a source file
+src/advancedOpenGL/advancedGLSL.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedGLSL.dir\build.make CMakeFiles/advancedGLSL.dir/src/advancedOpenGL/advancedGLSL.cpp.i
+.PHONY : src/advancedOpenGL/advancedGLSL.cpp.i
+
+src/advancedOpenGL/advancedGLSL.s: src/advancedOpenGL/advancedGLSL.cpp.s
+.PHONY : src/advancedOpenGL/advancedGLSL.s
+
+# target to generate assembly for a file
+src/advancedOpenGL/advancedGLSL.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedGLSL.dir\build.make CMakeFiles/advancedGLSL.dir/src/advancedOpenGL/advancedGLSL.cpp.s
+.PHONY : src/advancedOpenGL/advancedGLSL.cpp.s
 
 src/advancedOpenGL/blending.obj: src/advancedOpenGL/blending.cpp.obj
 .PHONY : src/advancedOpenGL/blending.obj
@@ -566,6 +603,7 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... GLAD
+	@echo ... advancedGLSL
 	@echo ... blending
 	@echo ... chapter_0
 	@echo ... chapter_1
@@ -578,6 +616,9 @@ help:
 	@echo ... 3rdparty/glad/src/glad.obj
 	@echo ... 3rdparty/glad/src/glad.i
 	@echo ... 3rdparty/glad/src/glad.s
+	@echo ... src/advancedOpenGL/advancedGLSL.obj
+	@echo ... src/advancedOpenGL/advancedGLSL.i
+	@echo ... src/advancedOpenGL/advancedGLSL.s
 	@echo ... src/advancedOpenGL/blending.obj
 	@echo ... src/advancedOpenGL/blending.i
 	@echo ... src/advancedOpenGL/blending.s

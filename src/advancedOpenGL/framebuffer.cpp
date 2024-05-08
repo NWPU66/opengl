@@ -22,6 +22,7 @@ void   processInput(GLFWwindow* window);
 int    initGLFWWindow(GLFWwindow*& window);
 GLuint createImageObjrct(const char* imagePath);
 GLuint loadCubemap();
+void   OpenGLAdvancedDataManagement();
 
 int main(int argc, char** argv)
 {
@@ -72,6 +73,14 @@ int main(int argc, char** argv)
     // 向缓冲写入数据
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices) * sizeof(float),
                  skyboxVertices, GL_STATIC_DRAW);
+    /**FIXME - 错题本
+     * sizeof(skyboxVertices) *
+     * sizeof(float)这么写是错的，但是不影响程序正常运行
+     * sizeof(skyboxVertices)已经是数组占据的字节数目（单位Byte），不需要乘上sizeof(float)
+     * sizeof(skyboxVertices) *
+     * sizeof(float)这样做的后果是OpenGL在GPU上准备了一个大得多的缓冲空间
+     * 我们的顶点数据只填充了一部分，所以没什么影响。。。
+     */
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(0);
     // 解绑
@@ -133,7 +142,7 @@ int main(int argc, char** argv)
     glGenTextures(1, &textureAttachment);
     glBindTexture(GL_TEXTURE_2D, textureAttachment);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, CAMERA_WIDTH, CAMERA_HEIGH, 0,
-                 GL_RGB, GL_UNSIGNED_BYTE, NULL);
+                 GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -146,7 +155,7 @@ int main(int argc, char** argv)
     /*使用深度 / 模板混合的纹理附件
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, CAMERA_WIDTH,
                  CAMERA_HEIGH, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8,
-                 NULL);
+                 nullptr);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
                            GL_TEXTURE_2D, textureAttachment, 0);*/
     // 渲染缓冲对象附件
@@ -211,6 +220,10 @@ int main(int argc, char** argv)
         stbi_image_free(data);
     }
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);  // 解绑
+
+    /**NOTE - OpenGL高级数据管理
+     */
+    // OpenGLAdvancedDataManagement();
 
     /**NOTE - OpenGL基本设置
      */
@@ -490,7 +503,7 @@ int initGLFWWindow(GLFWwindow*& window)
 
     // 创建窗口
     window = glfwCreateWindow(CAMERA_WIDTH, CAMERA_HEIGH, "Window", NULL, NULL);
-    if (window == NULL)
+    if (window == nullptr)
     {
         std::cout << "failed to create a window!" << std::endl;
         glfwTerminate();
@@ -562,6 +575,67 @@ GLuint createImageObjrct(const char* imagePath)
     stbi_image_free(data);  // 释放图像的内存，无论有没有data都释放
     glBindTexture(GL_TEXTURE_2D, 0);  // 解绑
     return texture;
+}
+
+void OpenGLAdvancedDataManagement()
+{
+    /**NOTE - 分批顶点属性
+     */
+    GLuint vboBuffer, vaoBuffer;
+    glGenVertexArrays(1, &vaoBuffer);
+    glGenBuffers(1, &vboBuffer);
+    glBindVertexArray(vaoBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vboBuffer);
+    float pos[3] = {1, 2, 3}, norm[3] = {1, 2, 3}, tex[3] = {1, 2, 3};
+    // 填充缓冲
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(pos), pos);
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos), sizeof(norm), norm);
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(pos) + sizeof(norm), sizeof(tex),
+                    tex);
+    // 链接数据
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)sizeof(pos));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0,
+                          (void*)(sizeof(pos) + sizeof(norm)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    // 解绑
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    /**NOTE - 复制缓冲
+     * 接下来glCopyBufferSubData会从readtarget中读取size大小的数据，
+     * 并将其写入writetarget缓冲的writeoffset偏移量处。
+     */
+    glBindBuffer(GL_COPY_READ_BUFFER, vboBuffer);
+    glBindBuffer(GL_COPY_WRITE_BUFFER, vaoBuffer);
+    glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0,
+                        sizeof(pos));
+
+    /**NOTE - 使用指针指导OpenGL数据转移
+     */
+    GLuint ptrBuffer;
+    glGenBuffers(1, &ptrBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, ptrBuffer);
+    // 向ptrBuffer填充一组空数据
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pos), nullptr, GL_STATIC_DRAW);
+    /**FIXME - 课外知识
+     * NULL在C++中就是0（长整型0），因为在C++中void*
+     * 不允许隐式转换成其他类型（C可以），
+     * C++11加入了nullptr（(void*)0），可以保证在任何情况下都代表空指针，
+     * 因此，建议以后还是都用nullptr替代NULL吧，而NULL就当做0使用。
+     *
+     * 隐式转换不行，不代表强制转换不行
+     */
+    float* ptr = (float*)glMapBuffer(GL_ARRAY_BUFFER,
+                                     GL_WRITE_ONLY);  // 获取缓冲区的指针
+    memcpy(ptr, pos, sizeof(pos));
+    glUnmapBuffer(GL_ARRAY_BUFFER);    // 释放缓冲区的指针
+    glBindBuffer(GL_ARRAY_BUFFER, 0);  // 解绑
+
+    glDeleteBuffers(1, &vboBuffer);
+    glDeleteVertexArrays(1, &vaoBuffer);
 }
 
 /**REVIEW - 帧缓冲
@@ -798,18 +872,18 @@ GLuint createImageObjrct(const char* imagePath)
  * 的深度测试。不用深度测试来进行渲染不是解决方案，因为天空盒将会复写场景中的其它物体。
  * 我们需要欺骗深度缓冲，让它认为天空盒有着最大的深度值1.0，只要它前面有一个物体，
  * 深度测试就会失败。
- * 
+ *
  * 在坐标系统小节中我们说过，透视除法是在顶点着色器运行之后执行的，将gl_Position的
  * xyz坐标除以w分量。我们又从深度测试小节中知道，相除结果的z分量等于顶点的深度值。
  * 使用这些信息，我们可以将输出位置的z分量等于它的w分量，让z分量永远等于1.0，
  * 这样子的话，当透视除法执行之后，z分量会变为w / w = 1.0。
- * 
+ *
  * 最终的标准化设备坐标将永远会有一个等于1.0的z值：最大的深度值。结果就是天空盒只
  * 会在没有可见物体的地方渲染了（只有这样才能通过深度测试，其它所有的东西都在天空盒前面）。
- * 
+ *
  * 我们还要改变一下深度函数，将它从默认的GL_LESS改为GL_LEQUAL。深度缓冲将会填充上天空盒的1.0值，
  * 所以我们需要保证天空盒在值小于或等于深度缓冲而不是小于时通过深度测试。
- * 
+ *
  * NOTE - 环境映射
  * 我们现在将整个环境映射到了一个纹理对象上了，能利用这个信息的不仅仅只有天空盒。
  * 通过使用环境的立方体贴图，我们可以给物体反射和折射的属性。这样使用环境立方体贴图的
@@ -819,10 +893,10 @@ GLuint createImageObjrct(const char* imagePath)
  * NOTE - 反射
  * 反射这个属性表现为物体（或物体的一部分）反射它周围环境，即根据观察者的视角，物体的颜色
  * 或多或少等于它的环境。镜子就是一个反射性物体：它会根据观察者的视角反射它周围的环境。
- * 
+ *
  * 当反射应用到一整个物体上（像是箱子）时，这个物体看起来就像是钢或者铬这样的高反射性材质。
  * 如果我们加载模型加载小节中的纳米装模型，我们会得到一种整个套装都是使用铬做成的效果..
- * 
+ *
  * 这看起来非常棒，但在现实中大部分的模型都不具有完全反射性。
  * 我们可以引入反射贴图(Reflection Map)，来给模型更多的细节。
  * 与漫反射和镜面光贴图一样，反射贴图也是可以采样的纹理图像，
@@ -834,9 +908,23 @@ GLuint createImageObjrct(const char* imagePath)
  * 在常见的类水表面上所产生的现象就是折射，光线不是直直地传播，而是弯曲了一点。
  * 将你的半只胳膊伸进水里，观察出来的就是这种效果。
  * ![](https://learnopengl-cn.github.io/img/04/06/cubemaps_refraction_theory.png)
- * 
+ *
  * 折射可以使用GLSL的内建refract函数来轻松实现，
  * 它需要一个法向量、一个观察方向和两个材质之间的折射率(Refractive Index)。
+ *
+ * 我们使用这些折射率来计算光传播的两种材质间的比值。在我们的例子中，
+ * 光线/视线从空气进入玻璃（如果我们假设箱子是玻璃制的），所以比值为1.00
+ * / 1.52=0.658。
+ *
+ * 通过改变折射率，你可以创建完全不同的视觉效果。编译程序并运行，但结果并不是很有趣，
+ * 因为我们只使用了一个简单的箱子，它不太能显示折射的效果，现在看起来只是有点像一个放大镜。
+ * 对纳米装使用相同的着色器却能够展现出了我们期待的效果：一个类玻璃的物体。
+ * ![](https://learnopengl-cn.github.io/img/04/06/cubemaps_refraction.png)
+ *
+ * 你可以想象出有了光照、反射、折射和顶点移动的正确组合，你可以创建出非常漂亮的水。
+ * 注意，如果要想获得物理上精确的结果，我们还需要在光线离开物体的时候再次折射，
+ * 现在我们使用的只是单面折射(Single-side
+ * Refraction)，但它对大部分场合都是没问题的。
  *
  * NOTE - 动态环境贴图
  * 现在我们使用的都是静态图像的组合来作为天空盒，看起来很不错，但它没有在场景中包括可移动
@@ -852,4 +940,78 @@ GLuint createImageObjrct(const char* imagePath)
  * 这是对程序是非常大的性能开销。现代的程序通常会尽可能使用天空盒，并在可能的时候使用
  * 预编译的立方体贴图，只要它们能产生一点动态环境贴图的效果。虽然动态环境贴图是
  * 一个很棒的技术，但是要想在不降低性能的情况下让它工作还是需要非常多的技巧的。
+ */
+
+/**REVIEW - 高级数据
+ * 我们在OpenGL中大量使用缓冲来储存数据已经有很长时间了。操作缓冲其实还有更有意思的方式，
+ * 而且使用纹理将大量数据传入着色器也有更有趣的方法。这一节中，我们将讨论一些更有意思的
+ * 缓冲函数，以及我们该如何使用纹理对象来储存大量的数据（纹理的部分还没有完成）。
+ *
+ * OpenGL中的缓冲只是一个管理特定内存块的对象，没有其它更多的功能了。
+ * 在我们将它绑定到一个缓冲目标(Buffer Target)时，我们才赋予了其意义。
+ * 当我们绑定一个缓冲到GL_ARRAY_BUFFER时，它就是一个顶点数组缓冲，
+ * 但我们也可以很容易地将其绑定到GL_ELEMENT_ARRAY_BUFFER。
+ * OpenGL内部会为每个目标储存一个缓冲，并且会根据目标的不同，以不同的方式处理缓冲。
+ *
+ * 到目前为止，我们一直是调用glBufferData函数来填充缓冲对象所管理的内存，
+ * 这个函数会分配一块内存，并将数据添加到这块内存中。如果我们将它的data参数设置为NULL，
+ * 那么这个函数将只会分配内存，但不进行填充。这在我们需要预留(Reserve)特定大小的内存，
+ * 之后回到这个缓冲一点一点填充的时候会很有用。
+ *
+ * 除了使用一次函数调用填充整个缓冲之外，我们也可以使用glBufferSubData，填充缓冲的特定区域。
+ * 这个函数需要一个缓冲目标、一个偏移量、数据的大小和数据本身作为它的参数。
+ * 这个函数不同的地方在于，我们可以提供一个偏移量，指定从何处开始填充这个缓冲。
+ * 这能够让我们插入或者更新缓冲内存的某一部分。要注意的是，缓冲需要有足够的已分配内存，
+ * 所以对一个缓冲调用glBufferSubData之前必须要先调用glBufferData。
+ *
+ * 将数据导入缓冲的另外一种方法是，请求缓冲内存的指针，直接将数据复制到缓冲当中。
+ * 通过调用glMapBuffer函数，OpenGL会返回当前绑定缓冲的内存指针，供我们操作
+ *
+ * 当我们使用glUnmapBuffer函数，告诉OpenGL我们已经完成指针操作之后，
+ * OpenGL就会知道你已经完成了。在解除映射(Unmapping)之后，指针将会不再可用，
+ * 并且如果OpenGL能够成功将您的数据映射到缓冲中，这个函数将会返回GL_TRUE。
+ *
+ * 如果要直接映射数据到缓冲，而不事先将其存储到临时内存中，glMapBuffer这个函数会很有用。
+ * 比如说，你可以从文件中读取数据，并直接将它们复制到缓冲内存中。
+ *
+ * NOTE - 分批顶点属性
+ * 通过使用glVertexAttribPointer，我们能够指定顶点数组缓冲内容的属性布局。在顶点数组缓冲中，
+ * 我们对属性进行了交错(Interleave)处理，也就是说，我们将每一个顶点的位置、法线和/或纹理坐标
+ * 紧密放置在一起。既然我们现在已经对缓冲有了更多的了解，我们可以采取另一种方式。
+ *
+ * 我们可以做的是，将每一种属性类型的向量数据打包(Batch)为一个大的区块，
+ * 而不是对它们进行交错储存。与交错布局123123123123不同，
+ * 我们将采用分批(Batched)的方式111122223333。
+ *
+ * 当从文件中加载顶点数据的时候，你通常获取到的是一个位置数组、一个法线数组和/或一个纹理坐标
+ * 数组。我们需要花点力气才能将这些数组转化为一个大的交错数据数组。
+ * 使用分批的方式会是更简单的解决方案，我们可以很容易使用glBufferSubData函数实现
+ *
+ * 这给了我们设置顶点属性的另一种方法。使用哪种方法都不会对OpenGL有什么立刻的好处，
+ * 它只是设置顶点属性的一种更整洁的方式。具体使用的方法将完全取决于你的喜好与程序类型。
+ *
+ * NOTE - 复制缓冲
+ * 当你的缓冲已经填充好数据之后，你可能会想与其它的缓冲共享其中的数据，
+ * 或者想要将缓冲的内容复制到另一个缓冲当中。glCopyBufferSubData能够
+ * 让我们相对容易地从一个缓冲中复制数据到另一个缓冲中。
+ * void glCopyBufferSubData(GLenum readtarget, GLenum writetarget, GLintptr
+ * readoffset, GLintptr writeoffset, GLsizeiptr size);
+ *
+ * readtarget和writetarget参数需要填入复制源和复制目标的缓冲目标。
+ * 比如说，我们可以将VERTEX_ARRAY_BUFFER缓冲复制到VERTEX_ELEMENT_ARRAY_BUFFER缓冲，
+ * 分别将这些缓冲目标设置为读和写的目标。当前绑定到这些缓冲目标的缓冲将会被影响到。
+ *
+ * 但如果我们想读写数据的两个不同缓冲都为顶点数组缓冲该怎么办呢？
+ * 我们不能同时将两个缓冲绑定到同一个缓冲目标上。正是出于这个原因，
+ * OpenGL提供给我们另外两个缓冲目标，叫做GL_COPY_READ_BUFFER和
+ * GL_COPY_WRITE_BUFFER。我们接下来就可以将需要的缓冲绑定到这两个缓冲目标上，
+ * 并将这两个目标作为readtarget和writetarget参数。
+ *
+ * 接下来glCopyBufferSubData会从readtarget中读取size大小的数据，
+ * 并将其写入writetarget缓冲的writeoffset偏移量处。
+ *
+ * 有了这些关于如何操作缓冲的额外知识，我们已经能够以更有意思的方式使用它们了。
+ * 当你越深入OpenGL时，这些新的缓冲方法将会变得更加有用。
+ * 在下一节中，在我们讨论Uniform缓冲对象(Uniform Buffer Object)时，
+ * 我们将会充分利用glBufferSubData。
  */
