@@ -11,15 +11,25 @@
  * 指针，表示片段着色器源代码文件的文件路径。该文件包含定义图形管道中片段着色器行为的
  * GLSL 代码。构造函数读取该文件的内容
  */
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
+Shader::Shader(const char* vertexPath,
+               const char* fragmentPath,
+               const char* geometryPath)
 {
+    /**FIXME - 关于带有默认值的函数
+     * 只能在定义或声明时指出默认参数，同时指定会报错。
+     * 如果函数有声明就会以声明的为准，定义时指出的默认参数就会无效，所以最好在声明时指定。
+     */
+    bool useGeometryShader = (geometryPath != nullptr);
+    std::cout << "useGeometryShader: " << useGeometryShader << std::endl;
+
     // 1. 从文件路径中获取顶点/片元着色器源码
     //---------------------------------------------------------------------
-    std::string   vertexCode, fragmentCode;
-    std::ifstream vShaderFile, fShaderFile;
+    std::string   vertexCode, fragmentCode, geometryCode;
+    std::ifstream vShaderFile, fShaderFile, gShaderFile;
     // 保证ifstream对象可以抛出异常：
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
     try
     {
@@ -36,6 +46,14 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
         // 转换数据流到String
         vertexCode   = vShaderStream.str();
         fragmentCode = fShaderStream.str();
+        if (geometryPath != nullptr)
+        {
+            gShaderFile.open(geometryPath);
+            std::stringstream gShaderStream;
+            gShaderStream << gShaderFile.rdbuf();
+            gShaderFile.close();
+            geometryCode = gShaderStream.str();
+        }
     }
     catch (std::ifstream::failure e)
     {
@@ -49,6 +67,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     //---------------------------------------------------------------------
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
     GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint gs = glCreateShader(GL_GEOMETRY_SHADER);
     // 设置着色器的源码
     glShaderSource(vs, 1, &vShaderCode, NULL);
     glShaderSource(fs, 1, &fShaderCode, NULL);
@@ -57,17 +76,26 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     // 检查着色器编译情况
     Shader::checkShaderCompiling(vs);
     Shader::checkShaderCompiling(fs);
+    if (geometryPath != nullptr)
+    {
+        const char* gShaderCode = geometryCode.c_str();
+        glShaderSource(gs, 1, &gShaderCode, NULL);
+        glCompileShader(gs);
+        Shader::checkShaderCompiling(gs);
+    }
 
     // 着色器程序
     Shader::ID = glCreateProgram();
     glAttachShader(ID, vs);
     glAttachShader(ID, fs);
+    if (geometryPath != nullptr) { glAttachShader(ID, gs); }
     glLinkProgram(ID);
     // 检查链接情况
     checkShaderProgramCompiling(ID);
     // 删除已经不需要的着色器源码
     glDeleteShader(vs);
     glDeleteShader(fs);
+    if (geometryPath != nullptr) { glDeleteShader(gs); }
 
     this->use();
 }

@@ -18,7 +18,9 @@ public:
     unsigned int ID;  // 程序ID
 
     // 构造函数和析构函数
-    Shader(const char* vertexPath, const char* fragmentPath);
+    Shader(const char* vertexPath,
+           const char* fragmentPath,
+           const char* geometryPath = nullptr);
     ~Shader();
 
     // 实用成员函数
@@ -31,6 +33,7 @@ public:
     void setParameter(const std::string& name, Material value) const;
     void setParameter(const std::string& name, Light value) const;
     // const表示该函数为常量成员函数，即不能修改成员变量的值，是只读函数。
+    // 并且只读函数中只能调用只读函数
 
 private:
     void checkShaderCompiling(GLuint shader);

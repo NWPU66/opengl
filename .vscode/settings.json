@@ -62,7 +62,15 @@
         "iomanip": "cpp",
         "span": "cpp",
         "variant": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "any": "cpp",
+        "bitset": "cpp",
+        "condition_variable": "cpp",
+        "forward_list": "cpp",
+        "mutex": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp"
     },
     "glsl-linter.validatorPath": "E:/Study/CodeProj/opengl/3rdparty/glslang-master-windows-Release/bin/glslangValidator.exe", 
     "glsl-linter.fileExtensions": {

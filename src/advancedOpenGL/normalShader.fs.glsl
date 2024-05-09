@@ -1,4 +1,5 @@
 #version 460 core
+layout(depth_unchanged)out float gl_FragDepth;
 
 in vec3 position;
 in vec2 uv;
@@ -9,6 +10,12 @@ out vec4 fragColor;
 uniform vec3 toneColor;
 uniform vec3 cameraPos;
 uniform samplerCube skybox;
+
+//接口块
+//实例名(Instance Name)可以不同，但块名(Block Name)要相同。
+in VS_OUT{
+    vec2 abc;
+}fs_in;
 
 void main(){
     vec3 sunlightDir=normalize(vec3(1.f,1.f,1.f));
