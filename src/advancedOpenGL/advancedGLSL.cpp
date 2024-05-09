@@ -32,13 +32,18 @@ int main(int argc, char** argv)
     /**NOTE - 模型和着色器、纹理
      */
     Model sphere("./sphere/sphere.obj"), plane("./plane/plane.obj"),
-        monkey("./monkey/monkey.obj");
+        monkey("./sphere/sphere.obj");
     Shader sphereShader("./shader/normalShader.vs.glsl",
                         "./shader/normalShader.fs.glsl"),
         outlinerShader("./shader/normalShader.vs.glsl",
                        "./shader/outlinerShader.fs.glsl"),
         grassShader("./shader/normalShader.vs.glsl",
-                    "./shader/grassShader.fs.glsl");
+                    "./shader/grassShader.fs.glsl"),
+        monkeyShader("./shader/explode.vs.glsl", "./shader/explode.fs.glsl",
+                     "./shader/explode.gs.glsl"),
+        showNormalShader("./shader/showNormal.vs.glsl",
+                         "./shader/showNormal.fs.glsl",
+                         "./shader/showNormal.gs.glsl");
     GLuint grassTexture = createImageObjrct("./texture/window.png");
 
     /**NOTE - 天空盒几何对象
@@ -238,13 +243,13 @@ int main(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);  // 启用深度缓冲
     glDepthFunc(GL_LEQUAL);   // 修改深度测试的标准
 
-    glEnable(GL_STENCIL_TEST);  // 启用模板缓冲
-
-    glEnable(GL_BLEND);                            // 启用混合
+    glEnable(GL_STENCIL_TEST);                     // 启用模板缓冲
     glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);  // 设置模板缓冲的操作
 
-    // glEnable(GL_CULL_FACE);                             // 启用面剔除
+    glEnable(GL_BLEND);                                 // 启用混合
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
+
+    // glEnable(GL_CULL_FACE);  // 启用面剔除
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // 设置清空颜色
 
@@ -287,6 +292,13 @@ int main(int argc, char** argv)
         sphereShader.setParameter("toneColor", vec3(1.0f, 0.5f, 0.31f));
         sphereShader.setParameter("cameraPos", camera->Position);
         sphere.Draw(&sphereShader);
+        // 绘制sphere的法线
+        showNormalShader.use();
+        showNormalShader.setParameter("view", view);
+        showNormalShader.setParameter("projection", projection);
+        showNormalShader.setParameter(
+            "model", translate(mat4(1.0f), vec3(-0.5f, 0.0f, 0.0f)));
+        sphere.Draw(&showNormalShader);
         // 绘制grass
         grassShader.use();
         grassShader.setParameter("view", view);
@@ -298,6 +310,28 @@ int main(int argc, char** argv)
         glBindTexture(GL_TEXTURE_2D, grassTexture);
         grassShader.setParameter("texture0", 0);  // 设置纹理槽位
         plane.Draw(&grassShader);
+        // 绘制monkey
+        monkeyShader.use();
+        monkeyShader.setParameter("view", view);
+        monkeyShader.setParameter("projection", projection);
+        monkeyShader.setParameter(
+            "model", translate(mat4(1.0f), vec3(0.0f, 0.0f, -5.0f)));
+        monkeyShader.setParameter("time", (float)glfwGetTime());
+        monkey.Draw(&monkeyShader);
+        /**FIXME - 关于爆炸效果的问题描述
+         * 感觉和深度有关（？？？）
+         * 正面朝向我的三角面,在收缩到原几何体的内部时消失
+         * 同样的，背朝我的三角面在膨胀到原几何体之外的时候，也会消失。
+         *
+         * 原因：
+         * 片元的深度超过了NDC空间的范围（[-1,+1]^3），然后被OpenGL裁切掉了。
+         * 我们在裁切空间计算了单位法向量，然后直接加到裁切空间的点上。
+         * 由于裁切空间的值域很小，加上一个单位法向量，很容易使得裁切空间坐标超出NDC的范围。
+         * 然后被OpenGL裁切掉。。。
+         *
+         * 解决方案：
+         * 在世界空间做所有的计算才是最稳的做法，然后把透视投影变换放在几何着色器中进行。
+         */
 
         /**NOTE - 绘制需要轮廓的物体
          */
@@ -915,7 +949,36 @@ void useUniformBuffer()
  * 尽管绘制房子非常有趣，但我们不会经常这么做。这也是为什么我们接下来要继续深入，来
  * 爆破(Explode)物体！虽然这也是一个不怎么常用的东西，但是它能向你展示几何着色器的强大之处。
  *
- * 当我们说爆破一个物体时，我们并不是指要将宝贵的顶点集给炸掉，我们是要将每个三角形沿着法向量的方向移动一小段时间。
+ * 当我们说爆破一个物体时，我们并不是指要将宝贵的顶点集给炸掉，
+ * 我们是要将每个三角形沿着法向量的方向移动一小段时间。
  * 效果就是，整个物体看起来像是沿着每个三角形的法线向量爆炸一样。
  * ![](https://learnopengl-cn.github.io/img/04/09/geometry_shader_explosion.png)
+ *
+ * NOTE - 法向量可视化
+ * 在这一部分中，我们将使用几何着色器来实现一个真正有用的例子：显示任意物体的法向量。
+ * 当编写光照着色器时，你可能会最终会得到一些奇怪的视觉输出，但又很难确定导致问题的原因。
+ * 光照错误很常见的原因就是法向量错误，这可能是由于不正确加载顶点数据、
+ * 错误地将它们定义为顶点属性或在着色器中不正确地管理所导致的。我们想要的是使用某种
+ * 方式来检测提供的法向量是正确的。检测法向量是否正确的一个很好的方式就是对它们进行可视化，
+ * 几何着色器正是实现这一目的非常有用的工具。
+ * 思路是这样的：我们首先不使用几何着色器正常绘制场景。然后再次绘制场景，
+ * 但这次只显示通过几何着色器生成法向量。几何着色器接收一个三角形图元，
+ * 并沿着法向量生成三条线——每个顶点一个法向量。
+ * shader.use();
+ * DrawScene();
+ * normalDisplayShader.use();
+ * DrawScene();
+ *
+ * 这次在几何着色器中，我们会使用模型提供的顶点法线，而不是自己生成，
+ * 为了适配（观察和模型矩阵的）缩放和旋转，我们在将法线变换到观察空间坐标之前，
+ * 先使用法线矩阵变换一次（几何着色器接受的位置向量是观察空间坐标，
+ * 所以我们应该将法向量变换到相同的空间中）。这可以在顶点着色器中完成：
  */
+
+/**FIXME - 关于几何着色器在什么空间？
+ * 图形管线：
+ * (Vertex Shader) => (Geometry Shader) => Clip Space => (透视除法) =>
+ * NDC => (视口变换) => Window Space => (Fragment Shader)
+ * 几何着色器拿到的是顶点着色器的输出，即透视投影变换后，透视除法之前的值。
+ */
+

@@ -55,6 +55,7 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/chapter_1.dir/DependInfo.cmake"
   "CMakeFiles/chapter_2.dir/DependInfo.cmake"
   "CMakeFiles/advancedGLSL.dir/DependInfo.cmake"
+  "CMakeFiles/antiAliasing.dir/DependInfo.cmake"
   "CMakeFiles/blending.dir/DependInfo.cmake"
   "CMakeFiles/depthTest.dir/DependInfo.cmake"
   "CMakeFiles/framebuffer.dir/DependInfo.cmake"

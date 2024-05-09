@@ -194,6 +194,19 @@ advancedGLSL/fast:
 .PHONY : advancedGLSL/fast
 
 #=============================================================================
+# Target rules for targets named antiAliasing
+
+# Build rule for target.
+antiAliasing: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 antiAliasing
+.PHONY : antiAliasing
+
+# fast build rule for target.
+antiAliasing/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\antiAliasing.dir\build.make CMakeFiles/antiAliasing.dir/build
+.PHONY : antiAliasing/fast
+
+#=============================================================================
 # Target rules for targets named blending
 
 # Build rule for target.
@@ -305,6 +318,30 @@ src/advancedOpenGL/advancedGLSL.s: src/advancedOpenGL/advancedGLSL.cpp.s
 src/advancedOpenGL/advancedGLSL.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedGLSL.dir\build.make CMakeFiles/advancedGLSL.dir/src/advancedOpenGL/advancedGLSL.cpp.s
 .PHONY : src/advancedOpenGL/advancedGLSL.cpp.s
+
+src/advancedOpenGL/antiAliasing.obj: src/advancedOpenGL/antiAliasing.cpp.obj
+.PHONY : src/advancedOpenGL/antiAliasing.obj
+
+# target to build an object file
+src/advancedOpenGL/antiAliasing.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\antiAliasing.dir\build.make CMakeFiles/antiAliasing.dir/src/advancedOpenGL/antiAliasing.cpp.obj
+.PHONY : src/advancedOpenGL/antiAliasing.cpp.obj
+
+src/advancedOpenGL/antiAliasing.i: src/advancedOpenGL/antiAliasing.cpp.i
+.PHONY : src/advancedOpenGL/antiAliasing.i
+
+# target to preprocess a source file
+src/advancedOpenGL/antiAliasing.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\antiAliasing.dir\build.make CMakeFiles/antiAliasing.dir/src/advancedOpenGL/antiAliasing.cpp.i
+.PHONY : src/advancedOpenGL/antiAliasing.cpp.i
+
+src/advancedOpenGL/antiAliasing.s: src/advancedOpenGL/antiAliasing.cpp.s
+.PHONY : src/advancedOpenGL/antiAliasing.s
+
+# target to generate assembly for a file
+src/advancedOpenGL/antiAliasing.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\antiAliasing.dir\build.make CMakeFiles/antiAliasing.dir/src/advancedOpenGL/antiAliasing.cpp.s
+.PHONY : src/advancedOpenGL/antiAliasing.cpp.s
 
 src/advancedOpenGL/blending.obj: src/advancedOpenGL/blending.cpp.obj
 .PHONY : src/advancedOpenGL/blending.obj
@@ -604,6 +641,7 @@ help:
 	@echo ... rebuild_cache
 	@echo ... GLAD
 	@echo ... advancedGLSL
+	@echo ... antiAliasing
 	@echo ... blending
 	@echo ... chapter_0
 	@echo ... chapter_1
@@ -619,6 +657,9 @@ help:
 	@echo ... src/advancedOpenGL/advancedGLSL.obj
 	@echo ... src/advancedOpenGL/advancedGLSL.i
 	@echo ... src/advancedOpenGL/advancedGLSL.s
+	@echo ... src/advancedOpenGL/antiAliasing.obj
+	@echo ... src/advancedOpenGL/antiAliasing.i
+	@echo ... src/advancedOpenGL/antiAliasing.s
 	@echo ... src/advancedOpenGL/blending.obj
 	@echo ... src/advancedOpenGL/blending.i
 	@echo ... src/advancedOpenGL/blending.s
