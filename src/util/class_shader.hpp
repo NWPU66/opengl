@@ -29,6 +29,7 @@ public:
     void setParameter(const std::string& name, int value) const;
     void setParameter(const std::string& name, float value) const;
     void setParameter(const std::string& name, vec3 value) const;
+    void setParameter(const std::string& name, vec2 value) const;
     void setParameter(const std::string& name, mat4 value) const;
     void setParameter(const std::string& name, Material value) const;
     void setParameter(const std::string& name, Light value) const;

@@ -23,7 +23,7 @@ class Model {
 public:
     Model(const string path);
     ~Model();
-    void Draw(Shader* shader);
+    void Draw(Shader* shader, GLuint instanceNum = 1);
 
 private:
     // 模型数据

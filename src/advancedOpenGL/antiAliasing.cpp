@@ -28,14 +28,32 @@ int main(int argc, char** argv)
     GLFWwindow* window;  // 创建GLFW窗口，初始化GLAD
     if (!initGLFWWindow(window)) return -1;
 
-    // SECTION - 准备数据
     /**NOTE - 模型和着色器、纹理
      */
     Model  box("./box/box.obj");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl",
                         "./shader/skyboxShader.fs.glsl");
+    Shader instanceBoxShader("./shader/instanceBoxShader.vs.glsl",
+                             "./shader/instanceBoxShader.fs.glsl");
     GLuint cubeTexture = createSkyboxTexture("./texture/");  // 创建立方体贴图
-    //~SECTION
+
+    /**NOTE - 计算instance的offset矩阵
+     */
+    instanceBoxShader.use();
+    vec2  offsetTranslate[100];
+    int   index  = 0;
+    float offset = 0.1f;
+    for (int y = -9; y < 10; y += 2)
+    {
+        for (int x = -9; x < 10; x += 2)
+        {
+            offsetTranslate[index] = vec2((float)x + offset, (float)y + offset);
+            // set shader parameter
+            string paraName = "offsets[" + to_string(index) + "]";
+            instanceBoxShader.setParameter(paraName, offsetTranslate[index]);
+            index++;
+        }
+    }
 
     /**NOTE - OpenGL基本设置
      */
@@ -51,7 +69,6 @@ int main(int argc, char** argv)
     // glEnable(GL_CULL_FACE);  // 启用面剔除
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // 设置清空颜色
-    //~SECTION
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -76,9 +93,14 @@ int main(int argc, char** argv)
 
         /**NOTE - 绘制
          */
+        // 绘制100个立方体实例
+        instanceBoxShader.use();
+        instanceBoxShader.setParameter("view", view);
+        instanceBoxShader.setParameter("projection", projection);
+        // TODO - 设置offsets矩阵
+        box.Draw(&instanceBoxShader, 100);
 
         /**NOTE - 最后渲染天空盒
-         * 他会填充没有物体的空间
          */
         skyboxShader.use();
         skyboxShader.setParameter("view",
@@ -93,8 +115,7 @@ int main(int argc, char** argv)
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    /**NOTE - 释放内存
-     */
+    // 释放内存
     glfwTerminate();
     delete camera;
     return 0;
@@ -177,17 +198,12 @@ void processInput(GLFWwindow* window)
     camera->ProcessKeyboard(direction, deltaTime);
 }
 
-/**
- * 该函数使用指定的 OpenGL 上下文版本和回调初始化 GLFW 窗口。
- *
- * @param window `initGLFWWindow` 函数中的 `window` 参数是指向
- * GLFWwindow 对象的指针的引用。此函数初始化
- * GLFW，使用指定参数创建窗口，设置回调，隐藏光标，并初始化 GLAD 以进行
- * OpenGL 加载。如果成功，则返回
- *
- * @return
- * 函数“initGLFWWindow”返回一个整数值。如果GLFW窗口初始化成功则返回1，如果创建窗口或加载GLAD失败则返回0。
- */
+/// @brief 该函数使用指定的 OpenGL 上下文版本和回调初始化 GLFW 窗口。
+/// @param window `initGLFWWindow` 函数中的 `window` 参数是指向GLFWwindow
+/// 对象的指针的引用。此函数初始化GLFW，使用指定参数创建窗口，设置回调，隐藏光标，并初始化
+/// GLAD 以进行OpenGL 加载。如果成功，则返回
+/// @return
+/// 函数“initGLFWWindow”返回一个整数值。如果GLFW窗口初始化成功则返回1，如果创建窗口或加载GLAD失败则返回0。
 int initGLFWWindow(GLFWwindow*& window)
 {
     // 初始化GLFW
@@ -222,16 +238,12 @@ int initGLFWWindow(GLFWwindow*& window)
     return 1;
 }
 
-/**
- * 函数 createImageObject 加载图像文件，在 OpenGL
- * 中创建纹理对象，设置纹理参数，生成纹理，并返回纹理 ID。
- *
- * @param imagePath “createImageObject”函数中的“imagePath”参数是一个指向 C
- * 风格字符串的指针，该字符串表示要加载并从中创建纹理对象的图像文件的路径。该路径应指向文件系统上图像文件的位置。
- *
- * @return 函数 createImageObjrct 返回一个整数值，它是在 OpenGL
- * 中加载和创建的图像的纹理 ID。
- */
+/// @brief 函数 createImageObject 加载图像文件，在
+/// OpenGL中创建纹理对象，设置纹理参数，生成纹理，并返回纹理 ID。
+/// @param imagePath “createImageObject”函数中的“imagePath”参数是一个指向
+/// C风格字符串的指针，该字符串表示要加载并从中创建纹理对象的图像文件的路径。该路径应指向文件系统上图像文件的位置。
+/// @return 函数 createImageObjrct 返回一个整数值，它是在
+/// OpenGL中加载和创建的图像的纹理 ID。
 GLuint createImageObjrct(const char* imagePath)
 {
     // 读取
@@ -272,14 +284,10 @@ GLuint createImageObjrct(const char* imagePath)
     return texture;
 }
 
-/**
- * 加载一个天空盒贴图
- *
- * @param imageFolder 纹理集所在文件夹路径
- *
- * @return 函数 createImageObjrct 返回一个整数值，它是在
- * OpenGL中加载和创建的图像的纹理 ID。
- */
+/// @brief 加载一个天空盒贴图
+/// @param imageFolder 纹理集所在文件夹路径
+/// @return 函数 createImageObjrct
+/// 返回一个整数值，它是在OpenGL中加载和创建的图像的纹理 ID。
 GLuint createSkyboxTexture(const char* imageFolder)
 {
     GLuint cubeTexture;
@@ -321,3 +329,41 @@ GLuint createSkyboxTexture(const char* imageFolder)
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);  // 解绑
     return cubeTexture;
 }
+
+/**REVIEW - 实例化
+ * 假设你有一个绘制了很多模型的场景，而大部分的模型包含的是同一组顶点数据，只不过进行的是
+ * 不同的世界空间变换。想象一个充满草的场景：每根草都是一个包含几个三角形的小模型。
+ * 你可能会需要绘制很多根草，最终在每帧中你可能会需要渲染上千或者上万根草。
+ * 因为每一根草仅仅是由几个三角形构成，渲染几乎是瞬间完成的，但上千个渲染函数调用却会极大地
+ * 影响性能。
+ *
+ * 如果像这样绘制模型的大量实例(Instance)，你很快就会因为绘制调用过多而达到性能瓶颈。
+ * 与绘制顶点本身相比，使用glDrawArrays或glDrawElements函数告诉GPU去绘制你的顶点数据
+ * 会消耗更多的性能，因为OpenGL在绘制顶点数据之前需要做很多准备工作（比如告诉GPU该从
+ * 哪个缓冲读取数据，从哪寻找顶点属性，而且这些都是在相对缓慢的CPU到GPU总线
+ * (CPU to GPU Bus)上进行的）。所以，即便渲染顶点非常快，命令GPU去渲染却未必。
+ *
+ * 如果我们能够将数据一次性发送给GPU，然后使用一个绘制函数让OpenGL
+ * 利用这些数据绘制多个物体，就会更方便了。这就是实例化(Instancing)。
+ *
+ * 实例化这项技术能够让我们使用一个渲染调用来绘制多个物体，来节省每次绘制物体时
+ * CPU -> GPU的通信，它只需要一次即可。如果想使用实例化渲染，我们只需要将
+ * glDrawArrays和glDrawElements的渲染调用分别改为glDrawArraysInstanced和
+ * glDrawElementsInstanced就可以了。这些渲染函数的实例化版本需要一个额外的参数，
+ * 叫做实例数量(Instance Count)，它能够设置我们需要渲染的实例个数。
+ * 这样我们只需要将必须的数据发送到GPU一次，然后使用一次函数调用告诉GPU它应该如何
+ * 绘制这些实例。GPU将会直接渲染这些实例，而不用不断地与CPU进行通信。
+ *
+ * 这个函数本身并没有什么用。渲染同一个物体一千次对我们并没有什么用处，
+ * 每个物体都是完全相同的，而且还在同一个位置。我们只能看见一个物体！出于这个原因，
+ * GLSL在顶点着色器中嵌入了另一个内建变量，gl_InstanceID。
+ *
+ * 在使用实例化渲染调用时，gl_InstanceID会从0开始，在每个实例被渲染时递增1。
+ * 比如说，我们正在渲染第43个实例，那么顶点着色器中它的gl_InstanceID将会是42。
+ * 因为每个实例都有唯一的ID，我们可以建立一个数组，将ID与位置值对应起来，
+ * 将每个实例放置在世界的不同位置。
+ *
+ * 为了体验一下实例化绘制，我们将会在标准化设备坐标系中使用一个渲染调用，
+ * 绘制100个2D四边形。我们会索引一个包含100个偏移向量的uniform数组，
+ * 将偏移值加到每个实例化的四边形上。最终的结果是一个排列整齐的四边形网格：
+ */

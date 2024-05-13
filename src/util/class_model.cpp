@@ -9,11 +9,11 @@ Model::Model(const string path)
 
 Model::~Model() {}
 
-void Model::Draw(Shader* shader)
+void Model::Draw(Shader* shader, GLuint instanceNum)
 {
     shader->use();
     for (int i = 0; i < meshes.size(); i++)
-        meshes[i].Draw(shader);
+        meshes[i].Draw(shader, instanceNum);
 }
 
 void Model::loadModel(const string path)

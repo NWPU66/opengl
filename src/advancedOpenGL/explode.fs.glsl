@@ -24,7 +24,7 @@ void main(){
     
     //Debug程序
     // FragColor=vec4(vec3(gl_FragCoord.z),1);
-    // if(gl_FragCoord.z>.99f){
-        //     FragColor=vec4(1,0,0,1);
+    // if(gl_FragCoord.z<0){
+    //     FragColor=vec4(1,0,0,1);
     // }
 }

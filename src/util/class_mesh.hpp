@@ -48,7 +48,7 @@ public:
          vector<GLuint>&  indices,
          vector<Texture>& textures);
     ~Mesh();
-    void Draw(Shader* shader);
+    void Draw(Shader* shader, GLuint instanceNum = 1);
 
 private:
     // 渲染数据

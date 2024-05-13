@@ -58,7 +58,7 @@ void Mesh::setupMesh()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Mesh::Draw(Shader* shader)
+void Mesh::Draw(Shader* shader, GLuint instanceNum)
 {
     GLuint diffuseNr  = 1;
     GLuint specularNr = 1;
@@ -83,7 +83,9 @@ void Mesh::Draw(Shader* shader)
 
     // 绘制
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    // glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0,
+                            instanceNum);
     glBindVertexArray(0);
 
     // always good practice to set everything back to defaults once configured.

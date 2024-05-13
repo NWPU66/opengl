@@ -130,6 +130,11 @@ void Shader::setParameter(const std::string& name, vec3 value) const
     glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, value_ptr(value));
 }
 
+void Shader::setParameter(const std::string& name, vec2 value) const
+{
+    glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, value_ptr(value));
+}
+
 void Shader::setParameter(const std::string& name, mat4 value) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE,
