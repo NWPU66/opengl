@@ -22,6 +22,9 @@ void   processInput(GLFWwindow* window);
 int    initGLFWWindow(GLFWwindow*& window);
 GLuint createImageObjrct(const char* imagePath);
 GLuint createSkyboxTexture(const char* imageFolder);
+mat4   makeRandomPosture(const float propotion,
+                         const float radius = 50.0f,
+                         const float offset = 2.5f);
 
 int main(int argc, char** argv)
 {
@@ -33,9 +36,13 @@ int main(int argc, char** argv)
     Model box("./box/box.obj"), planet("./planet/planet.obj"),
         rock("./rock/rock.obj");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl",
-                        "./shader/skyboxShader.fs.glsl");
-    Shader instanceBoxShader("./shader/instanceBoxShader.vs.glsl",
-                             "./shader/instanceBoxShader.fs.glsl");
+                        "./shader/skyboxShader.fs.glsl"),
+        instanceBoxShader("./shader/instanceBoxShader.vs.glsl",
+                          "./shader/instanceBoxShader.fs.glsl"),
+        planetShader("./shader/planetShader.vs.glsl",
+                     "./shader/generalFragShader.fs.glsl"),
+        rockShader("./shader/rockShader.vs.glsl",
+                   "./shader/generalFragShader.fs.glsl");
     GLuint cubeTexture = createSkyboxTexture("./texture/");  // 创建立方体贴图
 
     /**NOTE - 计算instance的offset矩阵
@@ -76,6 +83,42 @@ int main(int argc, char** argv)
      * 每‘divisor’个实例后更新一次。
      */
 
+    /**NOTE - 设置陨石带的实例化数组
+     */
+    // 创建instanceModelMatrixs元数据
+    rockShader.use();
+    vector<mat4> instanceModelMatrixs;
+    const GLuint rockAmount = 1000;
+    const float  rockRadius = 10.0f, rockOffset = 1.0f;
+    srand(glfwGetTime());
+    for (GLuint i = 0; i < rockAmount; i++)
+    {
+        mat4 model = makeRandomPosture((float)i / (float)rockAmount, rockRadius,
+                                       rockOffset);
+        instanceModelMatrixs.push_back(model);
+        /**FIXME -
+         * (float)(i / rockAmount)永远是0，因为是整数除法
+         * 应该使用浮点数除法：(float)i / (float)rockAmount
+         */
+    }
+    // 创建VBO
+    GLuint rockInstanceVBO;
+    glGenBuffers(1, &rockInstanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, rockInstanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(mat4) * instanceModelMatrixs.size(),
+                 instanceModelMatrixs.data(), GL_STATIC_DRAW);
+    // 解绑
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // 设置整个model对象下Mesh的实例数组
+    rock.SetInstanceArray(rockInstanceVBO, 3, 4, sizeof(mat4), (void*)0);
+    rock.SetInstanceArray(rockInstanceVBO, 4, 4, sizeof(mat4),
+                          (void*)(1 * sizeof(vec4)));
+    rock.SetInstanceArray(rockInstanceVBO, 5, 4, sizeof(mat4),
+                          (void*)(2 * sizeof(vec4)));
+    rock.SetInstanceArray(rockInstanceVBO, 6, 4, sizeof(mat4),
+                          (void*)(3 * sizeof(vec4)));
+    // FIXME - 错题本：这里的偏移量是列向量vec4的大小，而不是mat4的大小。
+
     /**NOTE - OpenGL基本设置
      */
     glEnable(GL_DEPTH_TEST);  // 启用深度缓冲
@@ -87,7 +130,7 @@ int main(int argc, char** argv)
     glEnable(GL_BLEND);                                 // 启用混合
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
 
-    // glEnable(GL_CULL_FACE);  // 启用面剔除
+    glEnable(GL_CULL_FACE);  // 启用面剔除
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // 设置清空颜色
 
@@ -112,17 +155,38 @@ int main(int argc, char** argv)
             perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
         // projection应该是透视+投影，转换进标准体积空间：[-1,+1]^3
 
-        /**NOTE - 绘制
+        /**NOTE - 绘制100个立方体实例
          */
-        // 绘制100个立方体实例
-        instanceBoxShader.use();
-        instanceBoxShader.setParameter("view", view);
-        instanceBoxShader.setParameter("projection", projection);
-        // TODO - 设置offsets矩阵
-        box.Draw(&instanceBoxShader, 100);
+        // instanceBoxShader.use();
+        // instanceBoxShader.setParameter("view", view);
+        // instanceBoxShader.setParameter("projection", projection);
+        // box.Draw(&instanceBoxShader, 100);
+
+        /**NOTE - 绘制行星
+         */
+        // 绘制行星
+        planetShader.use();
+        planetShader.setParameter("view", view);
+        planetShader.setParameter("projection", projection);
+        planetShader.setParameter(
+            "model", translate(rotate(rotate(mat4(1.0f),
+                                             radians((float)glfwGetTime() * 10),
+                                             vec3(0.0f, 1.0f, 0.0f)),
+                                      radians(90.0f), vec3(1.0f, 0.0f, 0.0f)),
+                               vec3(0.0f, -1.0f, 0.0f)));
+        planet.Draw(&planetShader);
+        /**FIXME - 旋转的时候有点偏离原点
+         * 小问题，修好了。。。
+         */
+        // 绘制行星的陨石带
+        rockShader.use();
+        rockShader.setParameter("view", view);
+        rockShader.setParameter("projection", projection);
+        rock.Draw(&rockShader, rockAmount);
 
         /**NOTE - 最后渲染天空盒
          */
+        glFrontFace(GL_CW);  // 把顺时针的面设置为“正面”。
         skyboxShader.use();
         skyboxShader.setParameter("view",
                                   mat4(mat3(view)));  // 除去位移，相当于锁头
@@ -130,6 +194,12 @@ int main(int argc, char** argv)
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
         skyboxShader.setParameter("skybox", 0);
         box.Draw(&skyboxShader);
+        glFrontFace(GL_CCW);
+        /**FIXME - 错题本
+         * 天空盒消失的原因：天空盒锁头，只能看到“背面”，然后我开了背面剔除。
+         * 解决方案：渲染天空盒的时候，把顺时针的面设置为“正面”。
+         * 或者开启“正面”剔除。
+         */
         //~SECTION
 
         // 处理事件、交换缓冲区
@@ -336,6 +406,38 @@ GLuint createSkyboxTexture(const char* imageFolder)
     return cubeTexture;
 }
 
+/// @brief 为陨石生成一个随机的姿态
+/// @param propotion
+/// @param radius 生成的目标半径
+/// @param offset 位置的随机偏移量
+/// @return 返回一个姿态矩阵mat4
+mat4 makeRandomPosture(const float propotion,
+                       const float radius,
+                       const float offset)
+{
+    // TODO - 做陨石的旋转
+    mat4 model(1.0f);
+    // 1. 位移：分布在半径为 'radius' 的圆形上，偏移的范围是 [-offset, offset]
+    float angle        = propotion * 360.0f;
+    float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+    float x            = cos(angle) * radius + displacement;
+    displacement       = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+    float y = displacement * 0.4f;  //// 让行星带的高度比x和z的宽度要小
+    displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+    float z      = sin(angle) * radius + displacement;
+    model        = translate(mat4(1.0f), vec3(x, y, z));
+
+    // 2. 缩放：在 0.05 和 0.25f 之间缩放
+    float scale = (rand() % 20) / 100.0f + 0.05;
+    model       = glm::scale(model, vec3(scale * 0.5f));
+
+    // 3. 旋转：绕着一个（半）随机选择的旋转轴向量进行随机的旋转
+    float rotAngle = (rand() % 360);
+    model          = rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+    return model;
+}
+
 /**REVIEW - 实例化
  * 假设你有一个绘制了很多模型的场景，而大部分的模型包含的是同一组顶点数据，只不过进行的是
  * 不同的世界空间变换。想象一个充满草的场景：每根草都是一个包含几个三角形的小模型。
@@ -402,4 +504,39 @@ GLuint createSkyboxTexture(const char* imageFolder)
  * 这样的小行星带可能包含成千上万的岩块，在很不错的显卡上也很难完成这样的渲染。
  * 实例化渲染正是适用于这样的场景，因为所有的小行星都可以使用一个模型来表示。
  * 每个小行星可以再使用不同的变换矩阵来进行少许的变化。
+ *
+ * 这里，我们绘制与之前相同数量amount的小行星，但是使用的是实例渲染。结果应该是非常相似的，
+ * 但如果你开始增加amount变量，你就能看见实例化渲染的效果了。没有实例化渲染的时候，
+ * 我们只能流畅渲染1000到1500个小行星。而使用了实例化渲染之后，我们可以将这个值设置为
+ * 100000，每个岩石模型有576个顶点，每帧加起来大概要绘制5700万个顶点，但性能却没有
+ * 受到任何影响！
+ */
+
+/**REVIEW - 抗锯齿
+ * 在学习渲染的旅途中，你可能会时不时遇到模型边缘有锯齿的情况。
+ * 这些锯齿边缘(Jagged Edges)的产生和光栅器将顶点数据转化为片段的方式有关。
+ *
+ * 可能不是非常明显，但如果你离近仔细观察立方体的边缘，
+ * 你就应该能够看到锯齿状的图案。如果放大的话，你会看到下面的图案：
+ * ![](https://learnopengl-cn.github.io/img/04/11/anti_aliasing_zoomed.png)
+ *
+ * 这很明显不是我们想要在最终程序中所实现的效果。你能够清楚看见形成边缘的像素。
+ * 这种现象被称之为走样(Aliasing)。有很多种抗锯齿（Anti-aliasing，也被称为反走样）
+ * 的技术能够帮助我们缓解这种现象，从而产生更平滑的边缘。
+ *
+ * 最开始我们有一种叫做超采样抗锯齿(Super Sample Anti-aliasing,
+ * SSAA)的技术，它会使用
+ * 比正常分辨率更高的分辨率（即超采样）来渲染场景，当图像输出在帧缓冲中更新时，分辨率
+ * 会被下采样(Downsample)至正常的分辨率。这些额外的分辨率会被用来防止锯齿边缘的产生。
+ * 虽然它确实能够解决走样的问题，但是由于这样比平时要绘制更多的片段，
+ * 它也会带来很大的性能开销。所以这项技术只拥有了短暂的辉煌。
+ *
+ * 然而，在这项技术的基础上也诞生了更为现代的技术，叫做多重采样抗锯齿(Multisample
+ *  Anti-aliasing,
+ * MSAA)。它借鉴了SSAA背后的理念，但以更加高效的方式实现了抗锯齿。
+ * 我们在这一节中会深度讨论OpenGL中内建的MSAA技术。
+ *
+ * NOTE - 多重采样
+ * 为了理解什么是多重采样(Multisampling)，以及它是如何解决锯齿问题的，
+ * 我们有必要更加深入地了解OpenGL光栅器的工作方式。
  */

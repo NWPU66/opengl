@@ -49,10 +49,12 @@ public:
          vector<Texture>& textures);
     ~Mesh();
     void Draw(Shader* shader, GLuint instanceNum = 1);
-    void SetInstanceArray(GLuint instanceVBO,
-                          GLuint vaoSlot,
-                          GLuint vecSize,
-                          GLuint updateFruq = 1);
+    void SetInstanceArray(GLuint      instanceVBO,
+                          GLuint      vaoSlot,
+                          GLuint      vecSize,
+                          GLsizei     stride     = 0,
+                          const void* offset     = (void*)0,
+                          GLuint      updateFruq = 1);
 
 private:
     // 渲染数据

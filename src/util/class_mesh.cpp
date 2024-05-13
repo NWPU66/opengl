@@ -95,15 +95,17 @@ void Mesh::Draw(Shader* shader, GLuint instanceNum)
 /// @param vaoSlot 要绑定的顶点属性指针的槽位
 /// @param vecSize 实例数组每个元素的向量大小
 /// @param updateFruq 更新频率，0表示每次绘制时更新，2表示每2个实例更新一次属性
-void Mesh::SetInstanceArray(GLuint instanceVBO,
-                            GLuint vaoSlot,
-                            GLuint vecSize,
-                            GLuint updateFruq)
+void Mesh::SetInstanceArray(GLuint      instanceVBO,
+                            GLuint      vaoSlot,
+                            GLuint      vecSize,
+                            GLsizei     stride,
+                            const void* offset,
+                            GLuint      updateFruq)
 {
     glBindVertexArray(VAO);
     // 设置它的顶点属性指针，并启用顶点属性
-    glVertexAttribPointer(vaoSlot, vecSize, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(vaoSlot, vecSize, GL_FLOAT, GL_FALSE, stride, offset);
+    glEnableVertexAttribArray(vaoSlot);
     glVertexAttribDivisor(vaoSlot, updateFruq);
     // NOTE - 这里不绑定/解绑VBO，因为整个model下的所有Mesh都共享一个instanceVBO
     // FIXME - 忘记链接vao了
