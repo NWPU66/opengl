@@ -24,10 +24,8 @@ Mesh::Mesh(std::vector<Vertex>&       vertices,
 
 Mesh::~Mesh() {}
 
-/**
- * `setupMesh`
- * 函数通过生成顶点数组和缓冲区、绑定它们、用数据填充它们、指定数据解释和取消绑定来创建和设置网格。
- */
+/// @brief
+/// 函数通过生成顶点数组和缓冲区、绑定它们、用数据填充它们、指定数据解释和取消绑定来创建和设置网格。
 void Mesh::setupMesh()
 {
     // 创建顶点对象
@@ -90,4 +88,24 @@ void Mesh::Draw(Shader* shader, GLuint instanceNum)
 
     // always good practice to set everything back to defaults once configured.
     glActiveTexture(GL_TEXTURE0);
+}
+
+/// @brief 设置单个Mesh的实例数组
+/// @param instanceVBO 实例数组的缓冲区索引
+/// @param vaoSlot 要绑定的顶点属性指针的槽位
+/// @param vecSize 实例数组每个元素的向量大小
+/// @param updateFruq 更新频率，0表示每次绘制时更新，2表示每2个实例更新一次属性
+void Mesh::SetInstanceArray(GLuint instanceVBO,
+                            GLuint vaoSlot,
+                            GLuint vecSize,
+                            GLuint updateFruq)
+{
+    glBindVertexArray(VAO);
+    // 设置它的顶点属性指针，并启用顶点属性
+    glVertexAttribPointer(vaoSlot, vecSize, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(3);
+    glVertexAttribDivisor(vaoSlot, updateFruq);
+    // NOTE - 这里不绑定/解绑VBO，因为整个model下的所有Mesh都共享一个instanceVBO
+    // FIXME - 忘记链接vao了
+    glBindVertexArray(0);
 }

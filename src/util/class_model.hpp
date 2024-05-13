@@ -24,6 +24,10 @@ public:
     Model(const string path);
     ~Model();
     void Draw(Shader* shader, GLuint instanceNum = 1);
+    void SetInstanceArray(GLuint instanceVBO,
+                          GLuint vaoSlot,
+                          GLuint vecSize,
+                          GLuint updateFruq = 1);
 
 private:
     // 模型数据

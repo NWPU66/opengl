@@ -49,6 +49,10 @@ public:
          vector<Texture>& textures);
     ~Mesh();
     void Draw(Shader* shader, GLuint instanceNum = 1);
+    void SetInstanceArray(GLuint instanceVBO,
+                          GLuint vaoSlot,
+                          GLuint vecSize,
+                          GLuint updateFruq = 1);
 
 private:
     // 渲染数据

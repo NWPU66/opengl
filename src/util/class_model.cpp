@@ -32,6 +32,22 @@ void Model::loadModel(const string path)
     this->processNode(scene->mRootNode, scene);
 }
 
+/// @brief 设置model对象下所有Mesh的实例数组
+/// @param instanceVBO 实例数组的缓冲区索引
+/// @param vaoSlot 要绑定的顶点属性指针的槽位
+/// @param vecSize 实例数组每个元素的向量大小
+/// @param updateFruq 更新频率，0表示每次绘制时更新，2表示每2个实例更新一次属性
+void Model::SetInstanceArray(GLuint instanceVBO,
+                             GLuint vaoSlot,
+                             GLuint vecSize,
+                             GLuint updateFruq)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    for (int i = 0; i < meshes.size(); i++)
+        meshes[i].SetInstanceArray(instanceVBO, vaoSlot, vecSize, updateFruq);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void Model::processNode(aiNode* node, const aiScene* scene)
 {
     // 处理节点所有的网格（如果有的话）

@@ -30,7 +30,8 @@ int main(int argc, char** argv)
 
     /**NOTE - 模型和着色器、纹理
      */
-    Model  box("./box/box.obj");
+    Model box("./box/box.obj"), planet("./planet/planet.obj"),
+        rock("./rock/rock.obj");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl",
                         "./shader/skyboxShader.fs.glsl");
     Shader instanceBoxShader("./shader/instanceBoxShader.vs.glsl",
@@ -54,6 +55,26 @@ int main(int argc, char** argv)
             index++;
         }
     }
+
+    /**NOTE - 实例化数组
+     */
+    GLuint instanceVBO;
+    glGenBuffers(1, &instanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(offsetTranslate), offsetTranslate,
+                 GL_STATIC_DRAW);
+    // 解绑
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // 设置整个model对象下Mesh的实例数组
+    box.SetInstanceArray(instanceVBO, 3, 2, 1);
+    /**FIXME - updateFruq=0时出现几何体的撕扯现象
+     * If divisor is zero, the attribute at slot index advances once per vertex.
+     * divisor=0，每个顶点更新一次，这就不是实例的渲染了。
+     *
+     * If divisor is non-zero, the attribute advances once per divisor instances
+     * of the set(s) of vertices being rendered.
+     * 每‘divisor’个实例后更新一次。
+     */
 
     /**NOTE - OpenGL基本设置
      */
@@ -121,32 +142,24 @@ int main(int argc, char** argv)
     return 0;
 }
 
-/**
- * 函数“framebuffer_size_callback”根据窗口大小设置视口尺寸。
- *
- * @param window `window` 参数是指向触发回调函数的 GLFW 窗口的指针。
- * @param w
- * “framebuffer_size_callback”函数中的“w”参数表示帧缓冲区的宽度，即OpenGL将渲染图形的区域的大小。
- * @param h
- * “framebuffer_size_callback”函数中的参数“h”表示帧缓冲区的高度（以像素为单位）。它用于设置在
- * OpenGL 上下文中渲染的视口高度。
- */
+/// @brief 函数“framebuffer_size_callback”根据窗口大小设置视口尺寸。
+/// @param window `window` 参数是指向触发回调函数的 GLFW 窗口的指针。
+/// @param w
+/// “framebuffer_size_callback”函数中的“w”参数表示帧缓冲区的宽度，即OpenGL将渲染图形的区域的大小。
+/// @param h
+/// “framebuffer_size_callback”函数中的参数“h”表示帧缓冲区的高度（以像素为单位）。它用于设置在OpenGL
+/// 上下文中渲染的视口高度。
 void framebuffer_size_callback(GLFWwindow* window, int w, int h)
 {
     glViewport(0, 0, w, h);
 }
 
-/**
- * 函数“mouse_callback”根据 GLFW 窗口中的鼠标移动更新相机的方向。
- *
- * @param window “window”参数是指向接收鼠标输入的 GLFW
- * 窗口的指针。它用于标识鼠标事件发生的窗口。
- * @param xpos mouse_callback 函数中的 xpos 参数表示鼠标光标位置的当前 x
- * 坐标。
- * @param ypos `mouse_callback` 函数中的 `ypos`
- * 参数表示鼠标光标在窗口内的当前 y
- * 坐标。它是一个双精度值，表示触发回调函数时鼠标光标的垂直位置。
- */
+/// @brief 函数“mouse_callback”根据 GLFW 窗口中的鼠标移动更新相机的方向。
+/// @param window “window”参数是指向接收鼠标输入的
+/// GLFW窗口的指针。它用于标识鼠标事件发生的窗口。
+/// @param xpos mouse_callback 函数中的 xpos 参数表示鼠标光标位置的当前 x坐标。
+/// @param ypos 'mouse_callback` 函数中的 `ypos`参数表示鼠标光标在窗口内的当前
+/// y坐标。它是一个双精度值，表示触发回调函数时鼠标光标的垂直位置。
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     camera->ProcessMouseMovement(xpos - mouseLastX, ypos - mouseLastY, true);
@@ -154,27 +167,20 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     mouseLastY = ypos;
 }
 
-/**
- * 函数“scroll_callback”处理鼠标滚动输入以调整相机位置。
- *
- * @param window `GLFWwindow* window`
- * 参数是指向接收滚动输入的窗口的指针。
- * @param xoffset `xoffset` 参数表示水平滚动偏移。
- * @param yoffset
- * `scroll_callback`函数中的`yoffset`参数表示鼠标滚轮的垂直滚动偏移量。正值表示向上滚动，负值表示向下滚动。
- */
+/// @brief 函数“scroll_callback”处理鼠标滚动输入以调整相机位置。
+/// @param window `GLFWwindow* window`参数是指向接收滚动输入的窗口的指针。
+/// @param xoffset `xoffset` 参数表示水平滚动偏移。
+/// @param yoffset
+/// 'scroll_callback`函数中的`yoffset`参数表示鼠标滚轮的垂直滚动偏移量。正值表示向上滚动，负值表示向下滚动。
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera->ProcessMouseScroll(yoffset);
 }
 
-/**
- * C++ 中的函数“processInput”处理来自 GLFW
- * 窗口的用户输入，以控制相机的移动和速度。
- *
- * @param window processInput 函数中的 window 参数是一个指向 GLFWwindow
- * 对象的指针。该对象表示应用程序中用于渲染图形和处理用户输入的窗口。该函数使用此参数来检查按键并更新相机的移动和速度
- */
+/// @brief C++ 中的函数“processInput”处理来自
+/// GLFW窗口的用户输入，以控制相机的移动和速度。
+/// @param window processInput 函数中的 window 参数是一个指向
+/// GLFWwindow对象的指针。该对象表示应用程序中用于渲染图形和处理用户输入的窗口。该函数使用此参数来检查按键并更新相机的移动和速度
 void processInput(GLFWwindow* window)
 {
     // 当Esc按下时，窗口关闭
@@ -366,4 +372,34 @@ GLuint createSkyboxTexture(const char* imageFolder)
  * 为了体验一下实例化绘制，我们将会在标准化设备坐标系中使用一个渲染调用，
  * 绘制100个2D四边形。我们会索引一个包含100个偏移向量的uniform数组，
  * 将偏移值加到每个实例化的四边形上。最终的结果是一个排列整齐的四边形网格：
+ *
+ * NOTE - 实例化数组
+ * 虽然之前的实现在目前的情况下能够正常工作，但是如果我们要渲染远超过100个实例的时候
+ * （这其实非常普遍），我们最终会超过最大能够发送至着色器的uniform数据大小上限。
+ * 它的一个代替方案是实例化数组(Instanced Array)，它被定义为一个顶点属性
+ * （能够让我们储存更多的数据），仅在顶点着色器渲染一个新的实例时才会更新。
+ *
+ * 使用顶点属性时，顶点着色器的每次运行都会让GLSL获取新一组适用于当前顶点的属性。
+ * 而当我们将顶点属性定义为一个实例化数组时，顶点着色器就只需要对每个实例，
+ * 而不是每个顶点，更新顶点属性的内容了。这允许我们对逐顶点的数据使用普通的顶点属性，
+ * 而对逐实例的数据使用实例化数组。
+ *
+ * 这段代码很有意思的地方在于最后一行，我们调用了glVertexAttribDivisor。这个函数告诉了
+ * OpenGL该什么时候更新顶点属性的内容至新一组数据。它的第一个参数是需要的顶点属性，
+ * 第二个参数是属性除数(Attribute
+ * Divisor)。默认情况下，属性除数是0，告诉OpenGL我们
+ * 需要在顶点着色器的每次迭代时更新顶点属性。将它设置为1时，我们告诉OpenGL我们希望
+ * 在渲染一个新实例的时候更新顶点属性。而设置为2时，我们希望每2个实例更新一次属性，
+ * 以此类推。我们将属性除数设置为1，是在告诉OpenGL，处于位置值2的顶点属性是一个实例化数组。
+ *
+ * 虽然很有趣，但是这些例子并不是实例化的好例子。
+ * 是的，它们的确让你知道实例化是怎么工作的，但是我们还没接触到它最有用的一点：
+ * 绘制巨大数量的相似物体。出于这个原因，我们将会在下一部分进入太空探险，
+ * 见识实例化渲染真正的威力。
+ *
+ * NOTE - 小行星带
+ * 想象这样一个场景，在宇宙中有一个大的行星，它位于小行星带的中央。
+ * 这样的小行星带可能包含成千上万的岩块，在很不错的显卡上也很难完成这样的渲染。
+ * 实例化渲染正是适用于这样的场景，因为所有的小行星都可以使用一个模型来表示。
+ * 每个小行星可以再使用不同的变换矩阵来进行少许的变化。
  */
