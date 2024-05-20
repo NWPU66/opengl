@@ -49,6 +49,7 @@ set(LIBS ${LIBS} utilTool)
 include_directories(${INCLUDES} ${CMAKE_SOURCE_DIR}/src)
 # link library
 link_libraries(${LIBS})
+message(STATUS "LIBS: ${LIBS}")
 
 # create helloworld program
 # add_executable(helloopengl ${CMAKE_SOURCE_DIR}/src/helloopengl.cpp)

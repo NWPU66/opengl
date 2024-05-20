@@ -50,4 +50,8 @@ void main()
     vec3 color=texture(screenTexture,TexCoords).rgb;
     // FragColor=vec4(vec3(.2126*col.r+.7152*col.g+.0722*col.b),1.);
     FragColor=vec4(color,1.f);
+    
+    //NOTE - 自定义抗锯齿算法
+    //uniform sampler2DMS screenTextureMS;
+    //vec4 colorSample=texelFetch(screenTextureMS,TexCoords,3);// 第4个子样本
 }

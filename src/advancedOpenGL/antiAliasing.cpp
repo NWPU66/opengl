@@ -25,6 +25,15 @@ GLuint createSkyboxTexture(const char* imageFolder);
 mat4   makeRandomPosture(const float propotion,
                          const float radius = 50.0f,
                          const float offset = 2.5f);
+void   createFBO(GLuint&     fbo,
+                 GLuint&     texAttachment,
+                 GLuint&     rbo,
+                 const char* hint = "null");
+void   createObjFromHardcode(vector<GLfloat> vertices,
+                             vector<GLuint>  vertexIdx = {},
+                             GLuint&         vao,
+                             GLuint&         vbo,
+                             GLuint& ebo = 0);  // TODO - createObjFromHardcode
 
 int main(int argc, char** argv)
 {
@@ -119,6 +128,55 @@ int main(int argc, char** argv)
                           (void*)(3 * sizeof(vec4)));
     // FIXME - 错题本：这里的偏移量是列向量vec4的大小，而不是mat4的大小。
 
+    /**NOTE - 多重采样缓冲
+     */
+    GLuint msFbo, msTexAttachment, msRbo, fbo, texAttchment, rbo;
+    createFBO(msFbo, msTexAttachment, msRbo, "ms");
+    createFBO(fbo, texAttchment, rbo);
+
+    /**NOTE - 屏幕几何对象
+     */
+    vector<GLfloat> screenVertices = {
+        // 位置               // 纹理坐标
+        -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,  // 左上
+        1.0f,  1.0f,  0.0f, 1.0f, 1.0f,  // 右上
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,  // 左下
+        1.0f,  -1.0f, 0.0f, 1.0f, 0.0f   // 右下
+    };
+    vector<GLuint> screenVerticesIdx = {
+        0, 2, 1,  // 第一个三角形
+        1, 2, 3   // 第二个三角形
+    };
+    Shader screenShader("./shader/screenShader.vs.glsl",
+                        "./shader/screenShader.fs.glsl");
+    // VBO
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, screenVertices.size() * sizeof(GLfloat),
+                 screenVertices.data(), GL_STATIC_DRAW);
+    // VAO
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+    // EBO
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 screenVerticesIdx.size() * sizeof(GLuint),
+                 screenVerticesIdx.data(), GL_STATIC_DRAW);
+    // 解绑
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
     /**NOTE - OpenGL基本设置
      */
     glEnable(GL_DEPTH_TEST);  // 启用深度缓冲
@@ -134,6 +192,8 @@ int main(int argc, char** argv)
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // 设置清空颜色
 
+    glEnable(GL_MULTISAMPLE);  // 启用多重采样
+
     // 渲染循环
     while (!glfwWindowShouldClose(window))
     {
@@ -143,6 +203,7 @@ int main(int argc, char** argv)
         processInput(window);
 
         // SECTION - 渲染循环
+        glBindFramebuffer(GL_FRAMEBUFFER, msFbo);
         /**NOTE - 清空屏幕
          */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
@@ -201,6 +262,23 @@ int main(int argc, char** argv)
          * 或者开启“正面”剔除。
          */
         //~SECTION
+
+        /**NOTE - 从msFbo多重采样
+         */
+        // 将多重采样缓冲还原到中介FBO上
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, msFbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+        glBlitFramebuffer(0, 0, CAMERA_WIDTH, CAMERA_HEIGH, 0, 0, CAMERA_WIDTH,
+                          CAMERA_HEIGH, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        // 绘制ScreenTexture
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+                GL_STENCIL_BUFFER_BIT);
+        glBindVertexArray(vao);
+        screenShader.use();
+        glBindTexture(GL_TEXTURE_2D, texAttchment);
+        screenShader.setParameter("screenTexture", 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // 处理事件、交换缓冲区
         glfwSwapBuffers(window);
@@ -287,6 +365,8 @@ int initGLFWWindow(GLFWwindow*& window)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    glfwWindowHint(GLFW_SAMPLES, 4);  // 多重采样缓冲
 
     // 创建窗口
     window = glfwCreateWindow(CAMERA_WIDTH, CAMERA_HEIGH, "Window", NULL, NULL);
@@ -438,6 +518,97 @@ mat4 makeRandomPosture(const float propotion,
     return model;
 }
 
+/// @brief 创建一个FBO（帧缓冲对象）
+/// @param hint 如果hint为"ms"，则使用多重采样
+void createFBO(GLuint&     fbo,
+               GLuint&     texAttachment,
+               GLuint&     rbo,
+               const char* hint)
+{
+    bool useMutiSampled = (strcmp(hint, "ms") == 0);
+    // FIXME - 使用strcmp()的时候，不可以出空指针
+
+    // 创建一个帧缓冲
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    //  创建一个纹理附件
+    glGenTextures(1, &texAttachment);
+    if (useMutiSampled)
+    {
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texAttachment);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB,
+                                CAMERA_WIDTH, CAMERA_HEIGH, GL_TRUE);
+        // 如果最后一个参数为GL_TRUE，图像将会对每个纹素使用相同的样本位置以及相同数量的子采样点个数。
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER,
+                        GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER,
+                        GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D_MULTISAMPLE, texAttachment, 0);
+    }
+    else
+    {
+        glBindTexture(GL_TEXTURE_2D, texAttachment);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, CAMERA_WIDTH, CAMERA_HEIGH, 0,
+                     GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, texAttachment, 0);
+    }
+
+    // 创建一个多重采样渲染缓冲对象
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    if (useMutiSampled)
+    {
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4,
+                                         GL_DEPTH24_STENCIL8, CAMERA_WIDTH,
+                                         CAMERA_HEIGH);
+    }
+    else
+    {
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
+                              CAMERA_WIDTH, CAMERA_HEIGH);
+    }
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                              GL_RENDERBUFFER, rbo);
+    // FIXME - GL_DEPTH_STENCIL_ATTACHMENT写错了，导致深度缓冲没有初始化成功。
+
+    //  检查帧缓冲状态
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    {
+        cout << "Framebuffer is  complete!" << endl;
+    }
+    else
+    {
+        cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+    }
+
+    // 解绑
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // FIXME - 函数写错了，fbo没有解绑。导致默认的fbo为空。
+    if (useMutiSampled) { glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0); }
+    else { glBindTexture(GL_TEXTURE_2D, 0); }
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+
+/// @brief 从一组顶点的硬编码创建几何体
+void createObjFromHardcode(vector<GLfloat> vertices,
+                           vector<GLuint>  vertexIdx,
+                           GLuint&         vao,
+                           GLuint&         vbo,
+                           GLuint&         ebo)
+{
+    if (vertexIdx.size() == 0 && ebo == 0)
+    {
+        cout << "No EBO used to create a simple object!" << endl;
+    }
+
+    // TODO -
+}
+
 /**REVIEW - 实例化
  * 假设你有一个绘制了很多模型的场景，而大部分的模型包含的是同一组顶点数据，只不过进行的是
  * 不同的世界空间变换。想象一个充满草的场景：每根草都是一个包含几个三角形的小模型。
@@ -539,4 +710,106 @@ mat4 makeRandomPosture(const float propotion,
  * NOTE - 多重采样
  * 为了理解什么是多重采样(Multisampling)，以及它是如何解决锯齿问题的，
  * 我们有必要更加深入地了解OpenGL光栅器的工作方式。
+ *
+ * 光栅器是位于最终处理过的顶点之后到片段着色器之前所经过的所有的算法与过程的总和。
+ * 光栅器会将一个图元的所有顶点作为输入，并将它转换为一系列的片段。
+ * 顶点坐标理论上可以取任意值，但片段不行，因为它们受限于你窗口的分辨率。
+ * 顶点坐标与片段之间几乎永远也不会有一对一的映射，所以光栅器必须以某种方式来决
+ * 定每个顶点最终所在的片段/屏幕坐标。
+ *
+ * 这里我们可以看到一个屏幕像素的网格，每个像素的中心包含有一个采样点(Sample
+ * Point)，
+ * 它会被用来决定这个三角形是否遮盖了某个像素。图中红色的采样点被三角形所遮盖，
+ * 在每一个遮住的像素处都会生成一个片段。虽然三角形边缘的一些部分也遮住了某些屏幕像素，
+ * 但是这些像素的采样点并没有被三角形内部所遮盖，所以它们不会受到片段着色器的影响。
+ *
+ * 由于屏幕像素总量的限制，有些边缘的像素能够被渲染出来，而有些则不会。
+ * 结果就是我们使用了不光滑的边缘来渲染图元，导致之前讨论到的锯齿边缘。
+ *
+ * 多重采样所做的正是将单一的采样点变为多个采样点（这也是它名称的由来）。
+ * 我们不再使用像素中心的单一采样点，取而代之的是以特定图案排列的4个子采样点(Subsample)。
+ * 我们将用这些子采样点来决定像素的遮盖度。当然，这也意味着颜色缓冲的大小会随着子
+ * 采样点的增加而增加。
+ * ![](https://learnopengl-cn.github.io/img/04/11/anti_aliasing_sample_points.png)
+ *
+ * 采样点的数量可以是任意的，更多的采样点能带来更精确的遮盖率。
+ *
+ * 从这里开始多重采样就变得有趣起来了。我们知道三角形只遮盖了2个子采样点，所以下一步是
+ * 决定这个像素的颜色。你的猜想可能是，我们对每个被遮盖住的子采样点运行一次片段着色器，
+ * 最后将每个像素所有子采样点的颜色平均一下。在这个例子中，我们需要在两个子采样点上对
+ * 被插值的顶点数据运行两次片段着色器，并将结果的颜色储存在这些采样点中。（幸运的是）
+ * 这并不是它工作的方式，因为这本质上说还是需要运行更多次的片段着色器，会显著地降低性能。
+ *
+ * MSAA真正的工作方式是，无论三角形遮盖了多少个子采样点，（每个图元中）每个像素只运行
+ * 一次片段着色器。片段着色器所使用的顶点数据会插值到每个像素的中心，所得到的结果颜色会
+ * 被储存在每个被遮盖住的子采样点中。当颜色缓冲的子样本被图元的所有颜色填满时，
+ * 所有的这些颜色将会在每个像素内部平均化。因为上图的4个采样点中只有2个被遮盖住了，
+ * 这个像素的颜色将会是三角形颜色与其他两个采样点的颜色（在这里是无色）的平均值，
+ * 最终形成一种淡蓝色。
+ *
+ * 这样子做之后，颜色缓冲中所有的图元边缘将会产生一种更平滑的图形。
+ * ![](https://learnopengl-cn.github.io/img/04/11/anti_aliasing_rasterization_samples.png)
+ *
+ * 这里，每个像素包含4个子采样点（不相关的采样点都没有标注），蓝色的采样点被三角形所遮盖，
+ * 而灰色的则没有。对于三角形的内部的像素，片段着色器只会运行一次，颜色输出会被存储到
+ * 全部的4个子样本中。而在三角形的边缘，并不是所有的子采样点都被遮盖，
+ * 所以片段着色器的结果将只会储存到部分的子样本中。根据被遮盖的子样本的数量，
+ * 最终的像素颜色将由三角形的颜色与其它子样本中所储存的颜色来决定。
+ *
+ * 简单来说，一个像素中如果有更多的采样点被三角形遮盖，
+ * 那么这个像素的颜色就会更接近于三角形的颜色。如果我们给上面的三角形填充颜色
+ * ![](https://learnopengl-cn.github.io/img/04/11/anti_aliasing_rasterization_samples_filled.png)
+ *
+ * 对于每个像素来说，越少的子采样点被三角形所覆盖，那么它受到三角形的影响就越小。
+ * 三角形的不平滑边缘被稍浅的颜色所包围后，从远处观察时就会显得更加平滑了。
+ *
+ * 不仅仅是颜色值会受到多重采样的影响，深度和模板测试也能够使用多个采样点。
+ * 对深度测试来说，每个顶点的深度值会在运行深度测试之前被插值到各个子样本中。
+ * 对模板测试来说，我们对每个子样本，而不是每个像素，存储一个模板值。当然，
+ * 这也意味着深度和模板缓冲的大小会乘以子采样点的个数。
+ *
+ * NOTE - OpenGL中的MSAA
+ * 如果我们想要在OpenGL中使用MSAA，我们必须要使用一个能在每个像素中存储大于1个
+ * 颜色值的颜色缓冲（因为多重采样需要我们为每个采样点都储存一个颜色）。所以，
+ * 我们需要一个新的缓冲类型，来存储特定数量的多重采样样本，它叫做多重采样缓冲
+ * (Multisample Buffer)。
+ *
+ * 大多数的窗口系统都应该提供了一个多重采样缓冲，用以代替默认的颜色缓冲。
+ * GLFW同样给了我们这个功能，我们所要做的只是提示(Hint) GLFW，
+ * 我们希望使用一个包含N个样本的多重采样缓冲。
+ * 这可以在创建窗口之前调用glfwWindowHint来完成。
+ *
+ * 在大多数OpenGL的驱动上，多重采样都是默认启用的。
+ * 只要默认的帧缓冲有了多重采样缓冲的附件，我们所要做的只是调用glEnable来启用多重采样。
+ * 因为多重采样的算法都在OpenGL驱动的光栅器中实现了，我们不需要再多做什么。
+ *
+ * NOTE - 离屏MSAA
+ * 由于GLFW负责了创建多重采样缓冲，启用MSAA非常简单。然而，如果我们想要使用
+ * 我们自己的帧缓冲来进行离屏渲染，那么我们就必须要自己动手生成多重采样缓冲了。
+ *
+ * 有两种方式可以创建多重采样缓冲，将其作为帧缓冲的附件：
+ * 纹理附件和渲染缓冲附件，这和在帧缓冲教程中所讨论的普通附件很相似。
+ *
+ * NOTE - 多重采样纹理附件
+ * 为了创建一个支持储存多个采样点的纹理，我们使用glTexImage2DMultisample来替代
+ * glTexImage2D，它的纹理目标是GL_TEXTURE_2D_MULTISAPLE。
+ *
+ * 因为多重采样缓冲有一点特别，我们不能直接将它们的缓冲图像用于其他运算，
+ * 比如在着色器中对它们进行采样。
+ *
+ * 一个多重采样的图像包含比普通图像更多的信息，我们所要做的是缩小或者还原(Resolve)图像。
+ * 多重采样帧缓冲的还原通常是通过glBlitFramebuffer来完成，它能够将一个帧缓冲中的某个区域
+ * 复制到另一个帧缓冲中，并且将多重采样缓冲还原。
+ *
+ * glBlitFramebuffer会将一个用4个屏幕空间坐标所定义的源区域复制到一个同样用4个
+ * 屏幕空间坐标所定义的目标区域中。你可能记得在帧缓冲教程中，当我们绑定到
+ * GL_FRAMEBUFFER时，我们是同时绑定了读取和绘制的帧缓冲目标。我们也可以将
+ * 帧缓冲分开绑定至GL_READ_FRAMEBUFFER与GL_DRAW_FRAMEBUFFER。
+ * glBlitFramebuffer函数会根据这两个目标，决定哪个是源帧缓冲，哪个是目标帧缓冲。
+ * 接下来，我们可以将图像位块传送(Blit)到默认的帧缓冲中，将多重采样的帧缓冲传送到屏幕上。
+ *
+ * NOTE - 自定义抗锯齿算法
+ * 将一个多重采样的纹理图像不进行还原直接传入着色器也是可行的。GLSL提供了这样的选项，
+ * 让我们能够对纹理图像的每个子样本进行采样，所以我们可以创建我们自己的抗锯齿算法。
+ * 在大型的图形应用中通常都会这么做。
  */
