@@ -3,7 +3,7 @@
 #define SHADER_H
 #include <glad/glad.h>
 
-#include "util/structure.hpp"
+#include "structure.hpp"
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -18,9 +18,7 @@ public:
     unsigned int ID;  // 程序ID
 
     // 构造函数和析构函数
-    Shader(const char* vertexPath,
-           const char* fragmentPath,
-           const char* geometryPath = nullptr);
+    Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
     ~Shader();
 
     // 实用成员函数

@@ -43,7 +43,7 @@ set(LIBS ${LIBS} ${ASSIMP_PATH}/bin/libassimp-5.dll)  #bin/libassimp-5.dll lib/l
 # util tool
 file(GLOB_RECURSE UTILTOOL_SRC "${CMAKE_SOURCE_DIR}/src/util/*")
 add_library(utilTool STATIC ${UTILTOOL_SRC})
-set(LIBS ${LIBS} utilTool)
+set(LIBS utilTool ${LIBS})  #FIXME - 注意链接顺序
 
 # include directory
 include_directories(${INCLUDES} ${CMAKE_SOURCE_DIR}/src)
@@ -60,6 +60,7 @@ file(GLOB BEGINNERS__SRC "${CMAKE_SOURCE_DIR}/src/beginners/*.cpp")
 file(GLOB LIGHTING__SRC "${CMAKE_SOURCE_DIR}/src/lighting/*.cpp")
 file(GLOB MODEL_LOADING__SRC "${CMAKE_SOURCE_DIR}/src/model_loading/*.cpp")
 file(GLOB ADVANCED_OPENGL_DRC "${CMAKE_SOURCE_DIR}/src/advancedOpenGL/*.cpp")
+file(GLOB ADVANCED_LIGHTING_DRC "${CMAKE_SOURCE_DIR}/src/advancedLighting/*.cpp")
 # create program
 add_executable(chapter_0 ${CMAKE_SOURCE_DIR}/src/beginners/chapter_0.cpp)
 add_executable(chapter_1 ${CMAKE_SOURCE_DIR}/src/lighting/chapter_1.cpp)
@@ -68,6 +69,11 @@ foreach(SRC_FILE ${ADVANCED_OPENGL_DRC})
     get_filename_component(SRC_NAME ${SRC_FILE} NAME_WE)
     add_executable(${SRC_NAME} ${SRC_FILE})
 endforeach()
+foreach(SRC_FILE ${ADVANCED_LIGHTING_DRC})
+    get_filename_component(SRC_NAME ${SRC_FILE} NAME_WE)
+    add_executable(${SRC_NAME} ${SRC_FILE})
+endforeach()
+
 
 # install
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)

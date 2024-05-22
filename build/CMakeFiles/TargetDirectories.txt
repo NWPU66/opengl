@@ -10,5 +10,6 @@ E:/Study/CodeProj/opengl/build/CMakeFiles/depthTest.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/framebuffer.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/outliner.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/stencilTest.dir
+E:/Study/CodeProj/opengl/build/CMakeFiles/advancedLighting.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/edit_cache.dir
 E:/Study/CodeProj/opengl/build/CMakeFiles/rebuild_cache.dir

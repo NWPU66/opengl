@@ -271,6 +271,19 @@ stencilTest/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\stencilTest.dir\build.make CMakeFiles/stencilTest.dir/build
 .PHONY : stencilTest/fast
 
+#=============================================================================
+# Target rules for targets named advancedLighting
+
+# Build rule for target.
+advancedLighting: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 advancedLighting
+.PHONY : advancedLighting
+
+# fast build rule for target.
+advancedLighting/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedLighting.dir\build.make CMakeFiles/advancedLighting.dir/build
+.PHONY : advancedLighting/fast
+
 3rdparty/glad/src/glad.obj: 3rdparty/glad/src/glad.c.obj
 .PHONY : 3rdparty/glad/src/glad.obj
 
@@ -294,6 +307,30 @@ stencilTest/fast:
 3rdparty/glad/src/glad.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\GLAD.dir\build.make CMakeFiles/GLAD.dir/3rdparty/glad/src/glad.c.s
 .PHONY : 3rdparty/glad/src/glad.c.s
+
+src/advancedLighting/advancedLighting.obj: src/advancedLighting/advancedLighting.cpp.obj
+.PHONY : src/advancedLighting/advancedLighting.obj
+
+# target to build an object file
+src/advancedLighting/advancedLighting.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedLighting.dir\build.make CMakeFiles/advancedLighting.dir/src/advancedLighting/advancedLighting.cpp.obj
+.PHONY : src/advancedLighting/advancedLighting.cpp.obj
+
+src/advancedLighting/advancedLighting.i: src/advancedLighting/advancedLighting.cpp.i
+.PHONY : src/advancedLighting/advancedLighting.i
+
+# target to preprocess a source file
+src/advancedLighting/advancedLighting.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedLighting.dir\build.make CMakeFiles/advancedLighting.dir/src/advancedLighting/advancedLighting.cpp.i
+.PHONY : src/advancedLighting/advancedLighting.cpp.i
+
+src/advancedLighting/advancedLighting.s: src/advancedLighting/advancedLighting.cpp.s
+.PHONY : src/advancedLighting/advancedLighting.s
+
+# target to generate assembly for a file
+src/advancedLighting/advancedLighting.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedLighting.dir\build.make CMakeFiles/advancedLighting.dir/src/advancedLighting/advancedLighting.cpp.s
+.PHONY : src/advancedLighting/advancedLighting.cpp.s
 
 src/advancedOpenGL/advancedGLSL.obj: src/advancedOpenGL/advancedGLSL.cpp.obj
 .PHONY : src/advancedOpenGL/advancedGLSL.obj
@@ -535,6 +572,30 @@ src/model_loading/mesh.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/src/model_loading/mesh.cpp.s
 .PHONY : src/model_loading/mesh.cpp.s
 
+src/util/GlfwWindow.obj: src/util/GlfwWindow.cpp.obj
+.PHONY : src/util/GlfwWindow.obj
+
+# target to build an object file
+src/util/GlfwWindow.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/GlfwWindow.cpp.obj
+.PHONY : src/util/GlfwWindow.cpp.obj
+
+src/util/GlfwWindow.i: src/util/GlfwWindow.cpp.i
+.PHONY : src/util/GlfwWindow.i
+
+# target to preprocess a source file
+src/util/GlfwWindow.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/GlfwWindow.cpp.i
+.PHONY : src/util/GlfwWindow.cpp.i
+
+src/util/GlfwWindow.s: src/util/GlfwWindow.cpp.s
+.PHONY : src/util/GlfwWindow.s
+
+# target to generate assembly for a file
+src/util/GlfwWindow.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/GlfwWindow.cpp.s
+.PHONY : src/util/GlfwWindow.cpp.s
+
 src/util/class_camera.obj: src/util/class_camera.cpp.obj
 .PHONY : src/util/class_camera.obj
 
@@ -631,6 +692,30 @@ src/util/class_shader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_shader.cpp.s
 .PHONY : src/util/class_shader.cpp.s
 
+src/util/lightGroup.obj: src/util/lightGroup.cpp.obj
+.PHONY : src/util/lightGroup.obj
+
+# target to build an object file
+src/util/lightGroup.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/lightGroup.cpp.obj
+.PHONY : src/util/lightGroup.cpp.obj
+
+src/util/lightGroup.i: src/util/lightGroup.cpp.i
+.PHONY : src/util/lightGroup.i
+
+# target to preprocess a source file
+src/util/lightGroup.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/lightGroup.cpp.i
+.PHONY : src/util/lightGroup.cpp.i
+
+src/util/lightGroup.s: src/util/lightGroup.cpp.s
+.PHONY : src/util/lightGroup.s
+
+# target to generate assembly for a file
+src/util/lightGroup.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/lightGroup.cpp.s
+.PHONY : src/util/lightGroup.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -641,6 +726,7 @@ help:
 	@echo ... rebuild_cache
 	@echo ... GLAD
 	@echo ... advancedGLSL
+	@echo ... advancedLighting
 	@echo ... antiAliasing
 	@echo ... blending
 	@echo ... chapter_0
@@ -654,6 +740,9 @@ help:
 	@echo ... 3rdparty/glad/src/glad.obj
 	@echo ... 3rdparty/glad/src/glad.i
 	@echo ... 3rdparty/glad/src/glad.s
+	@echo ... src/advancedLighting/advancedLighting.obj
+	@echo ... src/advancedLighting/advancedLighting.i
+	@echo ... src/advancedLighting/advancedLighting.s
 	@echo ... src/advancedOpenGL/advancedGLSL.obj
 	@echo ... src/advancedOpenGL/advancedGLSL.i
 	@echo ... src/advancedOpenGL/advancedGLSL.s
@@ -684,6 +773,9 @@ help:
 	@echo ... src/model_loading/mesh.obj
 	@echo ... src/model_loading/mesh.i
 	@echo ... src/model_loading/mesh.s
+	@echo ... src/util/GlfwWindow.obj
+	@echo ... src/util/GlfwWindow.i
+	@echo ... src/util/GlfwWindow.s
 	@echo ... src/util/class_camera.obj
 	@echo ... src/util/class_camera.i
 	@echo ... src/util/class_camera.s
@@ -696,6 +788,9 @@ help:
 	@echo ... src/util/class_shader.obj
 	@echo ... src/util/class_shader.i
 	@echo ... src/util/class_shader.s
+	@echo ... src/util/lightGroup.obj
+	@echo ... src/util/lightGroup.i
+	@echo ... src/util/lightGroup.s
 .PHONY : help
 
 

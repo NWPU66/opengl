@@ -11,9 +11,7 @@
  * 指针，表示片段着色器源代码文件的文件路径。该文件包含定义图形管道中片段着色器行为的
  * GLSL 代码。构造函数读取该文件的内容
  */
-Shader::Shader(const char* vertexPath,
-               const char* fragmentPath,
-               const char* geometryPath)
+Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
     /**FIXME - 关于带有默认值的函数
      * 只能在定义或声明时指出默认参数，同时指定会报错。
@@ -137,8 +135,7 @@ void Shader::setParameter(const std::string& name, vec2 value) const
 
 void Shader::setParameter(const std::string& name, mat4 value) const
 {
-    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE,
-                       value_ptr(value));
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value_ptr(value));
 }
 
 /**
@@ -193,8 +190,7 @@ void Shader::checkShaderCompiling(GLuint shader)
     if (!success)
     {
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED" << infoLog
-                  << std::endl;
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED" << infoLog << std::endl;
     }
     else { std::cout << "Shader Compile success!" << std::endl; }
 }
@@ -214,8 +210,7 @@ void Shader::checkShaderProgramCompiling(GLuint shaderProgram)
     if (!success)
     {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED" << infoLog
-                  << std::endl;
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED" << infoLog << std::endl;
     }
     else { std::cout << "Shader Program Compile success!" << std::endl; }
 }

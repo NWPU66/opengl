@@ -10,10 +10,9 @@ using namespace glm;
 const GLint CAMERA_WIDTH = 800;
 const GLint CAMERA_HEIGH = 600;
 const float cameraAspect = (float)CAMERA_WIDTH / (float)CAMERA_HEIGH;
-Camera*     camera =
-    new Camera(vec3(0.0f, 0.0f, 2.0f), vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
-float mouseLastX = 0.0f, mouseLastY = 0.0f;  // 记录鼠标的位置
-float lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
+Camera*     camera       = new Camera(vec3(0.0f, 0.0f, 2.0f), vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+float       mouseLastX = 0.0f, mouseLastY = 0.0f;  // 记录鼠标的位置
+float       lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
 
 void   framebuffer_size_callback(GLFWwindow* window, int w, int h);
 void   mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -25,15 +24,12 @@ GLuint createSkyboxTexture(const char* imageFolder);
 mat4   makeRandomPosture(const float propotion,
                          const float radius = 50.0f,
                          const float offset = 2.5f);
-void   createFBO(GLuint&     fbo,
-                 GLuint&     texAttachment,
-                 GLuint&     rbo,
-                 const char* hint = "null");
-void   createObjFromHardcode(vector<GLfloat> vertices,
-                             vector<GLuint>  vertexIdx = {},
-                             GLuint&         vao,
+void   createFBO(GLuint& fbo, GLuint& texAttachment, GLuint& rbo, const char* hint = "null");
+void   createObjFromHardcode(GLuint&         vao,
                              GLuint&         vbo,
-                             GLuint& ebo = 0);  // TODO - createObjFromHardcode
+                             GLuint&         ebo,
+                             vector<GLfloat> vertices,
+                             vector<GLuint>  vertexIdx = {});
 
 int main(int argc, char** argv)
 {
@@ -42,16 +38,12 @@ int main(int argc, char** argv)
 
     /**NOTE - 模型和着色器、纹理
      */
-    Model box("./box/box.obj"), planet("./planet/planet.obj"),
-        rock("./rock/rock.obj");
-    Shader skyboxShader("./shader/skyboxShader.vs.glsl",
-                        "./shader/skyboxShader.fs.glsl"),
+    Model  box("./box/box.obj"), planet("./planet/planet.obj"), rock("./rock/rock.obj");
+    Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl"),
         instanceBoxShader("./shader/instanceBoxShader.vs.glsl",
                           "./shader/instanceBoxShader.fs.glsl"),
-        planetShader("./shader/planetShader.vs.glsl",
-                     "./shader/generalFragShader.fs.glsl"),
-        rockShader("./shader/rockShader.vs.glsl",
-                   "./shader/generalFragShader.fs.glsl");
+        planetShader("./shader/planetShader.vs.glsl", "./shader/generalFragShader.fs.glsl"),
+        rockShader("./shader/rockShader.vs.glsl", "./shader/generalFragShader.fs.glsl");
     GLuint cubeTexture = createSkyboxTexture("./texture/");  // 创建立方体贴图
 
     /**NOTE - 计算instance的offset矩阵
@@ -77,8 +69,7 @@ int main(int argc, char** argv)
     GLuint instanceVBO;
     glGenBuffers(1, &instanceVBO);
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(offsetTranslate), offsetTranslate,
-                 GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(offsetTranslate), offsetTranslate, GL_STATIC_DRAW);
     // 解绑
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     // 设置整个model对象下Mesh的实例数组
@@ -102,8 +93,7 @@ int main(int argc, char** argv)
     srand(glfwGetTime());
     for (GLuint i = 0; i < rockAmount; i++)
     {
-        mat4 model = makeRandomPosture((float)i / (float)rockAmount, rockRadius,
-                                       rockOffset);
+        mat4 model = makeRandomPosture((float)i / (float)rockAmount, rockRadius, rockOffset);
         instanceModelMatrixs.push_back(model);
         /**FIXME -
          * (float)(i / rockAmount)永远是0，因为是整数除法
@@ -120,12 +110,9 @@ int main(int argc, char** argv)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     // 设置整个model对象下Mesh的实例数组
     rock.SetInstanceArray(rockInstanceVBO, 3, 4, sizeof(mat4), (void*)0);
-    rock.SetInstanceArray(rockInstanceVBO, 4, 4, sizeof(mat4),
-                          (void*)(1 * sizeof(vec4)));
-    rock.SetInstanceArray(rockInstanceVBO, 5, 4, sizeof(mat4),
-                          (void*)(2 * sizeof(vec4)));
-    rock.SetInstanceArray(rockInstanceVBO, 6, 4, sizeof(mat4),
-                          (void*)(3 * sizeof(vec4)));
+    rock.SetInstanceArray(rockInstanceVBO, 4, 4, sizeof(mat4), (void*)(1 * sizeof(vec4)));
+    rock.SetInstanceArray(rockInstanceVBO, 5, 4, sizeof(mat4), (void*)(2 * sizeof(vec4)));
+    rock.SetInstanceArray(rockInstanceVBO, 6, 4, sizeof(mat4), (void*)(3 * sizeof(vec4)));
     // FIXME - 错题本：这里的偏移量是列向量vec4的大小，而不是mat4的大小。
 
     /**NOTE - 多重采样缓冲
@@ -147,35 +134,9 @@ int main(int argc, char** argv)
         0, 2, 1,  // 第一个三角形
         1, 2, 3   // 第二个三角形
     };
-    Shader screenShader("./shader/screenShader.vs.glsl",
-                        "./shader/screenShader.fs.glsl");
-    // VBO
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, screenVertices.size() * sizeof(GLfloat),
-                 screenVertices.data(), GL_STATIC_DRAW);
-    // VAO
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
-                          (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
-                          (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-    // EBO
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 screenVerticesIdx.size() * sizeof(GLuint),
-                 screenVerticesIdx.data(), GL_STATIC_DRAW);
-    // 解绑
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    Shader screenShader("./shader/screenShader.vs.glsl", "./shader/screenShader.fs.glsl");
+    GLuint screenVao, screenVbo, screenEbo;
+    createObjFromHardcode(screenVao, screenVbo, screenEbo, screenVertices, screenVerticesIdx);
 
     /**NOTE - OpenGL基本设置
      */
@@ -211,9 +172,8 @@ int main(int argc, char** argv)
 
         /**NOTE - 更新视图变换
          */
-        mat4 view = camera->GetViewMatrix();
-        mat4 projection =
-            perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
+        mat4 view       = camera->GetViewMatrix();
+        mat4 projection = perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
         // projection应该是透视+投影，转换进标准体积空间：[-1,+1]^3
 
         /**NOTE - 绘制100个立方体实例
@@ -230,8 +190,7 @@ int main(int argc, char** argv)
         planetShader.setParameter("view", view);
         planetShader.setParameter("projection", projection);
         planetShader.setParameter(
-            "model", translate(rotate(rotate(mat4(1.0f),
-                                             radians((float)glfwGetTime() * 10),
+            "model", translate(rotate(rotate(mat4(1.0f), radians((float)glfwGetTime() * 10),
                                              vec3(0.0f, 1.0f, 0.0f)),
                                       radians(90.0f), vec3(1.0f, 0.0f, 0.0f)),
                                vec3(0.0f, -1.0f, 0.0f)));
@@ -268,13 +227,12 @@ int main(int argc, char** argv)
         // 将多重采样缓冲还原到中介FBO上
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msFbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-        glBlitFramebuffer(0, 0, CAMERA_WIDTH, CAMERA_HEIGH, 0, 0, CAMERA_WIDTH,
-                          CAMERA_HEIGH, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, CAMERA_WIDTH, CAMERA_HEIGH, 0, 0, CAMERA_WIDTH, CAMERA_HEIGH,
+                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
         // 绘制ScreenTexture
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                GL_STENCIL_BUFFER_BIT);
-        glBindVertexArray(vao);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glBindVertexArray(screenVao);
         screenShader.use();
         glBindTexture(GL_TEXTURE_2D, texAttchment);
         screenShader.setParameter("screenTexture", 0);
@@ -332,8 +290,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 void processInput(GLFWwindow* window)
 {
     // 当Esc按下时，窗口关闭
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, 1);
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
 
     // 按下Shift时，飞行加速
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
@@ -366,7 +323,7 @@ int initGLFWWindow(GLFWwindow*& window)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    glfwWindowHint(GLFW_SAMPLES, 4);  // 多重采样缓冲
+    // glfwWindowHint(GLFW_SAMPLES, 4);  // 多重采样缓冲
 
     // 创建窗口
     window = glfwCreateWindow(CAMERA_WIDTH, CAMERA_HEIGH, "Window", NULL, NULL);
@@ -420,13 +377,13 @@ GLuint createImageObjrct(const char* imagePath)
     {
         if (nrChannels == 3)
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-                         GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE,
+                         data);
         }
         else  // nrChannels == 4
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-                         GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         data);
         }
         glGenerateMipmap(GL_TEXTURE_2D);
     }
@@ -435,7 +392,7 @@ GLuint createImageObjrct(const char* imagePath)
         std::cout << "Failed to load texture" << std::endl;
         return -1;
     }
-    stbi_image_free(data);  // 释放图像的内存，无论有没有data都释放
+    stbi_image_free(data);            // 释放图像的内存，无论有没有data都释放
     glBindTexture(GL_TEXTURE_2D, 0);  // 解绑
     return texture;
 }
@@ -457,29 +414,19 @@ GLuint createSkyboxTexture(const char* imageFolder)
         string cubeTexturePath = basePath + cubeTextureNames[i];
         int    width, height, nrChannels;
         stbi_set_flip_vertically_on_load(false);  // 加载图片时翻转y轴
-        GLubyte* data =
-            stbi_load(cubeTexturePath.c_str(), &width, &height, &nrChannels, 0);
+        GLubyte* data = stbi_load(cubeTexturePath.c_str(), &width, &height, &nrChannels, 0);
         if (data)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width,
-                         height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB,
+                         GL_UNSIGNED_BYTE, data);
             // 设置纹理属性
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER,
-                            GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER,
-                            GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S,
-                            GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T,
-                            GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R,
-                            GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         }
-        else
-        {
-            std::cout << "Failed to load texture: " << cubeTexturePath
-                      << std::endl;
-        }
+        else { std::cout << "Failed to load texture: " << cubeTexturePath << std::endl; }
         stbi_image_free(data);
     }
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);  // 解绑
@@ -491,9 +438,7 @@ GLuint createSkyboxTexture(const char* imageFolder)
 /// @param radius 生成的目标半径
 /// @param offset 位置的随机偏移量
 /// @return 返回一个姿态矩阵mat4
-mat4 makeRandomPosture(const float propotion,
-                       const float radius,
-                       const float offset)
+mat4 makeRandomPosture(const float propotion, const float radius, const float offset)
 {
     // TODO - 做陨石的旋转
     mat4 model(1.0f);
@@ -502,10 +447,10 @@ mat4 makeRandomPosture(const float propotion,
     float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
     float x            = cos(angle) * radius + displacement;
     displacement       = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-    float y = displacement * 0.4f;  //// 让行星带的高度比x和z的宽度要小
-    displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-    float z      = sin(angle) * radius + displacement;
-    model        = translate(mat4(1.0f), vec3(x, y, z));
+    float y            = displacement * 0.4f;  //// 让行星带的高度比x和z的宽度要小
+    displacement       = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+    float z            = sin(angle) * radius + displacement;
+    model              = translate(mat4(1.0f), vec3(x, y, z));
 
     // 2. 缩放：在 0.05 和 0.25f 之间缩放
     float scale = (rand() % 20) / 100.0f + 0.05;
@@ -520,10 +465,7 @@ mat4 makeRandomPosture(const float propotion,
 
 /// @brief 创建一个FBO（帧缓冲对象）
 /// @param hint 如果hint为"ms"，则使用多重采样
-void createFBO(GLuint&     fbo,
-               GLuint&     texAttachment,
-               GLuint&     rbo,
-               const char* hint)
+void createFBO(GLuint& fbo, GLuint& texAttachment, GLuint& rbo, const char* hint)
 {
     bool useMutiSampled = (strcmp(hint, "ms") == 0);
     // FIXME - 使用strcmp()的时候，不可以出空指针
@@ -537,25 +479,23 @@ void createFBO(GLuint&     fbo,
     if (useMutiSampled)
     {
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texAttachment);
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB,
-                                CAMERA_WIDTH, CAMERA_HEIGH, GL_TRUE);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, CAMERA_WIDTH, CAMERA_HEIGH,
+                                GL_TRUE);
         // 如果最后一个参数为GL_TRUE，图像将会对每个纹素使用相同的样本位置以及相同数量的子采样点个数。
-        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER,
-                        GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER,
-                        GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D_MULTISAMPLE, texAttachment, 0);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE,
+                               texAttachment, 0);
     }
     else
     {
         glBindTexture(GL_TEXTURE_2D, texAttachment);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, CAMERA_WIDTH, CAMERA_HEIGH, 0,
-                     GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB,
+                     GL_UNSIGNED_BYTE, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D, texAttachment, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texAttachment,
+                               0);
     }
 
     // 创建一个多重采样渲染缓冲对象
@@ -563,17 +503,14 @@ void createFBO(GLuint&     fbo,
     glBindRenderbuffer(GL_RENDERBUFFER, rbo);
     if (useMutiSampled)
     {
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4,
-                                         GL_DEPTH24_STENCIL8, CAMERA_WIDTH,
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, CAMERA_WIDTH,
                                          CAMERA_HEIGH);
     }
     else
     {
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-                              CAMERA_WIDTH, CAMERA_HEIGH);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, CAMERA_WIDTH, CAMERA_HEIGH);
     }
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-                              GL_RENDERBUFFER, rbo);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
     // FIXME - GL_DEPTH_STENCIL_ATTACHMENT写错了，导致深度缓冲没有初始化成功。
 
     //  检查帧缓冲状态
@@ -581,10 +518,7 @@ void createFBO(GLuint&     fbo,
     {
         cout << "Framebuffer is  complete!" << endl;
     }
-    else
-    {
-        cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
-    }
+    else { cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl; }
 
     // 解绑
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -595,18 +529,40 @@ void createFBO(GLuint&     fbo,
 }
 
 /// @brief 从一组顶点的硬编码创建几何体
-void createObjFromHardcode(vector<GLfloat> vertices,
-                           vector<GLuint>  vertexIdx,
-                           GLuint&         vao,
+void createObjFromHardcode(GLuint&         vao,
                            GLuint&         vbo,
-                           GLuint&         ebo)
+                           GLuint&         ebo,
+                           vector<GLfloat> vertices,
+                           vector<GLuint>  vertexIdx)
 {
-    if (vertexIdx.size() == 0 && ebo == 0)
-    {
-        cout << "No EBO used to create a simple object!" << endl;
-    }
+    bool useEBO = (vertexIdx.size() > 0);
 
-    // TODO -
+    // TODO - 从一组顶点的硬编码创建几何体
+    // VBO
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(),
+                 GL_STATIC_DRAW);
+    // VAO
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+    // EBO
+    if (useEBO)
+    {
+        glGenBuffers(1, &ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexIdx.size() * sizeof(GLuint), vertexIdx.data(),
+                     GL_STATIC_DRAW);
+    }
+    // 解绑
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (useEBO) { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 }
 
 /**REVIEW - 实例化

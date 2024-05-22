@@ -61,4 +61,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/framebuffer.dir/DependInfo.cmake"
   "CMakeFiles/outliner.dir/DependInfo.cmake"
   "CMakeFiles/stencilTest.dir/DependInfo.cmake"
+  "CMakeFiles/advancedLighting.dir/DependInfo.cmake"
   )
