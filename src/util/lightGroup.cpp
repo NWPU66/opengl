@@ -15,6 +15,26 @@ Light::Light(GLint     lightType,
 {
 }
 
+glm::vec3 Light::getPostion() const
+{
+    return position;
+}
+
+glm::vec3 Light::getRotation() const
+{
+    return rotation;
+}
+
+glm::vec3 Light::getColor() const
+{
+    return color;
+}
+
+GLint Light::getLightType() const
+{
+    return lightType;
+}
+
 GLuint Light::calculateMemoryOccupation()
 {
     /**NOTE - memory occupation
@@ -24,25 +44,43 @@ GLuint Light::calculateMemoryOccupation()
      * glm::vec3 position, rotation;（16B，16B）
      * GLfloat innerCutOff, outerCutOf,;（4B，4B）
      */
-    return 64;
+    /**FIXME - 错题本
+     * std140的布局理解错了！
+     * 详细的计算分析请看 opengl/src/advancedLighting/memoryLayout.md
+     */
+    return 80;
 }
 
 void Light::updateLightUniformBuffer(GLubyte* ptr)
 {
     memcpy(ptr + 0, &(this->lightType), sizeof(GLint));
-    memcpy(ptr + 4, &(this->color), sizeof(glm::vec3));
-    memcpy(ptr + 20, &(this->intensity), sizeof(GLfloat));
-    memcpy(ptr + 24, &(this->position), sizeof(glm::vec3));
-    memcpy(ptr + 40, &(this->rotation), sizeof(glm::vec3));
-    memcpy(ptr + 56, &(this->innerCutOff), sizeof(GLfloat));
-    memcpy(ptr + 60, &(this->outerCutOff), sizeof(GLfloat));
-    // 总大小 64 Byte
+    memcpy(ptr + 16, &(this->color), sizeof(glm::vec3));
+    memcpy(ptr + 28, &(this->intensity), sizeof(GLfloat));
+    memcpy(ptr + 32, &(this->position), sizeof(glm::vec3));
+    memcpy(ptr + 48, &(this->rotation), sizeof(glm::vec3));
+    memcpy(ptr + 60, &(this->innerCutOff), sizeof(GLfloat));
+    memcpy(ptr + 64, &(this->outerCutOff), sizeof(GLfloat));
+    /**FIXME - 错题本
+     * std140的布局理解错了！
+     * 详细的计算分析请看 opengl/src/advancedLighting/memoryLayout.md
+     */
 }
 
 // -----------------------------------------------------------------------------------------------
 
 LightGroup::LightGroup() {}
 LightGroup::~LightGroup() {}
+
+const std::vector<Light>& LightGroup::getLights() const
+{
+    return lights;
+    /**FIXME - 错题本
+     * 关于const函数：为了确保传出类的内部要用值。绝对不会被修改
+     * 返回的引用值必须为常值引用（const refer）
+     *
+     * 另外，常值对象只能调用常函数
+     */
+}
 
 void LightGroup::createLightUniformBuffer()
 {
@@ -52,9 +90,9 @@ void LightGroup::createLightUniformBuffer()
     // 计算灯光组占据的内存空间（以Byte为单位）
     int memoryOccupation = this->calculateMemoryOccupation();
 
-    glBufferData(GL_UNIFORM_BUFFER, memoryOccupation + 4, nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, memoryOccupation + 16, nullptr, GL_STATIC_DRAW);
     // NOTE - 这里出GL_STATIC_DRAW，暂且认为灯光的数据初始化后不再修改。
-    // NOTE - +4意味着缓冲的前4B是int型的灯光数量
+    // FIXME - +16意味着缓冲的前4B是int型的灯光数量，但是要对齐到16B
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);  // 解绑
 
@@ -79,6 +117,7 @@ void LightGroup::updateLightUniformBuffer()
     // 更新numLights
     int numLights = lights.size();
     glBufferSubData(GL_UNIFORM_BUFFER, 0, 4, &numLights);
+    // FIXME - 前16B = 4B整数 + 12B空填充
 
     if (lights.size() == 0)
     {
@@ -94,7 +133,7 @@ void LightGroup::updateLightUniformBuffer()
     // 逐元素更新buffer
     for (int i = 0; i < lights.size(); i++)
     {
-        GLubyte* lightPtr = ptr + i * stride + 4;  // NOTE - +4意味着缓冲的前4B是int型的灯光数量
+        GLubyte* lightPtr = ptr + i * stride + 16;  // FIXME - +16意味着缓冲的前16B是int型的灯光数量
         lights[i].updateLightUniformBuffer(lightPtr);
     }
     glUnmapBuffer(GL_UNIFORM_BUFFER);
@@ -132,4 +171,23 @@ void LightGroup::removeLight(int idx)
 GLuint LightGroup::calculateMemoryOccupation()
 {
     return lights.size() * Light::calculateMemoryOccupation();
+}
+
+void LightGroup::printBufferData()
+{
+    glBindBuffer(GL_UNIFORM_BUFFER, lightsUniformBufferObject);
+    // 获取指向buffer的指针
+    GLubyte* ptr        = (GLubyte*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    int      bufferSize = calculateMemoryOccupation() + 16;  // FIXME - 前16B放一个int变量
+
+    // 将ptr起始bufferSize大小的数据以16进制的形式打印出来
+    for (int i = 0; i < bufferSize; i++)
+    {
+        printf("%02X ", *(ptr + i));
+        if ((i + 1) % 4 == 0) { printf(" "); }
+        if ((i + 1) % 32 == 0) { printf("\n"); }
+    }
+
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);  // 解绑}
 }

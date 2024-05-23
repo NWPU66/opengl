@@ -133,7 +133,7 @@ vec3 spotLighting(Light light,vec3 normal,vec3 fragPos,vec3 viewDir){
     
     //ambient
     vec3 ambient=light.ambient*material.ambient*texture(material.diffuseMap,uv).xyz;
-    
+
     //combine
     return(diffuse+specular+ambient);
 }

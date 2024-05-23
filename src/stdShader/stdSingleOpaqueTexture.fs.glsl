@@ -19,7 +19,7 @@ struct Light{
 
 layout(std140,binding=0)uniform lightGroup{
     int numLights;
-    Light light[MAX_LIGHTS_NUM];
+    Light lights[MAX_LIGHTS_NUM];
 };
 
 //output

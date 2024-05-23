@@ -15,7 +15,7 @@ out VS_OUT{
 void main(){
     vec4 globalPos4=model*vec4(aPos,1);
     vs_out.globalPos=globalPos4.xyz;
-    vs_out.globalNormal=mat3(transpose(inverse(model)))*aNormal;
+    vs_out.globalNormal=normalize(mat3(transpose(inverse(model)))*aNormal);
     vs_out.texCoord=aTexCoord;
     
     gl_Position=projection*view*globalPos4;

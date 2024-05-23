@@ -43,16 +43,19 @@ int main(int argc, char** argv)
 
     /**NOTE - 模型和着色器、纹理
      */
-    Model  box("./box/box.obj"), plane("./plane/plane.obj");
+    Model  box("./box/box.obj"), plane("./plane/plane.obj"), sphere("./sphere/sphere.obj");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl"),
-        woodShader("./shader/stdVerShader.vs.glsl", "./shader/stdSingleOpaqueTexture.fs.glsl");
+        woodShader("./shader/stdVerShader.vs.glsl", "./shader/stdPhongLighting.fs.glsl"),
+        lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
     GLuint cubeTexture = createSkyboxTexture("./texture/");  // 创建立方体贴图
     GLuint woodTexture = createImageObjrct("./texture/wood.jpg");
 
     /**NOTE - 灯光组
      */
     LightGroup lightGroup;
-    lightGroup.addLight(Light(1, vec3(1), 1, vec3(0, 1, 0)));
+    lightGroup.addLight(Light(0, vec3(1, 1, 1), 1, vec3(1)));
+    lightGroup.addLight(Light(1, vec3(1, 1, 1), 1, vec3(0), vec3(1, -1, 1)));
+    lightGroup.addLight(Light(2, vec3(1, 1, 1), 1, vec3(0, 1, 0), vec3(0, -1, 0)));
     lightGroup.createLightUniformBuffer();
     lightGroup.bindingUniformBuffer(0);
 
@@ -97,11 +100,31 @@ int main(int argc, char** argv)
          */
         woodShader.use();
         glBindTexture(GL_TEXTURE_2D, woodTexture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
         woodShader.setParameter("model", mat4(1));
         woodShader.setParameter("view", view);
         woodShader.setParameter("projection", projection);
+        woodShader.setParameter("cameraPos", camera->Position);
+        woodShader.setParameter("skybox", 0);
         plane.Draw(&woodShader);
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        /**NOTE - 渲染灯光
+         */
+        for (const auto& light : lightGroup.getLights())
+        {
+            if (light.getLightType() != 1)  // 日光不渲染实体
+            {
+                lightObjShader.use();
+                lightObjShader.setParameter(
+                    "model", scale(translate(mat4(1), light.getPostion()), vec3(0.1)));
+                lightObjShader.setParameter("view", view);
+                lightObjShader.setParameter("projection", projection);
+                lightObjShader.setParameter("lightColor", light.getColor());
+                sphere.Draw(&lightObjShader);
+                // FIXME - 常量对象只能调用它的常函数
+            }
+        }
 
         /**NOTE - 最后渲染天空盒
          */

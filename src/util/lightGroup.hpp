@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 
-//定义灯光组的最大灯光数量
+// 定义灯光组的最大灯光数量
 #define MAX_LIGHTS_NUM 16
 
 /// @brief 灯光
@@ -32,6 +32,19 @@ public:
           GLfloat   innerCutOff = cos(glm::radians(12.5f)),
           GLfloat   outerCutOff = cos(glm::radians(17.5f)));
     ~Light();
+
+    /// @brief 获取灯光的位置
+    glm::vec3 getPostion() const;
+
+    /// @brief 获取灯光的旋转（灯的方向）
+    glm::vec3 getRotation() const;
+
+    /// @brief 获取灯光的颜色
+    glm::vec3 getColor() const;
+
+    /// @brief 
+    /// @return 
+    GLint getLightType() const;
 
     /// @brief 计算在OpenGL 140布局下，单个灯光在缓冲中占用的空间
     /// @return 占用的缓冲空间，以Byte为单位
@@ -58,6 +71,9 @@ private:
 public:
     LightGroup();
     ~LightGroup();
+
+    /// @brief 灯光组的get方法
+    const std::vector<Light>& getLights() const;
 
     /// @brief 向灯光组添加新的灯光
     /// @param light 灯光
@@ -90,4 +106,7 @@ public:
     /// @brief 计算在OpenGL 140布局下，整个灯光组在缓冲中占用的空间
     /// @return 占用的缓冲空间，以Byte为单位
     GLuint calculateMemoryOccupation();
+
+    /// @brief
+    void printBufferData();
 };

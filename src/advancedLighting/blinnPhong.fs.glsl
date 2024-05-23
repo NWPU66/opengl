@@ -21,11 +21,12 @@ layout(std140,binding=0)uniform lightGroup{
     Light lights[MAX_LIGHTS_NUM];
 };
 
-uniform vec3 lightColor;
+uniform vec3 cameraPos;
+uniform sampler2D texture0;
 
 //output
 out vec4 fragColor;
 
 void main(){
-    fragColor=vec4(lightColor,1);
+    fragColor=vec4(cameraPos,1);
 }
