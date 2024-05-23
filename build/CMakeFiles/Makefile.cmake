@@ -51,9 +51,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/GLAD.dir/DependInfo.cmake"
   "CMakeFiles/utilTool.dir/DependInfo.cmake"
-  "CMakeFiles/chapter_0.dir/DependInfo.cmake"
-  "CMakeFiles/chapter_1.dir/DependInfo.cmake"
-  "CMakeFiles/chapter_2.dir/DependInfo.cmake"
   "CMakeFiles/advancedGLSL.dir/DependInfo.cmake"
   "CMakeFiles/antiAliasing.dir/DependInfo.cmake"
   "CMakeFiles/blending.dir/DependInfo.cmake"

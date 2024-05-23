@@ -28,7 +28,7 @@ const Material material = Material();
 
 /**NOTE - 几何体元数据
  */
-// lightGroup中的第一盏灯是绑定在摄像机上的手电筒
+lightGroup中的第一盏灯是绑定在摄像机上的手电筒
 vector<Light> lightGroup = {Light(2, vec3(0.0f), 0.0f, vec3(0.0f, 0.0f, 1.0f)),
                             Light(0, vec3(0.0f, 0.0f, 0.0f), 1.0f, vec3(-1.0f)),
                             Light(1, vec3(2.3f, -3.3f, -4.0f), 0.0f),

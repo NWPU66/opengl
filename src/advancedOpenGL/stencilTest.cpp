@@ -23,15 +23,15 @@ float lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
 
 /**NOTE - 高级渲染设置
  */
-const Material material = Material();
+// const Material material = Material();
 
 /**NOTE - 几何体元数据
  */
 // lightGroup中的第一盏灯是绑定在摄像机上的手电筒
-vector<Light> lightGroup = {Light(2, vec3(0.0f), 0.0f, vec3(0.0f, 0.0f, 1.0f)),
-                            Light(0, vec3(0.0f, 0.0f, 0.0f), 1.0f, vec3(-1.0f)),
-                            Light(1, vec3(2.3f, -3.3f, -4.0f), 0.0f),
-                            Light(1, vec3(0.0f, 0.0f, -3.0f), 0.0f)};
+// vector<Light> lightGroup = {Light(2, vec3(0.0f), 0.0f, vec3(0.0f, 0.0f, 1.0f)),
+//                             Light(0, vec3(0.0f, 0.0f, 0.0f), 1.0f, vec3(-1.0f)),
+//                             Light(1, vec3(2.3f, -3.3f, -4.0f), 0.0f),
+//                             Light(1, vec3(0.0f, 0.0f, -3.0f), 0.0f)};
 
 void framebuffer_size_callback(GLFWwindow* window, int w, int h);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -55,17 +55,17 @@ int main(int argc, char** argv)
 
     /**NOTE - 向Shader写入静态光的数据
      */
-    int idx = 0;
-    objShader->use();
-    while (idx < MAX_NUM_LIGHTS_SPUUORT)
-    {
-        string shaderVarName = "light[" + to_string(idx) + "]";
-        if (idx < lightGroup.size())
-            objShader->setParameter(shaderVarName, lightGroup[idx]);
-        else  // 向shader填充无效的灯光
-            objShader->setParameter(shaderVarName, Light(-1, vec3(0.0f), 0.0f));
-        idx++;
-    }
+    // int idx = 0;
+    // objShader->use();
+    // while (idx < MAX_NUM_LIGHTS_SPUUORT)
+    // {
+    //     string shaderVarName = "light[" + to_string(idx) + "]";
+    //     if (idx < lightGroup.size())
+    //         objShader->setParameter(shaderVarName, lightGroup[idx]);
+    //     else  // 向shader填充无效的灯光
+    //         objShader->setParameter(shaderVarName, Light(-1, vec3(0.0f), 0.0f));
+    //     idx++;
+    // }
 
     /**NOTE - OpenGL基本设置
      */
@@ -113,10 +113,10 @@ int main(int argc, char** argv)
 
         /**NOTE - 将聚光灯绑定在摄像机上
          */
-        objShader->use();
-        lightGroup[0].position = camera->Position;
-        lightGroup[0].lightDir = camera->Front;
-        objShader->setParameter("light[0]", lightGroup[0]);
+        // objShader->use();
+        // lightGroup[0].position = camera->Position;
+        // lightGroup[0].lightDir = camera->Front;
+        // objShader->setParameter("light[0]", lightGroup[0]);
 
         /**NOTE - 绘制模型
          */

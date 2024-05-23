@@ -10,7 +10,7 @@
 #include "class_mesh.hpp"
 #include "class_model.hpp"
 #include "class_shader.hpp"
-#include "structure.hpp"
+// #include "structure.hpp"
 // #include "lightGroup.hpp"
 
 using namespace std;

@@ -144,13 +144,13 @@ void Shader::setParameter(const std::string& name, mat4 value) const
  * @param name “name”参数是一个字符串，表示着色器程序中设置的参数名称。
  * @param value 环境光、漫反射、镜面反射、光泽度
  */
-void Shader::setParameter(const std::string& name, Material value) const
-{
-    Shader::setParameter(name + ".ambient", value.ambient);
-    Shader::setParameter(name + ".diffuse", value.diffuse);
-    Shader::setParameter(name + ".specular", value.specular);
-    Shader::setParameter(name + ".shininess", value.shininess);
-}
+// void Shader::setParameter(const std::string& name, Material value) const
+// {
+//     Shader::setParameter(name + ".ambient", value.ambient);
+//     Shader::setParameter(name + ".diffuse", value.diffuse);
+//     Shader::setParameter(name + ".specular", value.specular);
+//     Shader::setParameter(name + ".shininess", value.shininess);
+// }
 
 /**
  * 该函数为着色器程序中的 Light 对象设置参数。
@@ -158,23 +158,23 @@ void Shader::setParameter(const std::string& name, Material value) const
  * @param name “name”参数是一个字符串，表示为着色器设置的参数名称。
  * @param value 位置、强度、漫反射、环境光、镜面反射
  */
-void Shader::setParameter(const std::string& name, Light value) const
-{
-    Shader::setParameter(name + ".type", value.type);  // 灯光类型
+// void Shader::setParameter(const std::string& name, Light value) const
+// {
+//     Shader::setParameter(name + ".type", value.type);  // 灯光类型
 
-    // 基本属性
-    Shader::setParameter(name + ".position", value.position);
-    Shader::setParameter(name + ".intensity", value.intensity);
-    Shader::setParameter(name + ".diffuse", value.diffuse);
-    Shader::setParameter(name + ".ambient", value.ambient);
-    Shader::setParameter(name + ".specular", value.specular);
-    Shader::setParameter(name + ".dropOffFac", value.dropOffFac);
+//     // 基本属性
+//     Shader::setParameter(name + ".position", value.position);
+//     Shader::setParameter(name + ".intensity", value.intensity);
+//     Shader::setParameter(name + ".diffuse", value.diffuse);
+//     Shader::setParameter(name + ".ambient", value.ambient);
+//     Shader::setParameter(name + ".specular", value.specular);
+//     Shader::setParameter(name + ".dropOffFac", value.dropOffFac);
 
-    // 方向光和聚光灯设置
-    Shader::setParameter(name + ".lightDir", value.lightDir);
-    Shader::setParameter(name + ".innerCutOff", value.innerCutOff);
-    Shader::setParameter(name + ".outerCutOff", value.outerCutOff);
-}
+//     // 方向光和聚光灯设置
+//     Shader::setParameter(name + ".lightDir", value.lightDir);
+//     Shader::setParameter(name + ".innerCutOff", value.innerCutOff);
+//     Shader::setParameter(name + ".outerCutOff", value.outerCutOff);
+// }
 
 /**
  * 函数“checkShaderCompiling”检查着色器是否已成功编译，如果编译失败则打印错误消息。

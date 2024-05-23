@@ -3,7 +3,7 @@
 #define SHADER_H
 #include <glad/glad.h>
 
-#include "structure.hpp"
+// #include "structure.hpp"
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -29,8 +29,8 @@ public:
     void setParameter(const std::string& name, vec3 value) const;
     void setParameter(const std::string& name, vec2 value) const;
     void setParameter(const std::string& name, mat4 value) const;
-    void setParameter(const std::string& name, Material value) const;
-    void setParameter(const std::string& name, Light value) const;
+    // void setParameter(const std::string& name, Material value) const;
+    // void setParameter(const std::string& name, Light value) const;
     // const表示该函数为常量成员函数，即不能修改成员变量的值，是只读函数。
     // 并且只读函数中只能调用只读函数
 

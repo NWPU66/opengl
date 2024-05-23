@@ -52,10 +52,13 @@ void LightGroup::createLightUniformBuffer()
     // 计算灯光组占据的内存空间（以Byte为单位）
     int memoryOccupation = this->calculateMemoryOccupation();
 
-    glBufferData(GL_UNIFORM_BUFFER, memoryOccupation, nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, memoryOccupation + 4, nullptr, GL_STATIC_DRAW);
     // NOTE - 这里出GL_STATIC_DRAW，暂且认为灯光的数据初始化后不再修改。
+    // NOTE - +4意味着缓冲的前4B是int型的灯光数量
 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);  // 解绑
+
+    updateLightUniformBuffer();  // 更新灯光组数据
 }
 
 void LightGroup::bindingUniformBuffer(GLuint bindingPoint)
@@ -70,6 +73,13 @@ void LightGroup::bindingUniformBuffer(GLuint bindingPoint, GLuint offset, GLuint
 
 void LightGroup::updateLightUniformBuffer()
 {
+    glBindBuffer(GL_UNIFORM_BUFFER, lightsUniformBufferObject);
+    int stride = Light::calculateMemoryOccupation();
+
+    // 更新numLights
+    int numLights = lights.size();
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, 4, &numLights);
+
     if (lights.size() == 0)
     {
         std::cout
@@ -78,15 +88,13 @@ void LightGroup::updateLightUniformBuffer()
         return;  // 没有灯光，不需要更新
     }
 
-    glBindBuffer(GL_UNIFORM_BUFFER, lightsUniformBufferObject);
-    int stride = Light::calculateMemoryOccupation();
-
     // 获取指向buffer的指针
     GLubyte* ptr = (GLubyte*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+
     // 逐元素更新buffer
     for (int i = 0; i < lights.size(); i++)
     {
-        GLubyte* lightPtr = ptr + i * stride;
+        GLubyte* lightPtr = ptr + i * stride + 4;  // NOTE - +4意味着缓冲的前4B是int型的灯光数量
         lights[i].updateLightUniformBuffer(lightPtr);
     }
     glUnmapBuffer(GL_UNIFORM_BUFFER);

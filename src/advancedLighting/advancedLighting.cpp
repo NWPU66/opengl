@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 // GLAD first
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include "util/class_camera.hpp"
 #include "util/class_model.hpp"
 #include "util/class_shader.hpp"
@@ -45,14 +44,17 @@ int main(int argc, char** argv)
     /**NOTE - 模型和着色器、纹理
      */
     Model  box("./box/box.obj"), plane("./plane/plane.obj");
-    Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl");
+    Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl"),
+        woodShader("./shader/stdVerShader.vs.glsl", "./shader/stdSingleOpaqueTexture.fs.glsl");
     GLuint cubeTexture = createSkyboxTexture("./texture/");  // 创建立方体贴图
     GLuint woodTexture = createImageObjrct("./texture/wood.jpg");
 
     /**NOTE - 灯光组
      */
     LightGroup lightGroup;
-    lightGroup.addLight(Light(1));
+    lightGroup.addLight(Light(1, vec3(1), 1, vec3(0, 1, 0)));
+    lightGroup.createLightUniformBuffer();
+    lightGroup.bindingUniformBuffer(0);
 
     /**NOTE - OpenGL基本设置
      */
@@ -90,6 +92,16 @@ int main(int argc, char** argv)
         mat4 view       = camera->GetViewMatrix();
         mat4 projection = perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
         // projection应该是透视+投影，转换进标准体积空间：[-1,+1]^3
+
+        /**NOTE - 渲染
+         */
+        woodShader.use();
+        glBindTexture(GL_TEXTURE_2D, woodTexture);
+        woodShader.setParameter("model", mat4(1));
+        woodShader.setParameter("view", view);
+        woodShader.setParameter("projection", projection);
+        plane.Draw(&woodShader);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         /**NOTE - 最后渲染天空盒
          */

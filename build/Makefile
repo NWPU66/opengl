@@ -142,45 +142,6 @@ utilTool/fast:
 .PHONY : utilTool/fast
 
 #=============================================================================
-# Target rules for targets named chapter_0
-
-# Build rule for target.
-chapter_0: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 chapter_0
-.PHONY : chapter_0
-
-# fast build rule for target.
-chapter_0/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/build
-.PHONY : chapter_0/fast
-
-#=============================================================================
-# Target rules for targets named chapter_1
-
-# Build rule for target.
-chapter_1: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 chapter_1
-.PHONY : chapter_1
-
-# fast build rule for target.
-chapter_1/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/build
-.PHONY : chapter_1/fast
-
-#=============================================================================
-# Target rules for targets named chapter_2
-
-# Build rule for target.
-chapter_2: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 chapter_2
-.PHONY : chapter_2
-
-# fast build rule for target.
-chapter_2/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/build
-.PHONY : chapter_2/fast
-
-#=============================================================================
 # Target rules for targets named advancedGLSL
 
 # Build rule for target.
@@ -500,78 +461,6 @@ src/advancedOpenGL/stencilTest.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\stencilTest.dir\build.make CMakeFiles/stencilTest.dir/src/advancedOpenGL/stencilTest.cpp.s
 .PHONY : src/advancedOpenGL/stencilTest.cpp.s
 
-src/beginners/chapter_0.obj: src/beginners/chapter_0.cpp.obj
-.PHONY : src/beginners/chapter_0.obj
-
-# target to build an object file
-src/beginners/chapter_0.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.obj
-.PHONY : src/beginners/chapter_0.cpp.obj
-
-src/beginners/chapter_0.i: src/beginners/chapter_0.cpp.i
-.PHONY : src/beginners/chapter_0.i
-
-# target to preprocess a source file
-src/beginners/chapter_0.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.i
-.PHONY : src/beginners/chapter_0.cpp.i
-
-src/beginners/chapter_0.s: src/beginners/chapter_0.cpp.s
-.PHONY : src/beginners/chapter_0.s
-
-# target to generate assembly for a file
-src/beginners/chapter_0.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_0.dir\build.make CMakeFiles/chapter_0.dir/src/beginners/chapter_0.cpp.s
-.PHONY : src/beginners/chapter_0.cpp.s
-
-src/lighting/chapter_1.obj: src/lighting/chapter_1.cpp.obj
-.PHONY : src/lighting/chapter_1.obj
-
-# target to build an object file
-src/lighting/chapter_1.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/src/lighting/chapter_1.cpp.obj
-.PHONY : src/lighting/chapter_1.cpp.obj
-
-src/lighting/chapter_1.i: src/lighting/chapter_1.cpp.i
-.PHONY : src/lighting/chapter_1.i
-
-# target to preprocess a source file
-src/lighting/chapter_1.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/src/lighting/chapter_1.cpp.i
-.PHONY : src/lighting/chapter_1.cpp.i
-
-src/lighting/chapter_1.s: src/lighting/chapter_1.cpp.s
-.PHONY : src/lighting/chapter_1.s
-
-# target to generate assembly for a file
-src/lighting/chapter_1.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_1.dir\build.make CMakeFiles/chapter_1.dir/src/lighting/chapter_1.cpp.s
-.PHONY : src/lighting/chapter_1.cpp.s
-
-src/model_loading/mesh.obj: src/model_loading/mesh.cpp.obj
-.PHONY : src/model_loading/mesh.obj
-
-# target to build an object file
-src/model_loading/mesh.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/src/model_loading/mesh.cpp.obj
-.PHONY : src/model_loading/mesh.cpp.obj
-
-src/model_loading/mesh.i: src/model_loading/mesh.cpp.i
-.PHONY : src/model_loading/mesh.i
-
-# target to preprocess a source file
-src/model_loading/mesh.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/src/model_loading/mesh.cpp.i
-.PHONY : src/model_loading/mesh.cpp.i
-
-src/model_loading/mesh.s: src/model_loading/mesh.cpp.s
-.PHONY : src/model_loading/mesh.s
-
-# target to generate assembly for a file
-src/model_loading/mesh.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\chapter_2.dir\build.make CMakeFiles/chapter_2.dir/src/model_loading/mesh.cpp.s
-.PHONY : src/model_loading/mesh.cpp.s
-
 src/util/GlfwWindow.obj: src/util/GlfwWindow.cpp.obj
 .PHONY : src/util/GlfwWindow.obj
 
@@ -729,9 +618,6 @@ help:
 	@echo ... advancedLighting
 	@echo ... antiAliasing
 	@echo ... blending
-	@echo ... chapter_0
-	@echo ... chapter_1
-	@echo ... chapter_2
 	@echo ... depthTest
 	@echo ... framebuffer
 	@echo ... outliner
@@ -764,15 +650,6 @@ help:
 	@echo ... src/advancedOpenGL/stencilTest.obj
 	@echo ... src/advancedOpenGL/stencilTest.i
 	@echo ... src/advancedOpenGL/stencilTest.s
-	@echo ... src/beginners/chapter_0.obj
-	@echo ... src/beginners/chapter_0.i
-	@echo ... src/beginners/chapter_0.s
-	@echo ... src/lighting/chapter_1.obj
-	@echo ... src/lighting/chapter_1.i
-	@echo ... src/lighting/chapter_1.s
-	@echo ... src/model_loading/mesh.obj
-	@echo ... src/model_loading/mesh.i
-	@echo ... src/model_loading/mesh.s
 	@echo ... src/util/GlfwWindow.obj
 	@echo ... src/util/GlfwWindow.i
 	@echo ... src/util/GlfwWindow.s
