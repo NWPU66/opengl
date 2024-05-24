@@ -58,7 +58,8 @@ vec3 Lighting(int i){
     if(lights[i].lightType!=1){
         //日光，不计算距离
         float lightDist=distance(dispToLight,vec3(0));
-        float lightDistDropoff=1/dot(vec3(1,lightDist,pow(lightDist,2)),vec3(1,.09,.032));
+        // float lightDistDropoff=1/dot(vec3(1,lightDist,pow(lightDist,2)),vec3(1,.09,.032));
+        float lightDistDropoff=1/pow(lightDist,2);
     }
     // 聚光灯裁切
     float spotLightCutOff=1;

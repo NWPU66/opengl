@@ -45,16 +45,17 @@ int main(int argc, char** argv)
      */
     Model  box("./box/box.obj"), plane("./plane/plane.obj"), sphere("./sphere/sphere.obj");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl"),
-        woodShader("./shader/stdVerShader.vs.glsl", "./shader/stdPhongLighting.fs.glsl"),
+        phongShader("./shader/stdVerShader.vs.glsl", "./shader/stdPhongLighting.fs.glsl"),
         lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
-    GLuint cubeTexture = createSkyboxTexture("./texture/");  // 创建立方体贴图
-    GLuint woodTexture = createImageObjrct("./texture/wood.jpg");
+    GLuint cubeTexture      = createSkyboxTexture("./texture/"),  // 创建立方体贴图
+        woodTexture         = createImageObjrct("./texture/wood.jpg"),
+           containerTexture = createImageObjrct("./texture/container2.png");
 
     /**NOTE - 灯光组
      */
     LightGroup lightGroup;
-    lightGroup.addLight(Light(0, vec3(1, 1, 1), 1, vec3(1)));
-    lightGroup.addLight(Light(1, vec3(1, 1, 1), 1, vec3(0), vec3(1, -1, 1)));
+    lightGroup.addLight(Light(0, vec3(1, 1, 1), 2, vec3(1)));
+    lightGroup.addLight(Light(1, vec3(1, 1, 1), 1.2, vec3(0), vec3(1, -1, 1)));
     lightGroup.addLight(Light(2, vec3(1, 1, 1), 1, vec3(0, 1, 0), vec3(0, -1, 0)));
     lightGroup.createLightUniformBuffer();
     lightGroup.bindingUniformBuffer(0);
@@ -75,6 +76,8 @@ int main(int argc, char** argv)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // 设置清空颜色
 
     glEnable(GL_MULTISAMPLE);  // 启用多重采样
+
+    glEnable(GL_FRAMEBUFFER_SRGB);  // 自动Gamme矫正
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -98,15 +101,27 @@ int main(int argc, char** argv)
 
         /**NOTE - 渲染
          */
-        woodShader.use();
+        // 木地板
+        phongShader.use();
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
-        woodShader.setParameter("model", mat4(1));
-        woodShader.setParameter("view", view);
-        woodShader.setParameter("projection", projection);
-        woodShader.setParameter("cameraPos", camera->Position);
-        woodShader.setParameter("skybox", 0);
-        plane.Draw(&woodShader);
+        phongShader.setParameter("model", scale(mat4(1), vec3(5)));
+        phongShader.setParameter("view", view);
+        phongShader.setParameter("projection", projection);
+        phongShader.setParameter("cameraPos", camera->Position);
+        phongShader.setParameter("skybox", 0);
+        plane.Draw(&phongShader);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        // 木板箱子
+        phongShader.use();
+        glBindTexture(GL_TEXTURE_2D, containerTexture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        phongShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
+        phongShader.setParameter("view", view);
+        phongShader.setParameter("projection", projection);
+        phongShader.setParameter("cameraPos", camera->Position);
+        phongShader.setParameter("skybox", 0);
+        box.Draw(&phongShader);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         /**NOTE - 渲染灯光
@@ -278,13 +293,15 @@ GLuint createImageObjrct(const char* imagePath)
     {
         if (nrChannels == 3)
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE,
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE,
                          data);
+            //  设置为GL_SRGB时，OpenGL回自动对图片进行重校
+            // FIXME - 注意，对于在线性空间下创建的纹理，如法线贴图，不能设置SRGB重校。
         }
         else  // nrChannels == 4
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                         data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGBA,
+                         GL_UNSIGNED_BYTE, data);
         }
         glGenerateMipmap(GL_TEXTURE_2D);
     }
@@ -318,7 +335,7 @@ GLuint createSkyboxTexture(const char* imageFolder)
         GLubyte* data = stbi_load(cubeTexturePath.c_str(), &width, &height, &nrChannels, 0);
         if (data)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB,
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_SRGB, width, height, 0, GL_RGB,
                          GL_UNSIGNED_BYTE, data);
             // 设置纹理属性
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
