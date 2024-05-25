@@ -1,3 +1,0 @@
-D:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\chapter_0.dir/objects.a
-E:\mingw64\bin\ar.exe qc CMakeFiles\chapter_0.dir/objects.a @CMakeFiles\chapter_0.dir\objects1.rsp
-E:\mingw64\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\chapter_0.dir/objects.a -Wl,--no-whole-archive -o chapter_0.exe -Wl,--out-implib,libchapter_0.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\chapter_0.dir\linkLibs.rsp
