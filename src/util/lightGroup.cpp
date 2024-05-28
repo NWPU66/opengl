@@ -71,6 +71,11 @@ void Light::updateLightUniformBuffer(GLubyte* ptr)
 LightGroup::LightGroup() {}
 LightGroup::~LightGroup() {}
 
+const Light& LightGroup::getLight(const int idx) const
+{
+    return lights[idx];
+}
+
 const std::vector<Light>& LightGroup::getLights() const
 {
     return lights;

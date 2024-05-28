@@ -35,6 +35,9 @@ void   createObjFromHardcode(GLuint&         vao,
                              GLuint&         ebo,
                              vector<GLfloat> vertices,
                              vector<GLuint>  vertexIdx = {});
+void   renderTextureToScreen(const GLuint screenVAO,
+                             const GLuint textureToShow,
+                             Shader&      screenShader);
 
 int main(int argc, char** argv)
 {
@@ -60,11 +63,28 @@ int main(int argc, char** argv)
     lightGroup.createLightUniformBuffer();
     lightGroup.bindingUniformBuffer(0);
 
+    /**NOTE - ScreenTextureObject
+     */
+    vector<GLfloat> screenVertices = {
+        // 位置               // 纹理坐标
+        -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,  // 左上
+        1.0f,  1.0f,  0.0f, 1.0f, 1.0f,  // 右上
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,  // 左下
+        1.0f,  -1.0f, 0.0f, 1.0f, 0.0f   // 右下
+    };
+    vector<GLuint> screenVerticesIdx = {
+        0, 2, 1,  // 第一个三角形
+        1, 2, 3   // 第二个三角形
+    };
+    GLuint screenVAO, screenVBO, screenEBO;
+    createObjFromHardcode(screenVAO, screenVBO, screenEBO, screenVertices, screenVerticesIdx);
+    Shader screenShader("./shader/stdScreenShader.vs.glsl", "./shader/stdScreenShader.fs.glsl");
+
     /**NOTE - 创建深度贴图
      */
     GLuint       depthMapFBO, depthMapTexture;
     const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-    glGenBuffers(1, &depthMapFBO);
+    glGenFramebuffers(1, &depthMapFBO);
     glGenTextures(1, &depthMapTexture);
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glBindTexture(GL_TEXTURE_2D, depthMapTexture);
@@ -83,20 +103,42 @@ int main(int argc, char** argv)
      * 我们不适用任何颜色数据进行渲染。我们通过将调用glDrawBuffer和glReadBuffer把
      * 读和绘制缓冲设置为GL_NONE来做这件事。
      */
+    //  检查帧缓冲状态
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Framebuffer is  complete!" << std::endl;
+    }
+    else { std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl; }
     // 解绑
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     /**NOTE - 生成深度贴图
-     */
-    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    // rendering
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    /**NOTE - 这里一定要记得调用glViewport。因为阴影贴图经常和我们原来渲染的场景（通常是
+     * 这里一定要记得调用glViewport。因为阴影贴图经常和我们原来渲染的场景（通常是
      * 窗口分辨率）有着不同的分辨率，我们需要改变视口（viewport）的参数以适应阴影贴图的尺寸。
      */
+    // 光源的空间变换
+    const GLfloat nearPlane = 0.1, farPlane = 15.0;
+    mat4          lightView       = lookAt(vec3(2, 3, 1), vec3(-2, 0, -3), vec3(0, 1, 0));
+    mat4          lightProjection = ortho(-5.0f, 5.0f, -5.0f, 5.0f, nearPlane,
+                                          farPlane);  // 正交投影变换
+    // mat4 lightProjection  = perspective(radians(45.0f), cameraAspect, nearPlane, farPlane);
+    mat4 lightSpaceMatrix = lightProjection * lightView;
+    // 渲染至深度贴图
+    Shader stdNullShader("./shader/stdNullVShader.vs.glsl", "./shader/stdNullFShader.fs.glsl");
+    stdNullShader.use();
+    stdNullShader.setParameter("view", lightView);
+    stdNullShader.setParameter("projection", lightProjection);
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glEnable(GL_DEPTH_TEST);  // FIXME - 写如深度值得时候，记得启动深度缓冲
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    // render scene
+    stdNullShader.setParameter("model", scale(mat4(1), vec3(5)));
+    plane.Draw(&stdNullShader);
+    stdNullShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
+    box.Draw(&stdNullShader);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     /**NOTE - OpenGL基本设置
      */
@@ -119,74 +161,79 @@ int main(int argc, char** argv)
         lastFrame = glfwGetTime();
         processInput(window);
 
-        // SECTION - 渲染循环
-        /**NOTE - 清空屏幕
-         */
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-                GL_STENCIL_BUFFER_BIT);  // 清除颜色、深度和模板缓冲
+        // // SECTION - 渲染循环
+        // /**NOTE - 清空屏幕
+        //  */
+        // glViewport(0, 0, CAMERA_WIDTH, CAMERA_HEIGH);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+        //         GL_STENCIL_BUFFER_BIT);  // 清除颜色、深度和模板缓冲
 
-        /**NOTE - 更新视图变换
-         */
-        mat4 view       = camera->GetViewMatrix();
-        mat4 projection = perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
-        // projection应该是透视+投影，转换进标准体积空间：[-1,+1]^3
-        // FIXME - 标准化设备坐标的范围是[-1, 1]，但是OpenGL深度缓冲的范围是[0, 1], 转换是自动的
-        // mat4的第一个索引是列向量（i.e. mat4[2]表示第三个列向量）
+        // /**NOTE - 更新视图变换
+        //  */
+        // mat4 view       = camera->GetViewMatrix();
+        // mat4 projection = perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
+        // // projection应该是透视+投影，转换进标准体积空间：[-1,+1]^3
+        // // FIXME - 标准化设备坐标的范围是[-1, 1]，但是OpenGL深度缓冲的范围是[0, 1], 转换是自动的
+        // // mat4的第一个索引是列向量（i.e. mat4[2]表示第三个列向量）
 
-        /**NOTE - 渲染
-         */
-        // 木地板
-        phongShader.use();
-        glBindTexture(GL_TEXTURE_2D, woodTexture);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
-        phongShader.setParameter("model", scale(mat4(1), vec3(5)));
-        phongShader.setParameter("view", view);
-        phongShader.setParameter("projection", projection);
-        phongShader.setParameter("cameraPos", camera->Position);
-        phongShader.setParameter("skybox", 0);
-        plane.Draw(&phongShader);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        // 木板箱子
-        phongShader.use();
-        glBindTexture(GL_TEXTURE_2D, containerTexture);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
-        phongShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
-        phongShader.setParameter("view", view);
-        phongShader.setParameter("projection", projection);
-        phongShader.setParameter("cameraPos", camera->Position);
-        phongShader.setParameter("skybox", 0);
-        box.Draw(&phongShader);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        // /**NOTE - 渲染
+        //  */
+        // // 木地板
+        // phongShader.use();
+        // glBindTexture(GL_TEXTURE_2D, woodTexture);
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        // phongShader.setParameter("model", scale(mat4(1), vec3(5)));
+        // phongShader.setParameter("view", view);
+        // phongShader.setParameter("projection", projection);
+        // phongShader.setParameter("cameraPos", camera->Position);
+        // phongShader.setParameter("skybox", 0);
+        // plane.Draw(&phongShader);
+        // glBindTexture(GL_TEXTURE_2D, 0);
+        // // 木板箱子
+        // phongShader.use();
+        // glBindTexture(GL_TEXTURE_2D, containerTexture);
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        // phongShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
+        // phongShader.setParameter("view", view);
+        // phongShader.setParameter("projection", projection);
+        // phongShader.setParameter("cameraPos", camera->Position);
+        // phongShader.setParameter("skybox", 0);
+        // box.Draw(&phongShader);
+        // glBindTexture(GL_TEXTURE_2D, 0);
 
-        /**NOTE - 渲染灯光
-         */
-        for (const auto& light : lightGroup.getLights())
-        {
-            if (light.getLightType() != 1)  // 日光不渲染实体
-            {
-                lightObjShader.use();
-                lightObjShader.setParameter(
-                    "model", scale(translate(mat4(1), light.getPostion()), vec3(0.1)));
-                lightObjShader.setParameter("view", view);
-                lightObjShader.setParameter("projection", projection);
-                lightObjShader.setParameter("lightColor", light.getColor());
-                sphere.Draw(&lightObjShader);
-                // FIXME - 常量对象只能调用它的常函数
-            }
-        }
+        // /**NOTE - 渲染灯光
+        //  */
+        // for (const auto& light : lightGroup.getLights())
+        // {
+        //     if (light.getLightType() != 1)  // 日光不渲染实体
+        //     {
+        //         lightObjShader.use();
+        //         lightObjShader.setParameter(
+        //             "model", scale(translate(mat4(1), light.getPostion()), vec3(0.1)));
+        //         lightObjShader.setParameter("view", view);
+        //         lightObjShader.setParameter("projection", projection);
+        //         lightObjShader.setParameter("lightColor", light.getColor());
+        //         sphere.Draw(&lightObjShader);
+        //         // FIXME - 常量对象只能调用它的常函数
+        //     }
+        // }
 
-        /**NOTE - 最后渲染天空盒
+        // /**NOTE - 最后渲染天空盒
+        //  */
+        // glFrontFace(GL_CW);  // 把顺时针的面设置为“正面”。
+        // skyboxShader.use();
+        // skyboxShader.setParameter("view",
+        //                           mat4(mat3(view)));  // 除去位移，相当于锁头
+        // skyboxShader.setParameter("projection", projection);
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        // skyboxShader.setParameter("skybox", 0);
+        // box.Draw(&skyboxShader);
+        // glFrontFace(GL_CCW);
+        // //~SECTION
+
+        /**NOTE - 渲染阴影贴图的内容到屏幕上
          */
-        glFrontFace(GL_CW);  // 把顺时针的面设置为“正面”。
-        skyboxShader.use();
-        skyboxShader.setParameter("view",
-                                  mat4(mat3(view)));  // 除去位移，相当于锁头
-        skyboxShader.setParameter("projection", projection);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
-        skyboxShader.setParameter("skybox", 0);
-        box.Draw(&skyboxShader);
-        glFrontFace(GL_CCW);
-        //~SECTION
+        renderTextureToScreen(screenVAO, depthMapTexture, screenShader);
 
         // 处理事件、交换缓冲区
         glfwSwapBuffers(window);
@@ -488,8 +535,6 @@ void createObjFromHardcode(GLuint&         vao,
                            vector<GLuint>  vertexIdx)
 {
     bool useEBO = (vertexIdx.size() > 0);
-
-    // TODO - 从一组顶点的硬编码创建几何体
     // VBO
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -515,6 +560,27 @@ void createObjFromHardcode(GLuint&         vao,
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     if (useEBO) { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
+}
+
+/// @brief 将指定texture绘制到屏幕上
+void renderTextureToScreen(const GLuint screenVAO, const GLuint textureToShow, Shader& screenShader)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);  // 清除颜色缓冲
+
+    // 绘制屏幕几何对象
+    glBindVertexArray(screenVAO);
+    screenShader.use();
+    glBindTexture(GL_TEXTURE_2D, textureToShow);
+    screenShader.setParameter("screenTexture", 0);
+    glDisable(GL_DEPTH_TEST);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    // 解绑
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    // 恢复深度测试
+    glEnable(GL_DEPTH_TEST);
 }
 
 /**REVIEW - 阴影映射
@@ -575,6 +641,8 @@ void createObjFromHardcode(GLuint&         vao,
  * 阴影映射由两个步骤组成：首先，我们渲染深度贴图，然后我们像往常一样渲染场景，
  * 使用生成的深度贴图来计算片段是否在阴影之中。听起来有点复杂，但随着我们一步一步
  * 地讲解这个技术，就能理解了。
- * 
+ *
  * NOTE - 光源空间的变换
+ *
+ * NOTE - 渲染阴影
  */

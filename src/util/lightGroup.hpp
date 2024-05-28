@@ -19,7 +19,9 @@ private:
     GLfloat   intensity;
     glm::vec3 position, rotation;
     GLfloat   innerCutOff, outerCutOff;  // for spot light
-    GLuint    shadowMap;                 // for shadow map
+
+    // For shadow map
+    GLuint shadowMap;
 
 public:
     Light();
@@ -77,6 +79,9 @@ private:
 public:
     LightGroup();
     ~LightGroup();
+
+    /// @brief 灯光组的get方法
+    const Light& getLight(const int idx) const;
 
     /// @brief 灯光组的get方法
     const std::vector<Light>& getLights() const;
