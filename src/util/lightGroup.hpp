@@ -18,9 +18,8 @@ private:
     glm::vec3 color;
     GLfloat   intensity;
     glm::vec3 position, rotation;
-
-    // for spot light
-    GLfloat innerCutOff, outerCutOff;
+    GLfloat   innerCutOff, outerCutOff;  // for spot light
+    GLuint    shadowMap;                 // for shadow map
 
 public:
     Light();
@@ -42,9 +41,13 @@ public:
     /// @brief 获取灯光的颜色
     glm::vec3 getColor() const;
 
-    /// @brief 
-    /// @return 
+    /// @brief
+    /// @return
     GLint getLightType() const;
+
+    /// @brief
+    /// @return
+    GLuint getShadowMap() const;
 
     /// @brief 计算在OpenGL 140布局下，单个灯光在缓冲中占用的空间
     /// @return 占用的缓冲空间，以Byte为单位
@@ -53,6 +56,9 @@ public:
     /// @brief 在以ptr为起始地址的空间上更新灯光的数据
     /// @param ptr 灯光Uniform缓冲的起始地址
     void updateLightUniformBuffer(GLubyte* ptr);
+
+    /// @brief
+    void createShadowMap();
 };
 
 /// @brief 灯光组

@@ -54,30 +54,62 @@ int main(int argc, char** argv)
     /**NOTE - 灯光组
      */
     LightGroup lightGroup;
-    lightGroup.addLight(Light(0, vec3(1, 1, 1), 2, vec3(1)));
-    lightGroup.addLight(Light(1, vec3(1, 1, 1), 1.2, vec3(0), vec3(1, -1, 1)));
-    lightGroup.addLight(Light(2, vec3(1, 1, 1), 1, vec3(0, 1, 0), vec3(0, -1, 0)));
+    lightGroup.addLight(Light(0, vec3(1, 1, 1), 2, vec3(1, 1.5, 1)));
+    lightGroup.addLight(Light(1, vec3(1, 1, 1), 1.2, vec3(0, 0, 0), vec3(1, -1, 1)));
+    lightGroup.addLight(Light(2, vec3(1, 1, 1), 1, vec3(0, 1.5, 0), vec3(0, -1, 0)));
     lightGroup.createLightUniformBuffer();
     lightGroup.bindingUniformBuffer(0);
 
+    /**NOTE - 创建深度贴图
+     */
+    GLuint       depthMapFBO, depthMapTexture;
+    const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+    glGenBuffers(1, &depthMapFBO);
+    glGenTextures(1, &depthMapTexture);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    // 设置texture属性
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    // 深度纹理作为帧缓冲的深度缓冲
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    /**NOTE - 不包含颜色缓冲的帧缓冲对象是不完整的，所以我们需要显式告诉OpenGL
+     * 我们不适用任何颜色数据进行渲染。我们通过将调用glDrawBuffer和glReadBuffer把
+     * 读和绘制缓冲设置为GL_NONE来做这件事。
+     */
+    // 解绑
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    /**NOTE - 生成深度贴图
+     */
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    // rendering
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    /**NOTE - 这里一定要记得调用glViewport。因为阴影贴图经常和我们原来渲染的场景（通常是
+     * 窗口分辨率）有着不同的分辨率，我们需要改变视口（viewport）的参数以适应阴影贴图的尺寸。
+     */
+
     /**NOTE - OpenGL基本设置
      */
-    glEnable(GL_DEPTH_TEST);  // 启用深度缓冲
-    glDepthFunc(GL_LEQUAL);   // 修改深度测试的标准
-
-    glEnable(GL_STENCIL_TEST);                     // 启用模板缓冲
-    glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);  // 设置模板缓冲的操作
-
+    glEnable(GL_DEPTH_TEST);                            // 启用深度缓冲
+    glDepthFunc(GL_LEQUAL);                             // 修改深度测试的标准
+    glEnable(GL_STENCIL_TEST);                          // 启用模板缓冲
+    glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);       // 设置模板缓冲的操作
     glEnable(GL_BLEND);                                 // 启用混合
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
-
-    glEnable(GL_CULL_FACE);  // 启用面剔除
-
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // 设置清空颜色
-
-    glEnable(GL_MULTISAMPLE);  // 启用多重采样
-
-    glEnable(GL_FRAMEBUFFER_SRGB);  // 自动Gamme矫正
+    glEnable(GL_CULL_FACE);                             // 启用面剔除
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);               // 设置清空颜色
+    glEnable(GL_MULTISAMPLE);                           // 启用多重采样
+    glEnable(GL_FRAMEBUFFER_SRGB);                      // 自动Gamme矫正
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -98,6 +130,8 @@ int main(int argc, char** argv)
         mat4 view       = camera->GetViewMatrix();
         mat4 projection = perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
         // projection应该是透视+投影，转换进标准体积空间：[-1,+1]^3
+        // FIXME - 标准化设备坐标的范围是[-1, 1]，但是OpenGL深度缓冲的范围是[0, 1], 转换是自动的
+        // mat4的第一个索引是列向量（i.e. mat4[2]表示第三个列向量）
 
         /**NOTE - 渲染
          */
@@ -482,3 +516,65 @@ void createObjFromHardcode(GLuint&         vao,
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     if (useEBO) { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 }
+
+/**REVIEW - 阴影映射
+ * 阴影是光线被阻挡的结果；当一个光源的光线由于其他物体的阻挡不能够达到一个物体的表面的时候，
+ * 那么这个物体就在阴影中了。阴影能够使场景看起来真实得多，并且可以让观察者获得物体之间的
+ * 空间位置关系。场景和物体的深度感因此能够得到极大提升，下图展示了有阴影和没有阴影
+ * 的情况下的不同：
+ * ![](https://learnopengl-cn.github.io/img/05/03/01/shadow_mapping_with_without.png)
+ *
+ * 你可以看到，有阴影的时候你能更容易地区分出物体之间的位置关系，
+ * 例如，当使用阴影的时候浮在地板上的立方体的事实更加清晰。
+ *
+ * 阴影还是比较不好实现的，因为当前实时渲染领域还没找到一种完美的阴影算法。
+ * 目前有几种近似阴影技术，但它们都有自己的弱点和不足，这点我们必须要考虑到。
+ *
+ * 视频游戏中较多使用的一种技术是阴影贴图（shadow mapping），效果不错，而且相对容易实现。
+ * 阴影贴图并不难以理解，性能也不会太低，而且非常容易扩展成更高级的算法
+ * （比如 Omnidirectional Shadow Maps和 Cascaded Shadow Maps）。
+ *
+ * NOTE - 阴影映射
+ * 阴影映射(Shadow Mapping)背后的思路非常简单：我们以光的位置为视角进行渲染，
+ * 我们能看到的东西都将被点亮，看不见的一定是在阴影之中了。假设有一个地板，
+ * 在光源和它之间有一个大盒子。由于光源处向光线方向看去，可以看到这个盒子，
+ * 但看不到地板的一部分，这部分就应该在阴影中了。
+ * ![](https://learnopengl-cn.github.io/img/05/03/01/shadow_mapping_theory.png)
+ *
+ * 这里的所有蓝线代表光源可以看到的fragment。黑线代表被遮挡的fragment：它们应该渲染为
+ * 带阴影的。如果我们绘制一条从光源出发，到达最右边盒子上的一个片段上的线段或射线，
+ * 那么射线将先击中悬浮的盒子，随后才会到达最右侧的盒子。结果就是悬浮的盒子被照亮，
+ * 而最右侧的盒子将处于阴影之中。
+ *
+ * 我们希望得到射线第一次击中的那个物体，然后用这个最近点和射线上其他点进行对比。
+ * 然后我们将测试一下看看射线上的其他点是否比最近点更远，如果是的话，这个点就在阴影中。
+ * 对从光源发出的射线上的成千上万个点进行遍历是个极端消耗性能的举措，实时渲染上基本不可取。
+ * 我们可以采取相似举措，不用投射出光的射线。我们所使用的是非常熟悉的东西：深度缓冲。
+ *
+ * 你可能记得在深度测试教程中，在深度缓冲里的一个值是摄像机视角下，对应于一个片段的一个
+ * 0到1之间的深度值。如果我们从光源的透视图来渲染场景，并把深度值的结果储存到纹理中会怎样？
+ * 通过这种方式，我们就能对光源的透视图所见的最近的深度值进行采样。最终，深度值就会显示从
+ * 光源的透视图下见到的第一个片段了。我们管储存在纹理中的所有这些深度值，叫做深度贴图
+ * （depth map）或阴影贴图。
+ * ![](https://learnopengl-cn.github.io/img/05/03/01/shadow_mapping_theory_spaces.png)
+ *
+ * 左侧的图片展示了一个定向光源（所有光线都是平行的）在立方体下的表面投射的阴影。
+ * 通过储存到深度贴图中的深度值，我们就能找到最近点，用以决定片段是否在阴影中。
+ * 我们使用一个来自光源的视图和投影矩阵来渲染场景就能创建一个深度贴图。这个投影和
+ * 视图矩阵结合在一起成为一个T变换，它可以将任何三维位置转变到光源的可见坐标空间。
+ *
+ * 定向光并没有位置，因为它被规定为无穷远。然而，为了实现阴影贴图，
+ * 我们得从一个光的透视图渲染场景，这样就得在光的方向的某一点上渲染场景。
+ *
+ * 在右边的图中我们显示出同样的平行光和观察者。我们渲染一个点P¯处的片段，需要决定它是
+ * 否在阴影中。我们先得使用T把P¯变换到光源的坐标空间里。既然点P¯是从光的透视图中看到的，
+ * 它的z坐标就对应于它的深度，例子中这个值是0.9。使用点P¯在光源的坐标空间的坐标，
+ * 我们可以索引深度贴图，来获得从光的视角中最近的可见深度，结果是点C¯，最近的深度是0.4。
+ * 因为索引深度贴图的结果是一个小于点P¯的深度，我们可以断定P¯被挡住了，它在阴影中了。
+ *
+ * 阴影映射由两个步骤组成：首先，我们渲染深度贴图，然后我们像往常一样渲染场景，
+ * 使用生成的深度贴图来计算片段是否在阴影之中。听起来有点复杂，但随着我们一步一步
+ * 地讲解这个技术，就能理解了。
+ * 
+ * NOTE - 光源空间的变换
+ */

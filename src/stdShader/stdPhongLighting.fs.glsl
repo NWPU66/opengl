@@ -21,6 +21,7 @@ layout(std140,binding=0)uniform lightGroup{
     int numLights;
     Light lights[MAX_LIGHTS_NUM];
 };
+uniform sampler2D abc[MAX_LIGHTS_NUM];
 
 uniform vec3 cameraPos;
 uniform sampler2D texture0;
