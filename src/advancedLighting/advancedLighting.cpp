@@ -48,7 +48,7 @@ int main(int argc, char** argv)
      */
     Model  box("./box/box.obj"), plane("./plane/plane.obj"), sphere("./sphere/sphere.obj");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl"),
-        phongShader("./shader/stdVerShader.vs.glsl", "./shader/stdPhongLighting.fs.glsl"),
+        phongShader("./shader/stdVerShader.vs.glsl", "./shader/stdShadowedPhongLighting.fs.glsl"),
         lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
     GLuint cubeTexture      = createSkyboxTexture("./texture/"),  // 创建立方体贴图
         woodTexture         = createImageObjrct("./texture/wood.jpg"),
@@ -93,8 +93,10 @@ int main(int argc, char** argv)
     // 设置texture属性
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    GLfloat borderColor[] = {1, 1, 1, 1};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
     // 深度纹理作为帧缓冲的深度缓冲
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
     glDrawBuffer(GL_NONE);
@@ -119,10 +121,10 @@ int main(int argc, char** argv)
      */
     // 光源的空间变换
     const GLfloat nearPlane = 0.1, farPlane = 15.0;
-    mat4          lightView       = lookAt(vec3(2, 3, 1), vec3(-2, 0, -3), vec3(0, 1, 0));
-    mat4          lightProjection = ortho(-5.0f, 5.0f, -5.0f, 5.0f, nearPlane,
-                                          farPlane);  // 正交投影变换
-    // mat4 lightProjection  = perspective(radians(45.0f), cameraAspect, nearPlane, farPlane);
+    mat4          lightView = lookAt(vec3(2, 3, 1), vec3(0), vec3(0, 1, 0));
+    // mat4          lightProjection = ortho(-5.0f, 5.0f, -5.0f, 5.0f, nearPlane,
+    //                                       farPlane);  // 正交投影变换
+    mat4 lightProjection  = perspective(radians(45.0f), cameraAspect, nearPlane, farPlane);
     mat4 lightSpaceMatrix = lightProjection * lightView;
     // 渲染至深度贴图
     Shader stdNullShader("./shader/stdNullVShader.vs.glsl", "./shader/stdNullFShader.fs.glsl");
@@ -131,6 +133,8 @@ int main(int argc, char** argv)
     stdNullShader.setParameter("projection", lightProjection);
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
     glEnable(GL_DEPTH_TEST);  // FIXME - 写如深度值得时候，记得启动深度缓冲
+    glEnable(GL_CULL_FACE);   // FIXME - 记得启动面剔除
+    glCullFace(GL_FRONT);  // 正面剔除，深度会稍微大一些，但仍然再阴影得前面
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
     // render scene
@@ -139,6 +143,7 @@ int main(int argc, char** argv)
     stdNullShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
     box.Draw(&stdNullShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glCullFace(GL_BACK);
 
     /**NOTE - OpenGL基本设置
      */
@@ -161,79 +166,95 @@ int main(int argc, char** argv)
         lastFrame = glfwGetTime();
         processInput(window);
 
-        // // SECTION - 渲染循环
-        // /**NOTE - 清空屏幕
-        //  */
-        // glViewport(0, 0, CAMERA_WIDTH, CAMERA_HEIGH);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
-        //         GL_STENCIL_BUFFER_BIT);  // 清除颜色、深度和模板缓冲
+        // SECTION - 渲染循环
+        /**NOTE - 清空屏幕
+         */
+        glViewport(0, 0, CAMERA_WIDTH, CAMERA_HEIGH);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+                GL_STENCIL_BUFFER_BIT);  // 清除颜色、深度和模板缓冲
 
-        // /**NOTE - 更新视图变换
-        //  */
-        // mat4 view       = camera->GetViewMatrix();
-        // mat4 projection = perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
-        // // projection应该是透视+投影，转换进标准体积空间：[-1,+1]^3
-        // // FIXME - 标准化设备坐标的范围是[-1, 1]，但是OpenGL深度缓冲的范围是[0, 1], 转换是自动的
-        // // mat4的第一个索引是列向量（i.e. mat4[2]表示第三个列向量）
+        /**NOTE - 更新视图变换
+         */
+        mat4 view       = camera->GetViewMatrix();
+        mat4 projection = perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
+        // projection应该是透视+投影，转换进标准体积空间：[-1,+1]^3
+        // FIXME - 标准化设备坐标的范围是[-1, 1]，但是OpenGL深度缓冲的范围是[0, 1], 转换是自动的
+        // mat4的第一个索引是列向量（i.e. mat4[2]表示第三个列向量）
 
-        // /**NOTE - 渲染
-        //  */
-        // // 木地板
-        // phongShader.use();
-        // glBindTexture(GL_TEXTURE_2D, woodTexture);
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
-        // phongShader.setParameter("model", scale(mat4(1), vec3(5)));
-        // phongShader.setParameter("view", view);
-        // phongShader.setParameter("projection", projection);
-        // phongShader.setParameter("cameraPos", camera->Position);
-        // phongShader.setParameter("skybox", 0);
-        // plane.Draw(&phongShader);
-        // glBindTexture(GL_TEXTURE_2D, 0);
-        // // 木板箱子
-        // phongShader.use();
-        // glBindTexture(GL_TEXTURE_2D, containerTexture);
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
-        // phongShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
-        // phongShader.setParameter("view", view);
-        // phongShader.setParameter("projection", projection);
-        // phongShader.setParameter("cameraPos", camera->Position);
-        // phongShader.setParameter("skybox", 0);
-        // box.Draw(&phongShader);
-        // glBindTexture(GL_TEXTURE_2D, 0);
+        /**NOTE - 渲染
+         */
+        // 木地板
+        phongShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, woodTexture);
+        phongShader.setParameter("texture0", 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+        phongShader.setParameter("shadowMap", 1);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        phongShader.setParameter("model", scale(mat4(1), vec3(5)));
+        phongShader.setParameter("view", view);
+        phongShader.setParameter("projection", projection);
+        phongShader.setParameter("cameraPos", camera->Position);
+        phongShader.setParameter("lightSpaceMatrix", lightSpaceMatrix);
+        phongShader.setParameter("skybox", 0);
+        plane.Draw(&phongShader);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        // 木板箱子
+        phongShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, woodTexture);
+        phongShader.setParameter("texture0", 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+        phongShader.setParameter("shadowMap", 1);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        phongShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
+        phongShader.setParameter("view", view);
+        phongShader.setParameter("projection", projection);
+        phongShader.setParameter("cameraPos", camera->Position);
+        phongShader.setParameter("lightSpaceMatrix", lightSpaceMatrix);
+        phongShader.setParameter("skybox", 0);
+        box.Draw(&phongShader);
+        glBindTexture(GL_TEXTURE_2D, 0);  // TODO - 两个槽位都要解除
 
-        // /**NOTE - 渲染灯光
-        //  */
-        // for (const auto& light : lightGroup.getLights())
-        // {
-        //     if (light.getLightType() != 1)  // 日光不渲染实体
-        //     {
-        //         lightObjShader.use();
-        //         lightObjShader.setParameter(
-        //             "model", scale(translate(mat4(1), light.getPostion()), vec3(0.1)));
-        //         lightObjShader.setParameter("view", view);
-        //         lightObjShader.setParameter("projection", projection);
-        //         lightObjShader.setParameter("lightColor", light.getColor());
-        //         sphere.Draw(&lightObjShader);
-        //         // FIXME - 常量对象只能调用它的常函数
-        //     }
-        // }
+        /**NOTE - 渲染灯光
+         */
+        for (const auto& light : lightGroup.getLights())
+        {
+            if (light.getLightType() != 1)  // 日光不渲染实体
+            {
+                lightObjShader.use();
+                lightObjShader.setParameter(
+                    "model", scale(translate(mat4(1), light.getPostion()), vec3(0.1)));
+                lightObjShader.setParameter("view", view);
+                lightObjShader.setParameter("projection", projection);
+                lightObjShader.setParameter("lightColor", light.getColor());
+                sphere.Draw(&lightObjShader);
+                // FIXME - 常量对象只能调用它的常函数
+            }
+        }
+        // 阴影贴图等效灯光
+        lightObjShader.setParameter("model", scale(translate(mat4(1), vec3(2, 3, 1)), vec3(0.1)));
+        lightObjShader.setParameter("lightColor", vec3(1, 0, 0));
+        sphere.Draw(&lightObjShader);
 
-        // /**NOTE - 最后渲染天空盒
-        //  */
-        // glFrontFace(GL_CW);  // 把顺时针的面设置为“正面”。
-        // skyboxShader.use();
-        // skyboxShader.setParameter("view",
-        //                           mat4(mat3(view)));  // 除去位移，相当于锁头
-        // skyboxShader.setParameter("projection", projection);
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
-        // skyboxShader.setParameter("skybox", 0);
-        // box.Draw(&skyboxShader);
-        // glFrontFace(GL_CCW);
-        // //~SECTION
+        /**NOTE - 最后渲染天空盒
+         */
+        glFrontFace(GL_CW);  // 把顺时针的面设置为“正面”。
+        skyboxShader.use();
+        skyboxShader.setParameter("view",
+                                  mat4(mat3(view)));  // 除去位移，相当于锁头
+        skyboxShader.setParameter("projection", projection);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        skyboxShader.setParameter("skybox", 0);
+        box.Draw(&skyboxShader);
+        glFrontFace(GL_CCW);
+        //~SECTION
 
         /**NOTE - 渲染阴影贴图的内容到屏幕上
          */
-        renderTextureToScreen(screenVAO, depthMapTexture, screenShader);
+        // renderTextureToScreen(screenVAO, depthMapTexture, screenShader);
 
         // 处理事件、交换缓冲区
         glfwSwapBuffers(window);
@@ -645,4 +666,105 @@ void renderTextureToScreen(const GLuint screenVAO, const GLuint textureToShow, S
  * NOTE - 光源空间的变换
  *
  * NOTE - 渲染阴影
+ *
+ * NOTE - 改进阴影贴图
+ * 我们试图让阴影映射工作，但是你也看到了，阴影映射还是有点不真实，我们修复它才
+ * 能获得更好的效果，这是下面的部分所关注的焦点。
+ *
+ * 我们可以看到地板四边形渲染出很大一块交替黑线。
+ * 这种阴影贴图的不真实感叫做阴影失真(Shadow Acne)，下图解释了成因：
+ * ![](https://learnopengl-cn.github.io/img/05/03/01/shadow_mapping_acne_diagram.png)
+ *
+ * 因为阴影贴图受限于分辨率，在距离光源比较远的情况下，多个片段可能从深度贴图的同一个
+ * 值中去采样。图片每个斜坡代表深度贴图一个单独的纹理像素。
+ * 你可以看到，多个片段从同一个深度值进行采样。
+ *
+ * 虽然很多时候没问题，但是当光源以一个角度朝向表面的时候就会出问题，这种情况下深度贴图也
+ * 是从一个角度下进行渲染的。多个片段就会从同一个斜坡的深度纹理像素中采样，有些在地板上面，
+ * 有些在地板下面；这样我们所得到的阴影就有了差异。因为这个，有些片段被认为是在阴影之中，
+ * 有些不在，由此产生了图片中的条纹样式。
+ *
+ * 我们可以用一个叫做阴影偏移（shadow bias）的技巧来解决这个问题，我们简单的对表面的深度
+ * （或深度贴图）应用一个偏移量，这样片段就不会被错误地认为在表面之下了。
+ *
+ * 这里我们有一个偏移量的最大值0.05，和一个最小值0.005，它们是基于表面法线和光照方向的。
+ * 这样像地板这样的表面几乎与光源垂直，得到的偏移就很小，而比如立方体的侧面这种表面得
+ * 到的偏移就更大。下图展示了同一个场景，但使用了阴影偏移，效果的确更好：
+ *
+ * NOTE - 偏移
+ * 使用阴影偏移的一个缺点是你对物体的实际深度应用了平移。偏移有可能足够大，
+ * 以至于可以看出阴影相对实际物体位置的偏移，你可以从下图看到这个现象（这是一个夸张的偏移值）：
+ * ![](https://learnopengl-cn.github.io/img/05/03/01/shadow_mapping_peter_panning.png)
+ *
+ * 这个阴影失真叫做悬浮(Peter Panning)，因为物体看起来轻轻悬浮在表面之上（译注Peter Pan
+ * 就是童话彼得潘，而panning有平移、悬浮之意，而且彼得潘是个会飞的男孩…）。我们可以使用
+ * 一个叫技巧解决大部分的Peter panning问题：当渲染深度贴图时候使用正面剔除（front face culling）
+ * 你也许记得在面剔除教程中OpenGL默认是背面剔除。我们要告诉OpenGL我们要剔除正面。
+ *
+ * 因为我们只需要深度贴图的深度值，对于实体物体无论我们用它们的正面还是背面都没问题。
+ * 使用背面深度不会有错误，因为阴影在物体内部有错误我们也看不见。
+ * ![](https://learnopengl-cn.github.io/img/05/03/01/shadow_mapping_culling.png)
+ *
+ * 这十分有效地解决了peter panning的问题，但只对内部不会对外开口的实体物体有效。
+ * 我们的场景中，在立方体上工作的很好，但在地板上无效，因为正面剔除完全移除了地板。
+ * 地面是一个单独的平面，不会被完全剔除。如果有人打算使用这个技巧解决peter panning
+ * 必须考虑到只有剔除物体的正面才有意义。
+ *
+ * 另一个要考虑到的地方是接近阴影的物体仍然会出现不正确的效果。
+ * 必须考虑到何时使用正面剔除对物体才有意义。不过使用普通的偏移值通常就能避免peter panning。
+ *
+ * NOTE - 采样过多
+ * 无论你喜不喜欢还有一个视觉差异，就是光的视锥不可见的区域一律被认为是处于阴影中，
+ * 不管它真的处于阴影之中。出现这个状况是因为超出光的视锥的投影坐标比1.0大，
+ * 这样采样的深度纹理就会超出他默认的0到1的范围。根据纹理环绕方式，我们将会得到
+ * 不正确的深度结果，它不是基于真实的来自光源的深度值。
+ *
+ * 你可以在图中看到，光照有一个区域，超出该区域就成为了阴影；这个区域实际上代表着
+ * 深度贴图的大小，这个贴图投影到了地板上。发生这种情况的原因是我们之前将深度贴图
+ * 的环绕方式设置成了GL_REPEAT。
+ *
+ * 我们宁可让所有超出深度贴图的坐标的深度范围是1.0，这样超出的坐标将永远不在阴影之中。
+ * 我们可以储存一个边框颜色，然后把深度贴图的纹理环绕选项设置为GL_CLAMP_TO_BORDER：
+ *
+ * 现在如果我们采样深度贴图0到1坐标范围以外的区域，
+ * 纹理函数总会返回一个1.0的深度值，阴影值为0.0。结果看起来会更真实：
+ *
+ * 这些结果意味着，只有在深度贴图范围以内的被投影的fragment坐标才有阴影，
+ * 所以任何超出范围的都将会没有阴影。由于在游戏中通常这只发生在远处，
+ * 就会比我们之前的那个明显的黑色区域效果更真实。
+ *
+ * NOTE - PCF
+ * 阴影现在已经附着到场景中了，不过这仍不是我们想要的。如果你放大看阴影，阴影映射对分辨率的依赖很快变得很明显。
+ *
+ * 因为深度贴图有一个固定的分辨率，多个片段对应于一个纹理像素。
+ * 结果就是多个片段会从深度贴图的同一个深度值进行采样，这几个片段便得到的是同一个阴影，这就会产生锯齿边。
+ *
+ * 另一个（并不完整的）解决方案叫做PCF（percentage-closer
+ * filtering），这是一种多个不同过滤方式的组合，
+ * 它产生柔和阴影，使它们出现更少的锯齿块和硬边。核心思想是从深度贴图中多次采样，
+ * 每一次采样的纹理坐标都稍有不同。每个独立的样本可能在也可能不再阴影中。
+ * 所有的次生结果接着结合在一起，进行平均化，我们就得到了柔和阴影。
+ *
+ * 这个textureSize返回一个给定采样器纹理的0级mipmap的vec2类型的宽和高。用1除以它返回一个
+ * 单独纹理像素的大小，我们用以对纹理坐标进行偏移，确保每个新样本，来自不同的深度值。
+ * 这里我们采样得到9个值，它们在投影坐标的x和y值的周围，
+ * 为阴影阻挡进行测试，并最终通过样本的总数目将结果平均化。
+ *
+ * NOTE - 正交 vs 投影
+ * 在渲染深度贴图的时候，正交(Orthographic)和投影(Projection)矩阵之间有所不同。
+ * 正交投影矩阵并不会将场景用透视图进行变形，所有视线/光线都是平行的，这使它
+ * 对于定向光来说是个很好的投影矩阵。然而透视投影矩阵，会将所有顶点根据透视关系进行变形，
+ * 结果因此而不同。下图展示了两种投影方式所产生的不同阴影区域：
+ * ![](https://learnopengl-cn.github.io/img/05/03/01/shadow_mapping_projection.png)
+ *
+ * 透视投影对于光源来说更合理，不像定向光，它是有自己的位置的。
+ * 透视投影因此更经常用在点光源和聚光灯上，而正交投影经常用在定向光上。
+ *
+ * 另一个细微差别是，透视投影矩阵，将深度缓冲视觉化经常会得到一个几乎全白的结果。
+ * 发生这个是因为透视投影下，深度变成了非线性的深度值，它的大多数可辨范围都位于近平面附近。
+ * 为了可以像使用正交投影一样合适地观察深度值，
+ * 你必须先将非线性深度值转变为线性的，如我们在深度测试教程中已经讨论过的那样。
+ *
+ * 这个深度值与我们见到的用正交投影的很相似。需要注意的是，这个只适用于调试；
+ * 正交或投影矩阵的深度检查仍然保持原样，因为相关的深度并没有改变。
  */
