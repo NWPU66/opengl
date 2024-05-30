@@ -4,6 +4,7 @@
 #include "util/class_camera.hpp"
 #include "util/class_model.hpp"
 #include "util/class_shader.hpp"
+#include "util/debugTool.hpp"
 #include "util/lightGroup.hpp"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -26,9 +27,6 @@ void   processInput(GLFWwindow* window);
 int    initGLFWWindow(GLFWwindow*& window);
 GLuint createImageObjrct(const char* imagePath);
 GLuint createSkyboxTexture(const char* imageFolder);
-mat4   makeRandomPosture(const float propotion,
-                         const float radius = 50.0f,
-                         const float offset = 2.5f);
 void   createFBO(GLuint& fbo, GLuint& texAttachment, GLuint& rbo, const char* hint = "null");
 void   createObjFromHardcode(GLuint&         vao,
                              GLuint&         vbo,
@@ -43,6 +41,19 @@ int main(int argc, char** argv)
 {
     GLFWwindow* window;  // 创建GLFW窗口，初始化GLAD
     if (!initGLFWWindow(window)) return -1;
+
+    /**NOTE - OpenGL基本设置
+     */
+    glEnable(GL_DEPTH_TEST);                            // 启用深度缓冲
+    glDepthFunc(GL_LEQUAL);                             // 修改深度测试的标准
+    glEnable(GL_STENCIL_TEST);                          // 启用模板缓冲
+    glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);       // 设置模板缓冲的操作
+    glEnable(GL_BLEND);                                 // 启用混合
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
+    glEnable(GL_CULL_FACE);                             // 启用面剔除
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);               // 设置清空颜色
+    glEnable(GL_MULTISAMPLE);                           // 启用多重采样
+    glEnable(GL_FRAMEBUFFER_SRGB);                      // 自动Gamme矫正
 
     /**NOTE - 模型和着色器、纹理
      */
@@ -63,24 +74,11 @@ int main(int argc, char** argv)
     lightGroup.createLightUniformBuffer();
     lightGroup.bindingUniformBuffer(0);
 
-    /**NOTE - ScreenTextureObject
+    /**NOTE - ScreenTextureObject for debug
      */
-    vector<GLfloat> screenVertices = {
-        // 位置               // 纹理坐标
-        -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,  // 左上
-        1.0f,  1.0f,  0.0f, 1.0f, 1.0f,  // 右上
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,  // 左下
-        1.0f,  -1.0f, 0.0f, 1.0f, 0.0f   // 右下
-    };
-    vector<GLuint> screenVerticesIdx = {
-        0, 2, 1,  // 第一个三角形
-        1, 2, 3   // 第二个三角形
-    };
-    GLuint screenVAO, screenVBO, screenEBO;
-    createObjFromHardcode(screenVAO, screenVBO, screenEBO, screenVertices, screenVerticesIdx);
-    Shader screenShader("./shader/stdScreenShader.vs.glsl", "./shader/stdScreenShader.fs.glsl");
+    DebugTool debugTool;
 
-    /**NOTE - 创建深度贴图
+    /**NOTE - 创建深度贴图（定向光源）
      */
     GLuint       depthMapFBO, depthMapTexture;
     const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -115,7 +113,7 @@ int main(int argc, char** argv)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    /**NOTE - 生成深度贴图
+    /**NOTE - 生成深度贴图（定向光源）
      * 这里一定要记得调用glViewport。因为阴影贴图经常和我们原来渲染的场景（通常是
      * 窗口分辨率）有着不同的分辨率，我们需要改变视口（viewport）的参数以适应阴影贴图的尺寸。
      */
@@ -145,18 +143,34 @@ int main(int argc, char** argv)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glCullFace(GL_BACK);
 
-    /**NOTE - OpenGL基本设置
+    /**NOTE - 创建深度立方体贴图（点光源）
      */
-    glEnable(GL_DEPTH_TEST);                            // 启用深度缓冲
-    glDepthFunc(GL_LEQUAL);                             // 修改深度测试的标准
-    glEnable(GL_STENCIL_TEST);                          // 启用模板缓冲
-    glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);       // 设置模板缓冲的操作
-    glEnable(GL_BLEND);                                 // 启用混合
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
-    glEnable(GL_CULL_FACE);                             // 启用面剔除
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);               // 设置清空颜色
-    glEnable(GL_MULTISAMPLE);                           // 启用多重采样
-    glEnable(GL_FRAMEBUFFER_SRGB);                      // 自动Gamme矫正
+    GLuint depthCubemapTexture;
+    glGenTextures(1, &depthCubemapTexture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemapTexture);
+    for (int i = 0; i < 6; i++)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH,
+                     SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    }
+    // 设置纹理参数
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // 将cubeMap绑定在FBO上
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemapTexture, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    // 解绑
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+    /**NOTE - 生成深度立方体贴图（点光源）
+     */
+    // 光空间的变换
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -203,7 +217,7 @@ int main(int argc, char** argv)
         // 木板箱子
         phongShader.use();
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, woodTexture);
+        glBindTexture(GL_TEXTURE_2D, containerTexture);
         phongShader.setParameter("texture0", 0);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, depthMapTexture);
@@ -254,7 +268,7 @@ int main(int argc, char** argv)
 
         /**NOTE - 渲染阴影贴图的内容到屏幕上
          */
-        // renderTextureToScreen(screenVAO, depthMapTexture, screenShader);
+        // debugTool.renderTextureToScreen(depthMapTexture);
 
         // 处理事件、交换缓冲区
         glfwSwapBuffers(window);
@@ -451,36 +465,6 @@ GLuint createSkyboxTexture(const char* imageFolder)
     }
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);  // 解绑
     return cubeTexture;
-}
-
-/// @brief 为陨石生成一个随机的姿态
-/// @param propotion
-/// @param radius 生成的目标半径
-/// @param offset 位置的随机偏移量
-/// @return 返回一个姿态矩阵mat4
-mat4 makeRandomPosture(const float propotion, const float radius, const float offset)
-{
-    // TODO - 做陨石的旋转
-    mat4 model(1.0f);
-    // 1. 位移：分布在半径为 'radius' 的圆形上，偏移的范围是 [-offset, offset]
-    float angle        = propotion * 360.0f;
-    float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-    float x            = cos(angle) * radius + displacement;
-    displacement       = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-    float y            = displacement * 0.4f;  //// 让行星带的高度比x和z的宽度要小
-    displacement       = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-    float z            = sin(angle) * radius + displacement;
-    model              = translate(mat4(1.0f), vec3(x, y, z));
-
-    // 2. 缩放：在 0.05 和 0.25f 之间缩放
-    float scale = (rand() % 20) / 100.0f + 0.05;
-    model       = glm::scale(model, vec3(scale * 0.5f));
-
-    // 3. 旋转：绕着一个（半）随机选择的旋转轴向量进行随机的旋转
-    float rotAngle = (rand() % 360);
-    model          = rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-
-    return model;
 }
 
 /// @brief 创建一个FBO（帧缓冲对象）
@@ -767,4 +751,47 @@ void renderTextureToScreen(const GLuint screenVAO, const GLuint textureToShow, S
  *
  * 这个深度值与我们见到的用正交投影的很相似。需要注意的是，这个只适用于调试；
  * 正交或投影矩阵的深度检查仍然保持原样，因为相关的深度并没有改变。
+ */
+
+/**REVIEW - 点光源阴影
+ * 上个教程我们学到了如何使用阴影映射技术创建动态阴影。效果不错，但它只适合定向光，
+ * 因为阴影只是在单一定向光源下生成的。所以它也叫定向阴影映射，深度（阴影）
+ * 贴图生成自定向光的视角。
+ *
+ * 本节我们的焦点是在各种方向生成动态阴影。这个技术可以适用于点光源，生成所有方向上的阴影。
+ *
+ * 这个技术叫做点光阴影，过去的名字是万向阴影贴图（omnidirectional shadow maps）技术。
+ *
+ * 本节代码基于前面的阴影映射教程，所以如果你对传统阴影映射不熟悉，还是建议先读一读
+ * 阴影映射教程。 算法和定向阴影映射差不多：我们从光的透视图生成一个深度贴图，
+ * 基于当前fragment位置来对深度贴图采样，然后用储存的深度值和每个fragment进行对比，
+ * 看看它是否在阴影中。定向阴影映射和万向阴影映射的主要不同在于深度贴图的使用上。
+ *
+ * 对于深度贴图，我们需要从一个点光源的所有渲染场景，普通2D深度贴图不能工作；
+ * 如果我们使用立方体贴图会怎样？因为立方体贴图可以储存6个面的环境数据，
+ * 它可以将整个场景渲染到立方体贴图的每个面上，把它们当作点光源四周的深度值来采样。
+ * ![](https://learnopengl-cn.github.io/img/05/03/02/point_shadows_diagram.png)
+ *
+ * 生成后的深度立方体贴图被传递到光照像素着色器，它会用一个方向向量来采样立方体贴图，
+ * 从而得到当前的fragment的深度（从光的透视图）。
+ * 大部分复杂的事情已经在阴影映射教程中讨论过了。算法只是在深度立方体贴图生成上稍微复杂一点。
+ *
+ * NOTE - 生成深度立方体贴图
+ * 为创建一个光周围的深度值的立方体贴图，我们必须渲染场景6次：每次一个面。
+ * 显然渲染场景6次需要6个不同的视图矩阵，每次把一个不同的立方体贴图面附加到帧缓冲对象上。
+ *
+ * 这会很耗费性能因为一个深度贴图下需要进行很多渲染调用。这个教程中我们将转而使用另外的
+ * 一个小技巧来做这件事，几何着色器允许我们使用一次渲染过程来建立深度立方体贴图。
+ *
+ * 正常情况下，我们把立方体贴图纹理的一个面附加到帧缓冲对象上，渲染场景6次，
+ * 每次将帧缓冲的深度缓冲目标改成不同立方体贴图面。由于我们将使用一个几何着色器，
+ * 它允许我们把所有面在一个过程渲染，我们可以使用glFramebufferTexture直接把立方体
+ * 贴图附加成帧缓冲的深度附件：
+ *
+ * 设置了帧缓冲和立方体贴图，我们需要一些方法来讲场景的所有几何体变换到6个光的方向
+ * 中相应的光空间。与阴影映射教程类似，我们将需要一个光空间的变换矩阵T
+ * ，但是这次是每个面都有一个。
+ *
+ * 每个光空间的变换矩阵包含了投影和视图矩阵。对于投影矩阵来说，我们将使用一个透视投影矩阵；
+ * 光源代表一个空间中的点，所以透视投影矩阵更有意义。每个光空间变换矩阵使用同样的投影矩阵：
  */

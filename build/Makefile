@@ -581,6 +581,54 @@ src/util/class_shader.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/class_shader.cpp.s
 .PHONY : src/util/class_shader.cpp.s
 
+src/util/debugTool.obj: src/util/debugTool.cpp.obj
+.PHONY : src/util/debugTool.obj
+
+# target to build an object file
+src/util/debugTool.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/debugTool.cpp.obj
+.PHONY : src/util/debugTool.cpp.obj
+
+src/util/debugTool.i: src/util/debugTool.cpp.i
+.PHONY : src/util/debugTool.i
+
+# target to preprocess a source file
+src/util/debugTool.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/debugTool.cpp.i
+.PHONY : src/util/debugTool.cpp.i
+
+src/util/debugTool.s: src/util/debugTool.cpp.s
+.PHONY : src/util/debugTool.s
+
+# target to generate assembly for a file
+src/util/debugTool.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/debugTool.cpp.s
+.PHONY : src/util/debugTool.cpp.s
+
+src/util/glBufferBuilder.obj: src/util/glBufferBuilder.cpp.obj
+.PHONY : src/util/glBufferBuilder.obj
+
+# target to build an object file
+src/util/glBufferBuilder.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/glBufferBuilder.cpp.obj
+.PHONY : src/util/glBufferBuilder.cpp.obj
+
+src/util/glBufferBuilder.i: src/util/glBufferBuilder.cpp.i
+.PHONY : src/util/glBufferBuilder.i
+
+# target to preprocess a source file
+src/util/glBufferBuilder.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/glBufferBuilder.cpp.i
+.PHONY : src/util/glBufferBuilder.cpp.i
+
+src/util/glBufferBuilder.s: src/util/glBufferBuilder.cpp.s
+.PHONY : src/util/glBufferBuilder.s
+
+# target to generate assembly for a file
+src/util/glBufferBuilder.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\utilTool.dir\build.make CMakeFiles/utilTool.dir/src/util/glBufferBuilder.cpp.s
+.PHONY : src/util/glBufferBuilder.cpp.s
+
 src/util/lightGroup.obj: src/util/lightGroup.cpp.obj
 .PHONY : src/util/lightGroup.obj
 
@@ -665,6 +713,12 @@ help:
 	@echo ... src/util/class_shader.obj
 	@echo ... src/util/class_shader.i
 	@echo ... src/util/class_shader.s
+	@echo ... src/util/debugTool.obj
+	@echo ... src/util/debugTool.i
+	@echo ... src/util/debugTool.s
+	@echo ... src/util/glBufferBuilder.obj
+	@echo ... src/util/glBufferBuilder.i
+	@echo ... src/util/glBufferBuilder.s
 	@echo ... src/util/lightGroup.obj
 	@echo ... src/util/lightGroup.i
 	@echo ... src/util/lightGroup.s

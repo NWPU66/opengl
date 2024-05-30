@@ -102,7 +102,7 @@ float calculateShadow(){
     }
     
     // float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    float shadow=0,bias=.001,s_col=.1,l_col=.5;
+    float shadow=0,bias=.0001,s_col=.1,l_col=.5;
     vec2 texelSize=1./textureSize(shadowMap,0);
     /**FIXME - 错题本
     textureSize()返回整数int，所以1/textureSize(shadowMap,0)算整数除法=0*/
