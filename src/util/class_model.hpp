@@ -28,7 +28,7 @@ public:
                           GLuint      vaoSlot,
                           GLuint      vecSize,
                           GLsizei     stride     = 0,
-                          const void* offset     = (void*)0,
+                          const void* offset     = static_cast<void*>(nullptr),
                           GLuint      updateFruq = 1);
 
 private:
@@ -37,11 +37,10 @@ private:
     string          directory;
     vector<Texture> textures_loaded;  // 已经加载过的纹理不再加载
     // 函数
-    void loadModel(const string path);
-    void processNode(aiNode* node, const aiScene* scene);
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-    vector<Texture>
-    loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
+    void            loadModel(const string path);
+    void            processNode(aiNode* node, const aiScene* scene);
+    Mesh            processMesh(aiMesh* mesh, const aiScene* scene);
+    vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
 };
 
 #endif  // MODEL_H

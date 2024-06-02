@@ -15,8 +15,8 @@ using namespace std;
  */
 const GLint CAMERA_WIDTH = 800;
 const GLint CAMERA_HEIGH = 600;
-const float cameraAspect = (float)CAMERA_WIDTH / (float)CAMERA_HEIGH;
-Camera*     camera       = new Camera(vec3(0.0f, 0.0f, 2.0f), vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+const float cameraAspect = static_cast<float>(CAMERA_WIDTH) / static_cast<float>(CAMERA_HEIGH);
+Camera*     camera       = new Camera(vec3(0.0F, 0.0F, 2.0F), vec3(0.0F, 1.0F, 0.0F), -90.0F, 0.0F);
 float       mouseLastX = 0.0f, mouseLastY = 0.0f;  // 记录鼠标的位置
 float       lastFrame = 0.0f, deltaTime = 0.0f;    // 全局时钟
 
@@ -37,10 +37,10 @@ void   renderTextureToScreen(const GLuint screenVAO,
                              const GLuint textureToShow,
                              Shader&      screenShader);
 
-int main(int argc, char** argv)
+int main(int /*argc*/, char** /*argv*/)
 {
     GLFWwindow* window;  // 创建GLFW窗口，初始化GLAD
-    if (!initGLFWWindow(window)) return -1;
+    if (initGLFWWindow(window) == 0) return -1;
 
     /**NOTE - OpenGL基本设置
      */
@@ -51,19 +51,22 @@ int main(int argc, char** argv)
     glEnable(GL_BLEND);                                 // 启用混合
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
     glEnable(GL_CULL_FACE);                             // 启用面剔除
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);               // 设置清空颜色
+    glClearColor(0.2F, 0.3F, 0.3F, 1.0F);               // 设置清空颜色
     glEnable(GL_MULTISAMPLE);                           // 启用多重采样
     glEnable(GL_FRAMEBUFFER_SRGB);                      // 自动Gamme矫正
 
     /**NOTE - 模型和着色器、纹理
      */
-    Model  box("./box/box.obj"), plane("./plane/plane.obj"), sphere("./sphere/sphere.obj");
-    Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl"),
-        phongShader("./shader/stdVerShader.vs.glsl", "./shader/stdShadowedPhongLighting.fs.glsl"),
-        lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
-    GLuint cubeTexture      = createSkyboxTexture("./texture/"),  // 创建立方体贴图
-        woodTexture         = createImageObjrct("./texture/wood.jpg"),
-           containerTexture = createImageObjrct("./texture/container2.png");
+    Model  box("./box/box.obj");
+    Model  plane("./plane/plane.obj");
+    Model  sphere("./sphere/sphere.obj");
+    Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl");
+    Shader phongShader("./shader/stdVerShader.vs.glsl",
+                       "./shader/stdShadowedPhongLighting.fs.glsl");
+    Shader lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
+    GLuint cubeTexture      = createSkyboxTexture("./texture/");
+    GLuint woodTexture      = createImageObjrct("./texture/wood.jpg");  // 创建立方体贴图
+    GLuint containerTexture = createImageObjrct("./texture/container2.png");
 
     /**NOTE - 灯光组
      */
@@ -80,8 +83,10 @@ int main(int argc, char** argv)
 
     /**NOTE - 创建深度贴图（定向光源）
      */
-    GLuint       depthMapFBO, depthMapTexture;
-    const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+    GLuint       depthMapFBO;
+    GLuint       depthMapTexture;
+    const GLuint SHADOW_WIDTH  = 1024;
+    const GLuint SHADOW_HEIGHT = 1024;
     glGenFramebuffers(1, &depthMapFBO);
     glGenTextures(1, &depthMapTexture);
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
@@ -94,7 +99,7 @@ int main(int argc, char** argv)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     GLfloat borderColor[] = {1, 1, 1, 1};
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &borderColor[0]);
     // 深度纹理作为帧缓冲的深度缓冲
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
     glDrawBuffer(GL_NONE);
@@ -579,7 +584,7 @@ void renderTextureToScreen(const GLuint screenVAO, const GLuint textureToShow, S
     glBindTexture(GL_TEXTURE_2D, textureToShow);
     screenShader.setParameter("screenTexture", 0);
     glDisable(GL_DEPTH_TEST);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
     // 解绑
     glBindVertexArray(0);

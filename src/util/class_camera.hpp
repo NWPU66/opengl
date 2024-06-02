@@ -33,9 +33,7 @@ public:
      */
     mat4 GetViewMatrix();
     void ProcessKeyboard(GLint direction[6], float deltaTime);
-    void ProcessMouseMovement(float     xoffset,
-                              float     yoffset,
-                              GLboolean constarinPitch);
+    void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constarinPitch);
     void ProcessMouseScroll(float yoffset);
     void SpeedUp(GLboolean speedUp);
 

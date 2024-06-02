@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 project(opengl)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 # opengl
 set(INCLUDES ${INCLUDES} E:/mingw64/x86_64-w64-mingw32/include)
 set(LIBS ${LIBS} C:/Windows/System32/opengl32.dll)

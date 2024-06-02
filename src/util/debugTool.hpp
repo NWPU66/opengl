@@ -6,20 +6,20 @@
 #include <vector>
 
 // 屏幕几何数据的硬编码
-std::vector<GLfloat> screenVertices = {
+static std::vector<GLfloat> screenVertices = {
     // 位置               // 纹理坐标
     -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,  // 左上
     1.0f,  1.0f,  0.0f, 1.0f, 1.0f,  // 右上
     -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,  // 左下
     1.0f,  -1.0f, 0.0f, 1.0f, 0.0f   // 右下
 };
-std::vector<GLuint> screenVerticesIdx = {
+static std::vector<GLuint> screenVerticesIdx = {
     0, 2, 1,  // 第一个三角形
     1, 2, 3   // 第二个三角形
 };
 // screenShader路径
-std::vector<std::string> screenShaderPath = {"./shader/stdScreenShader.vs.glsl",
-                                             "./shader/stdScreenShader.fs.glsl"};
+static std::vector<std::string> screenShaderPath = {"./shader/stdScreenShader.vs.glsl",
+                                                    "./shader/stdScreenShader.fs.glsl"};
 
 class DebugTool {
 private:

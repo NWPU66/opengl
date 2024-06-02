@@ -52,7 +52,10 @@
 # *.log
 
 # # local build(s)
-build*
+build
+.vs
+.cache
+.vscode
 
 # /.vs
 # /.vscode
