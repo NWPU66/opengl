@@ -87,10 +87,6 @@
         ".gs": "geom",
     },
     "commentAnchors.tagHighlights.enabled": true,
-    "docwriter.language": "Chinese",
-    "docwriter.style": "Auto-detect",
-    "docwriter.hotkey.windows": "Alt + .",
-    "docwriter.progress.trackFunctions": true,
     "python.analysis.typeCheckingMode": "basic",
-    "python.analysis.autoImportCompletions": true
+    "python.analysis.autoImportCompletions": true,
 }

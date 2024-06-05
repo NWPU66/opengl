@@ -178,7 +178,7 @@ int main(int /*argc*/, char** /*argv*/)
     // 光空间的变换
 
     // 渲染循环
-    while (!glfwWindowShouldClose(window))
+    while (glfwWindowShouldClose(window) == 0)
     {
         // 更新时钟、摄像机并处理输入信号
         deltaTime = glfwGetTime() - lastFrame;
