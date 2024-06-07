@@ -245,6 +245,19 @@ advancedLighting/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedLighting.dir\build.make CMakeFiles/advancedLighting.dir/build
 .PHONY : advancedLighting/fast
 
+#=============================================================================
+# Target rules for targets named normalMap
+
+# Build rule for target.
+normalMap: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 normalMap
+.PHONY : normalMap
+
+# fast build rule for target.
+normalMap/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\normalMap.dir\build.make CMakeFiles/normalMap.dir/build
+.PHONY : normalMap/fast
+
 3rdparty/glad/src/glad.obj: 3rdparty/glad/src/glad.c.obj
 .PHONY : 3rdparty/glad/src/glad.obj
 
@@ -292,6 +305,30 @@ src/advancedLighting/advancedLighting.s: src/advancedLighting/advancedLighting.c
 src/advancedLighting/advancedLighting.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\advancedLighting.dir\build.make CMakeFiles/advancedLighting.dir/src/advancedLighting/advancedLighting.cpp.s
 .PHONY : src/advancedLighting/advancedLighting.cpp.s
+
+src/advancedLighting/normalMap.obj: src/advancedLighting/normalMap.cpp.obj
+.PHONY : src/advancedLighting/normalMap.obj
+
+# target to build an object file
+src/advancedLighting/normalMap.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\normalMap.dir\build.make CMakeFiles/normalMap.dir/src/advancedLighting/normalMap.cpp.obj
+.PHONY : src/advancedLighting/normalMap.cpp.obj
+
+src/advancedLighting/normalMap.i: src/advancedLighting/normalMap.cpp.i
+.PHONY : src/advancedLighting/normalMap.i
+
+# target to preprocess a source file
+src/advancedLighting/normalMap.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\normalMap.dir\build.make CMakeFiles/normalMap.dir/src/advancedLighting/normalMap.cpp.i
+.PHONY : src/advancedLighting/normalMap.cpp.i
+
+src/advancedLighting/normalMap.s: src/advancedLighting/normalMap.cpp.s
+.PHONY : src/advancedLighting/normalMap.s
+
+# target to generate assembly for a file
+src/advancedLighting/normalMap.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\normalMap.dir\build.make CMakeFiles/normalMap.dir/src/advancedLighting/normalMap.cpp.s
+.PHONY : src/advancedLighting/normalMap.cpp.s
 
 src/advancedOpenGL/advancedGLSL.obj: src/advancedOpenGL/advancedGLSL.cpp.obj
 .PHONY : src/advancedOpenGL/advancedGLSL.obj
@@ -668,6 +705,7 @@ help:
 	@echo ... blending
 	@echo ... depthTest
 	@echo ... framebuffer
+	@echo ... normalMap
 	@echo ... outliner
 	@echo ... stencilTest
 	@echo ... utilTool
@@ -677,6 +715,9 @@ help:
 	@echo ... src/advancedLighting/advancedLighting.obj
 	@echo ... src/advancedLighting/advancedLighting.i
 	@echo ... src/advancedLighting/advancedLighting.s
+	@echo ... src/advancedLighting/normalMap.obj
+	@echo ... src/advancedLighting/normalMap.i
+	@echo ... src/advancedLighting/normalMap.s
 	@echo ... src/advancedOpenGL/advancedGLSL.obj
 	@echo ... src/advancedOpenGL/advancedGLSL.i
 	@echo ... src/advancedOpenGL/advancedGLSL.s

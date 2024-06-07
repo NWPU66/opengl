@@ -59,4 +59,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/outliner.dir/DependInfo.cmake"
   "CMakeFiles/stencilTest.dir/DependInfo.cmake"
   "CMakeFiles/advancedLighting.dir/DependInfo.cmake"
+  "CMakeFiles/normalMap.dir/DependInfo.cmake"
   )

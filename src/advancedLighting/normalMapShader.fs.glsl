@@ -21,15 +21,10 @@ layout(std140,binding=0)uniform lightGroup{
     int numLights;
     Light lights[MAX_LIGHTS_NUM];
 };
-uniform sampler2D shadowMap;
-uniform samplerCube depthMap;
 
 uniform vec3 cameraPos;
 uniform sampler2D texture0;
 uniform samplerCube skybox;
-uniform mat4 lightSpaceMatrix;
-uniform vec3 lightPos;
-uniform float far_plane;
 
 //output
 out vec4 fragColor;
@@ -44,9 +39,7 @@ void main(){
         outputColor+=Lighting(i);
     }
     vec3 ambient=texture(skybox,reflect(fs_in.globalPos-cameraPos,fs_in.globalNormal)).xyz;
-    fragColor=vec4(outputColor*calculatePointShadow(),1.f);
-    
-    // fragColor=vec4(vec3(calculatePointShadow()),1);
+    fragColor=vec4(outputColor+ambient,1.f);
 }
 
 vec3 Lighting(int i){
@@ -94,46 +87,4 @@ vec3 Lighting(int i){
     
     //combine
     return(diffuse+specular)*lights[i].intensity*lightDistDropoff*spotLightCutOff;
-}
-
-float calculateShadow(){
-    vec4 fragLightSpacePos4=lightSpaceMatrix*vec4(fs_in.globalPos,1);
-    vec3 fragLightSpacePos=(fragLightSpacePos4.xyz/fragLightSpacePos4.w+1)/2;//透视除法，转换到[0,1]
-    /**FIXME - 错题本
-    注意fragLightSpacePos.xy得范围是[-1, 1]，要转换成[0, 1]才能当作UV来采样*/
-    if(fragLightSpacePos.z<0||fragLightSpacePos.z>1){
-        return.5;
-    }
-    
-    // float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    float shadow=0,bias=.0001,s_col=.1,l_col=.5;
-    vec2 texelSize=1./textureSize(shadowMap,0);
-    /**FIXME - 错题本
-    textureSize()返回整数int，所以1/textureSize(shadowMap,0)算整数除法=0*/
-    for(int i=0;i<3;i++){
-        for(int j=0;j<3;j++){
-            float cloestDepth=texture(shadowMap,fragLightSpacePos.xy+vec2(i,j)*texelSize).r;
-            shadow+=(fragLightSpacePos.z-bias>cloestDepth)?s_col:l_col;
-        }
-    }
-    
-    return shadow/9;
-}
-
-float calculatePointShadow(){
-    vec3 displacementToLight=lightPos-fs_in.globalPos;
-    float distanceToLight=length(displacementToLight)/far_plane;
-    
-    float bias=.0001,s_col=.1,l_col=.5;
-    float offset=.01,samples=4.,shadow=0.;
-    for(float x=-offset;x<+offset;x+=offset/(samples*.5)){
-        for(float y=-offset;y<offset;y+=offset/(samples*.5)){
-            for(float z=-offset;z<offset;z+=offset/(samples*.5)){
-                float cloestDepth=texture(depthMap,-displacementToLight+vec3(x,y,z)).r;
-                //FIXME - displacementToLight是指向光源的向量，采样的时候要反向
-                shadow+=(distanceToLight-bias>cloestDepth)?s_col:l_col;
-            }
-        }
-    }
-    return shadow/pow(samples,3);
 }

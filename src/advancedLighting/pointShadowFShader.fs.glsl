@@ -1,0 +1,24 @@
+//NOTE - 上个教程，我们使用的是一个空的像素着色器，让OpenGL配置深度贴图的深度值。
+//这次我们将计算自己的深度，这个深度就是每个fragment位置和光源位置之间的线性距离。
+//计算自己的深度值使得之后的阴影计算更加直观。
+
+#version 460 core
+in vec4 FragPos;
+
+uniform vec3 lightPos;
+uniform float far_plane;
+
+void main()
+{
+    float lightDistance=length(FragPos.xyz-lightPos);// get distance between fragment and light source
+    
+    lightDistance=lightDistance/far_plane;// map to [0;1] range by dividing by far_plane
+    
+    gl_FragDepth=lightDistance;// write this as modified depth
+}
+
+//NOTE - 像素着色器将来自几何着色器的FragPos、光的位置向量和视锥的远平面值作为输入。
+//这里我们把fragment和光源之间的距离，映射到0到1的范围，把它写入为fragment的深度值。
+
+//使用这些着色器渲染场景，立方体贴图附加的帧缓冲对象激活以后，
+//你会得到一个完全填充的深度立方体贴图，以便于进行第二阶段的阴影计算。

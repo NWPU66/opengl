@@ -123,8 +123,10 @@ int main(int /*argc*/, char** /*argv*/)
      * 窗口分辨率）有着不同的分辨率，我们需要改变视口（viewport）的参数以适应阴影贴图的尺寸。
      */
     // 光源的空间变换
-    const GLfloat nearPlane = 0.1, farPlane = 15.0;
-    mat4          lightView = lookAt(vec3(2, 3, 1), vec3(0), vec3(0, 1, 0));
+    const GLfloat   nearPlane      = 0.1F;
+    const GLfloat   farPlane       = 15.0F;
+    const glm::vec3 light_position = glm::vec3(2, 3, 1);
+    mat4            lightView      = lookAt(light_position, vec3(0), vec3(0, 1, 0));
     // mat4          lightProjection = ortho(-5.0f, 5.0f, -5.0f, 5.0f, nearPlane,
     //                                       farPlane);  // 正交投影变换
     mat4 lightProjection  = perspective(radians(45.0f), cameraAspect, nearPlane, farPlane);
@@ -169,6 +171,12 @@ int main(int /*argc*/, char** /*argv*/)
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemapTexture, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
+    //  检查帧缓冲状态
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Framebuffer is  complete!" << std::endl;
+    }
+    else { std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl; }
     // 解绑
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -176,6 +184,56 @@ int main(int /*argc*/, char** /*argv*/)
     /**NOTE - 生成深度立方体贴图（点光源）
      */
     // 光空间的变换
+    GLfloat   near   = 1.0F;
+    GLfloat   far    = 25.0F;
+    GLfloat   aspect = static_cast<GLfloat>(SHADOW_WIDTH) / static_cast<GLfloat>(SHADOW_HEIGHT);
+    glm::mat4 shadow_projection = glm::perspective(glm::radians(90.0F), aspect, near, far);
+    // 90度我们才能保证视野足够大到可以合适地填满立方体贴图的一个面，立方体贴图的所有面都能与其他面在边缘对齐。
+    // 创建摄像机变换（视图矩阵）
+    std::vector<glm::mat4> shadow_transforms = {
+        shadow_projection * glm::lookAt(light_position, light_position + glm::vec3(1.0, 0.0, 0.0),
+                                        glm::vec3(0.0, -1.0, 0.0)),
+        shadow_projection * glm::lookAt(light_position, light_position + glm::vec3(-1.0, 0.0, 0.0),
+                                        glm::vec3(0.0, -1.0, 0.0)),
+        shadow_projection * glm::lookAt(light_position, light_position + glm::vec3(0.0, 1.0, 0.0),
+                                        glm::vec3(0.0, 0.0, 1.0)),
+        shadow_projection * glm::lookAt(light_position, light_position + glm::vec3(0.0, -1.0, 0.0),
+                                        glm::vec3(0.0, 0.0, -1.0)),
+        shadow_projection * glm::lookAt(light_position, light_position + glm::vec3(0.0, 0.0, 1.0),
+                                        glm::vec3(0.0, -1.0, 0.0)),
+        shadow_projection * glm::lookAt(light_position, light_position + glm::vec3(0.0, 0.0, -1.0),
+                                        glm::vec3(0.0, -1.0, 0.0))};
+    // 我们要为每个方向提供一个不同的视图矩阵。创建6个观察方向，每个都按顺序注视着立方体贴图的的一个方向：右左上下近远
+
+    // 渲染PointShadowMap
+    Shader pointShaderShader("./shader/PointShadowVShader.vs.glsl",
+                             "./shader/PointShadowFShader.fs.glsl",
+                             "./shader/PointShadowGShader.gs.glsl");
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    pointShaderShader.use();
+    // uniform
+    pointShaderShader.setParameter("model", mat4(1.0F));
+    for (int i = 0; i < 6; i++)
+    {
+        std::string para_name = "shadowMatrices[" + std::to_string(i) + "]";
+        pointShaderShader.setParameter(para_name, shadow_transforms[i]);
+    }
+    pointShaderShader.setParameter("lightPos", light_position);
+    pointShaderShader.setParameter("far_plane", far);
+    // bind cubeMap texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemapTexture);
+    // render scene
+    glCullFace(GL_FRONT);  // 正面剔除，深度会稍微大一些，但仍然再阴影得前面
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    pointShaderShader.setParameter("model", scale(mat4(1), vec3(5)));
+    plane.Draw(&pointShaderShader);
+    pointShaderShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
+    box.Draw(&pointShaderShader);
+    // 恢复现场
+    glCullFace(GL_BACK);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // 渲染循环
     while (glfwWindowShouldClose(window) == 0)
@@ -205,36 +263,27 @@ int main(int /*argc*/, char** /*argv*/)
         // 木地板
         phongShader.use();
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, woodTexture);
-        phongShader.setParameter("texture0", 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemapTexture);
+        phongShader.setParameter("depthMap", 0);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-        phongShader.setParameter("shadowMap", 1);
+        glBindTexture(GL_TEXTURE_2D, woodTexture);
+        phongShader.setParameter("texture0", 1);
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        phongShader.setParameter("skybox", 2);
         phongShader.setParameter("model", scale(mat4(1), vec3(5)));
         phongShader.setParameter("view", view);
         phongShader.setParameter("projection", projection);
         phongShader.setParameter("cameraPos", camera->Position);
-        phongShader.setParameter("lightSpaceMatrix", lightSpaceMatrix);
-        phongShader.setParameter("skybox", 0);
+        phongShader.setParameter("lightPos", light_position);
+        phongShader.setParameter("far_plane", far);
         plane.Draw(&phongShader);
-        glBindTexture(GL_TEXTURE_2D, 0);
         // 木板箱子
-        phongShader.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, containerTexture);
-        phongShader.setParameter("texture0", 0);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-        phongShader.setParameter("shadowMap", 1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        glBindTexture(GL_TEXTURE_2D, containerTexture);
         phongShader.setParameter("model", translate(scale(mat4(1), vec3(0.5)), vec3(0, 1, 0)));
-        phongShader.setParameter("view", view);
-        phongShader.setParameter("projection", projection);
-        phongShader.setParameter("cameraPos", camera->Position);
-        phongShader.setParameter("lightSpaceMatrix", lightSpaceMatrix);
-        phongShader.setParameter("skybox", 0);
         box.Draw(&phongShader);
+        // 解绑
         glBindTexture(GL_TEXTURE_2D, 0);  // TODO - 两个槽位都要解除
 
         /**NOTE - 渲染灯光
@@ -799,4 +848,16 @@ void renderTextureToScreen(const GLuint screenVAO, const GLuint textureToShow, S
  *
  * 每个光空间的变换矩阵包含了投影和视图矩阵。对于投影矩阵来说，我们将使用一个透视投影矩阵；
  * 光源代表一个空间中的点，所以透视投影矩阵更有意义。每个光空间变换矩阵使用同样的投影矩阵：
+ *
+ * NOTE - 万向阴影贴图
+ * 
+ * NOTE - PCF
+ * 当然了，我们添加到每个样本的bias（偏移）高度依赖于上下文，总是要根据场景进行微调的。
+ * 试试这些值，看看怎样影响了场景。 这里是最终版本的顶点和像素着色器。
+ * 
+ * 我还要提醒一下使用几何着色器来生成深度贴图不会一定比每个面渲染场景6次更快。
+ * 使用几何着色器有它自己的性能局限，在第一个阶段使用它可能获得更好的性能表现。
+ * 这取决于环境的类型，以及特定的显卡驱动等等，所以如果你很关心性能，
+ * 就要确保对两种方法有大致了解，然后选择对你场景来说更高效的那个。
+ * 我个人还是喜欢使用几何着色器来进行阴影映射，原因很简单，因为它们使用起来更简单。
  */
