@@ -37,10 +37,10 @@ void Mesh::setupMesh()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // 生成顶点数据，并填充
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
-                 vertices.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
-                 indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(),
+                 GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(),
+                 GL_STATIC_DRAW);
     // 设置VBO中数据的解读方式
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
@@ -50,6 +50,12 @@ void Mesh::setupMesh()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                           (void*)offsetof(Vertex, TexCoords));
     glEnableVertexAttribArray(2);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (void*)offsetof(Vertex, Tangent));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (void*)offsetof(Vertex, Bitangent));
+    glEnableVertexAttribArray(4);
     // 解绑
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -82,8 +88,7 @@ void Mesh::Draw(Shader* shader, GLuint instanceNum)
     // 绘制
     glBindVertexArray(VAO);
     // glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0,
-                            instanceNum);
+    glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instanceNum);
     glBindVertexArray(0);
 
     // always good practice to set everything back to defaults once configured.

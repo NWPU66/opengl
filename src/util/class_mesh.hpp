@@ -18,9 +18,12 @@ struct Vertex
     vec3 Position;
     vec3 Normal;
     vec2 TexCoords;
-    Vertex(){};
-    Vertex(vec3 Position, vec3 Normal, vec2 TexCoords)
-        : Position(Position), Normal(Normal), TexCoords(TexCoords)
+    vec3 Tangent;
+    vec3 Bitangent;
+    Vertex() {};
+    Vertex(vec3 Position, vec3 Normal, vec2 TexCoords, vec3 Tangent, vec3 Bitangent)
+        : Position(Position), Normal(Normal), TexCoords(TexCoords), Tangent(Tangent),
+          Bitangent(Bitangent)
     {
     }
 };
@@ -30,11 +33,8 @@ struct Texture
     GLuint id;
     string type;
     string path;
-    Texture(){};
-    Texture(GLuint id, string type, string path)
-        : id(id), type(type), path(path)
-    {
-    }
+    Texture() {};
+    Texture(GLuint id, string type, string path) : id(id), type(type), path(path) {}
 };
 
 class Mesh {
@@ -44,9 +44,7 @@ public:
     vector<GLuint>  indices;
     vector<Texture> textures;
     // 函数
-    Mesh(vector<Vertex>&  vertices,
-         vector<GLuint>&  indices,
-         vector<Texture>& textures);
+    Mesh(vector<Vertex>& vertices, vector<GLuint>& indices, vector<Texture>& textures);
     ~Mesh();
     void Draw(Shader* shader, GLuint instanceNum = 1);
     void SetInstanceArray(GLuint      instanceVBO,

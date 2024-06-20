@@ -27,7 +27,9 @@ void   mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void   scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void   processInput(GLFWwindow* window);
 int    initGLFWWindow(GLFWwindow*& window);
-GLuint createImageObjrct(const char* imagePath, const bool autoGammaCorrection = true);
+GLuint createImageObjrct(const char* imagePath,
+                         const bool  autoGammaCorrection = true,
+                         const bool  flip_texture        = true);
 GLuint createSkyboxTexture(const char* imageFolder, const bool autoGammaCorrection = true);
 void   createFBO(GLuint& fbo, GLuint& texAttachment, GLuint& rbo, const char* hint = "null");
 void   createObjFromHardcode(GLuint&         vao,
@@ -135,7 +137,9 @@ int main(int /*argc*/, char** /*argv*/)
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
         phongLightingWithNormal.setParameter("skybox", 2);
         phongLightingWithNormal.setParameter(
-            "model", rotate(translate(mat4(1), vec3(0, 1, -1)), radians(90.0F), vec3(1, 0, 0)));
+            "model",
+            rotate(rotate(translate(mat4(1), vec3(0, 1, -1)), radians(90.0F), vec3(1, 0, 0)),
+                   radians(180.0F), vec3(0, 1, 0)));
         phongLightingWithNormal.setParameter("view", view);
         phongLightingWithNormal.setParameter("projection", projection);
         phongLightingWithNormal.setParameter("cameraPos", camera->Position);
@@ -294,11 +298,12 @@ int initGLFWWindow(GLFWwindow*& window)
 /// C风格字符串的指针，该字符串表示要加载并从中创建纹理对象的图像文件的路径。该路径应指向文件系统上图像文件的位置。
 /// @return 函数 createImageObjrct 返回一个整数值，它是在
 /// OpenGL中加载和创建的图像的纹理 ID。
-GLuint createImageObjrct(const char* imagePath, const bool autoGammaCorrection)
+GLuint
+createImageObjrct(const char* imagePath, const bool autoGammaCorrection, const bool flip_texture)
 {
     // 读取
     GLint width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);  // 加载图片时翻转y轴
+    stbi_set_flip_vertically_on_load(flip_texture);  // 加载图片时翻转y轴
     GLubyte* data = stbi_load(imagePath, &width, &height, &nrChannels, 0);
     // 创建纹理对象
     GLuint texture;
@@ -580,4 +585,19 @@ void renderTextureToScreen(const GLuint screenVAO, const GLuint textureToShow, S
 这是建构这个矩阵所需的向量。要建构这样一个把切线空间转变为不同空间的变异矩阵，
 我们需要三个相互垂直的向量，它们沿一个表面的法线贴图对齐于：上、右、前；
 这和我们在摄像机教程中做的类似。
+
+* NOTE - 手工计算切线和副切线
+
+* NOTE - 切线空间法线贴图
+我们先将所有TBN向量变换到我们所操作的坐标系中，现在是世界空间，我们可以乘以
+model矩阵。然后我们创建实际的TBN矩阵，直接把相应的向量应用到mat3构造器就行。
+注意，如果我们希望更精确的话就不要将TBN向量乘以model矩阵，而是使用法线矩阵，
+因为我们只关心向量的方向，不关心平移和缩放。
+
+从技术上讲，顶点着色器中无需副切线。所有的这三个TBN向量都是相互垂直的所以我们
+可以在顶点着色器中用T和N向量的叉乘，自己计算出副切线：vec3 B = cross(T, N);
  */
+
+/**REVIEW - 视差贴图
+
+*/

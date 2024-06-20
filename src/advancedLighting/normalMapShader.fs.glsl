@@ -7,6 +7,9 @@ in VS_OUT{
     vec3 globalPos;
     vec3 globalNormal;
     vec2 texCoord;
+    vec3 globalTangent;
+    vec3 globalBitangent;
+    mat3 TBN;
 }fs_in;
 
 struct Light{
@@ -30,11 +33,20 @@ uniform samplerCube skybox;
 //output
 out vec4 fragColor;
 
-vec3 globalNormal=(gl_FragCoord.x<400)?normalize(texture(texture_normal,fs_in.texCoord).xyz*2.f-1.f):fs_in.globalNormal;
+vec3 globalNormal=(gl_FragCoord.x<400)?normalize(fs_in.TBN*normalize(texture(texture_normal,fs_in.texCoord).xyz*2.f-1.f)):fs_in.globalNormal;
+/**NOTE -
+可行的改进：在vertexshader中把所有要在fragmentshader中使用的变量都转换进tangent空间
+这样就不必再fragmentshader中使用昂贵的矩阵乘法来计算globalNormal
+
+需要计算的量：
+uniform vec3 dirToLight;
+uniform vec3 dirToCamera;
+其中dirToLight对于多光源管理来说有点困难
+另外这两个量在vertexshader准备的时候最好使用“位移”而非“方向”
+“位移”在globalspace中式线性的，“方向”则不是
+*/
 
 vec3 Lighting(int i);
-float calculateShadow();
-float calculatePointShadow();
 
 void main(){
     vec3 outputColor=vec3(0.f);
@@ -98,4 +110,5 @@ vec3 Lighting(int i){
     
     //combine
     return(diffuse+specular)*lights[i].intensity*lightDistDropoff*spotLightCutOff;
+    // return vec3(dot(globalNormal,dirToLight))/5;
 }

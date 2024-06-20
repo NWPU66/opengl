@@ -19,10 +19,10 @@ void Model::Draw(Shader* shader, GLuint instanceNum)
 void Model::loadModel(const string path)
 {
     Assimp::Importer import;
-    const aiScene*   scene =
-        import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-        !scene->mRootNode)
+    // const aiScene*   scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene* scene =
+        import.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs);
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         cout << "ERROR::ASSIMP::" << import.GetErrorString() << endl;
         return;
@@ -46,8 +46,7 @@ void Model::SetInstanceArray(GLuint      instanceVBO,
 {
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
     for (int i = 0; i < meshes.size(); i++)
-        meshes[i].SetInstanceArray(instanceVBO, vaoSlot, vecSize, stride,
-                                   offset, updateFruq);
+        meshes[i].SetInstanceArray(instanceVBO, vaoSlot, vecSize, stride, offset, updateFruq);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -74,15 +73,21 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     {
         Vertex vertex;
         // 处理顶点位置、法线和纹理坐标
-        vertex.Position = vec3(mesh->mVertices[i].x, mesh->mVertices[i].y,
-                               mesh->mVertices[i].z);
-        vertex.Normal =
-            vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+        vertex.Position = vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+        vertex.Normal   = vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+
         if (mesh->HasTextureCoords(0))
-            vertex.TexCoords = vec2(mesh->mTextureCoords[0][i].x,
-                                    mesh->mTextureCoords[0][i].y);
+            vertex.TexCoords = vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
         else
             vertex.TexCoords = vec2(0.0f, 0.0f);
+
+        // tangent and bitangent
+        if (mesh->HasTangentsAndBitangents())
+        {
+            vertex.Tangent = vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+            vertex.Bitangent =
+                vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
+        }
 
         vertices.push_back(vertex);
     }
@@ -101,19 +106,18 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
         // diffuse
-        vector<Texture> diffuseMaps = loadMaterialTextures(
-            material, aiTextureType_DIFFUSE, "texture_diffuse");
+        vector<Texture> diffuseMaps =
+            loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
         // specular
-        vector<Texture> specularMaps = loadMaterialTextures(
-            material, aiTextureType_SPECULAR, "texture_specular");
-        textures.insert(textures.end(), specularMaps.begin(),
-                        specularMaps.end());
+        vector<Texture> specularMaps =
+            loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
         // normal
-        std::vector<Texture> normalMaps = loadMaterialTextures(
-            material, aiTextureType_HEIGHT, "texture_normal");
+        std::vector<Texture> normalMaps =
+            loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
         // FIXME - 为什么法线贴图的类型是 aiTextureType_HEIGHT ？
     }
@@ -121,9 +125,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     return Mesh(vertices, indices, textures);
 }
 
-vector<Texture> Model::loadMaterialTextures(aiMaterial*   mat,
-                                            aiTextureType type,
-                                            string        typeName)
+vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
 {
     vector<Texture> textures;
     for (int i = 0; i < mat->GetTextureCount(type); i++)
@@ -143,8 +145,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial*   mat,
 
         if (!skip)
         {
-            GLuint id =
-                TextureFromFile(texturePath.C_Str(), this->directory, false);
+            GLuint  id = TextureFromFile(texturePath.C_Str(), this->directory, false);
             Texture texture(id, typeName, string(texturePath.C_Str()));
             textures.push_back(texture);
             textures_loaded.push_back(texture);
@@ -161,13 +162,12 @@ GLuint TextureFromFile(const char* path, const string& directory, bool gamma)
 
     // 生成并绑定纹理对象
     GLuint textureID;
-    glGenTextures(1, &textureID);  // gl函数要在GLAD加载之后调用
+    glGenTextures(1, &textureID);             // gl函数要在GLAD加载之后调用
     glBindTexture(GL_TEXTURE_2D, textureID);  // 绑定
 
     // 读取图片
     int            width, height, nrComponents;
-    unsigned char* data =
-        stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
         GLenum format;
@@ -180,15 +180,13 @@ GLuint TextureFromFile(const char* path, const string& directory, bool gamma)
         cout << "channel" << nrComponents << endl;
 
         // 创建纹理对象的数据
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
-                     GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         // 纹理设置
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                        GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     else
