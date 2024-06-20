@@ -24,10 +24,13 @@ layout(std140,binding=0)uniform lightGroup{
 
 uniform vec3 cameraPos;
 uniform sampler2D texture0;
+uniform sampler2D texture_normal;
 uniform samplerCube skybox;
 
 //output
 out vec4 fragColor;
+
+vec3 globalNormal=(gl_FragCoord.x<400)?normalize(texture(texture_normal,fs_in.texCoord).xyz*2.f-1.f):fs_in.globalNormal;
 
 vec3 Lighting(int i);
 float calculateShadow();
@@ -38,8 +41,16 @@ void main(){
     for(int i=0;i<MAX_LIGHTS_NUM;i++){
         outputColor+=Lighting(i);
     }
+    
+    //ambient加上一个随视角的改变，正视的时候强度小，斜视强度大
     vec3 ambient=texture(skybox,reflect(fs_in.globalPos-cameraPos,fs_in.globalNormal)).xyz;
-    fragColor=vec4(outputColor+ambient,1.f);
+    vec3 fragToCamera=normalize(cameraPos-fs_in.globalPos);
+    float fr=pow(1-max(dot(fragToCamera,fs_in.globalNormal),0.f),8);
+    fragColor=vec4(vec3(fr),1);
+    
+    fragColor=vec4(outputColor+ambient*fr,1.f);
+    
+    // fragColor=vec4(globalNormal,1);
 }
 
 vec3 Lighting(int i){
@@ -72,18 +83,18 @@ vec3 Lighting(int i){
     }
     
     //diffusion
-    float diffuseFac=max(dot(dirToLight,fs_in.globalNormal),0.f);
+    float diffuseFac=max(dot(dirToLight,globalNormal),0.f);
     vec3 diffuseColor=lights[i].color*texture(texture0,fs_in.texCoord).rgb;
     vec3 diffuse=diffuseColor*diffuseFac;
     
     //specular
     vec3 halfVec=normalize(dirToLight+viewDir);
-    float specularFac=pow(max(dot(halfVec,fs_in.globalNormal),0.f),64);
+    float specularFac=pow(max(dot(halfVec,globalNormal),0.f),64);
     vec3 specularColor=texture(texture0,fs_in.texCoord).rgb*lights[i].color;
     vec3 specular=specularColor*specularFac;
     
     //ambient
-    // vec3 ambient=texture(skybox,reflect(-viewDir,fs_in.globalNormal)).xyz;
+    // vec3 ambient=texture(skybox,reflect(-viewDir,globalNormal)).xyz;
     
     //combine
     return(diffuse+specular)*lights[i].intensity*lightDistDropoff*spotLightCutOff;

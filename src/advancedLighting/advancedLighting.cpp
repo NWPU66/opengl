@@ -65,7 +65,7 @@ int main(int /*argc*/, char** /*argv*/)
                        "./shader/stdShadowedPhongLighting.fs.glsl");
     Shader lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
     GLuint cubeTexture      = createSkyboxTexture("./texture/");
-    GLuint woodTexture      = createImageObjrct("./texture/wood.jpg");  // 创建立方体贴图
+    GLuint woodTexture      = createImageObjrct("./texture/wood.jpg");  
     GLuint containerTexture = createImageObjrct("./texture/container2.png");
 
     /**NOTE - 灯光组

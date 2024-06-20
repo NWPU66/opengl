@@ -89,4 +89,5 @@
     "commentAnchors.tagHighlights.enabled": true,
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoImportCompletions": true,
+    "cmake.generator": "MinGW Makefiles",
 }

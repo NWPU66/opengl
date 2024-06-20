@@ -1,3 +1,5 @@
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/trigonometric.hpp"
 #include <glad/glad.h>
 // GLAD first
 #define STB_IMAGE_IMPLEMENTATION
@@ -60,11 +62,15 @@ int main(int /*argc*/, char** /*argv*/)
     Model  box("./box/box.obj");
     Model  plane("./plane/plane.obj");
     Model  sphere("./sphere/sphere.obj");
+    Shader phongShader("./shader/stdVerShader.vs.glsl", "./shader/stdPhongLighting.fs.glsl");
+    Shader phongLightingWithNormal("./shader/stdVerShader.vs.glsl",
+                                   "./shader/normalMapShader.fs.glsl");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl");
     Shader lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
     GLuint brickwallDiffuseTexture = createImageObjrct("./texture/brickwall.jpg", true);
     GLuint brickwallNormalTexture  = createImageObjrct("./texture/brickwall_normal.jpg", false);
     GLuint cubeTexture             = createSkyboxTexture("./texture/", true);
+    GLuint woodTexture             = createImageObjrct("./texture/wood.jpg");
 
     /**NOTE - 灯光组
      */
@@ -104,6 +110,36 @@ int main(int /*argc*/, char** /*argv*/)
 
         /**NOTE - 渲染
          */
+        // 木地板
+        phongShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, woodTexture);
+        phongShader.setParameter("texture0", 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        phongShader.setParameter("skybox", 1);
+        phongShader.setParameter("model", scale(mat4(1), vec3(5)));
+        phongShader.setParameter("view", view);
+        phongShader.setParameter("projection", projection);
+        phongShader.setParameter("cameraPos", camera->Position);
+        plane.Draw(&phongShader);
+        // 带法线的砖墙
+        phongLightingWithNormal.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, brickwallDiffuseTexture);
+        phongLightingWithNormal.setParameter("texture0", 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, brickwallNormalTexture);
+        phongLightingWithNormal.setParameter("texture_normal", 1);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        phongLightingWithNormal.setParameter("skybox", 2);
+        phongLightingWithNormal.setParameter(
+            "model", rotate(translate(mat4(1), vec3(0, 1, -1)), radians(90.0F), vec3(1, 0, 0)));
+        phongLightingWithNormal.setParameter("view", view);
+        phongLightingWithNormal.setParameter("projection", projection);
+        phongLightingWithNormal.setParameter("cameraPos", camera->Position);
+        plane.Draw(&phongLightingWithNormal);
 
         /**NOTE - 渲染灯光
          */
@@ -498,13 +534,13 @@ void renderTextureToScreen(const GLuint screenVAO, const GLuint textureToShow, S
  * 颜色向量用r、g、b元素代表一个3D向量。类似的我们也可以将法线向量
  * 的x、y、z元素储存到纹理中，代替颜色的r、g、b元素。法线向量的范围
  * 在-1到1之间，所以我们先要将其映射到0到1的范围：
- * 
+ *
  * 这会是一种偏蓝色调的纹理（你在网上找到的几乎所有法线贴图都是这样的）。
  * 这是因为所有法线的指向都偏向z轴（0, 0, 1）这是一种偏蓝的颜色。法线向量从
  * z轴方向也向其他方向轻微偏移，颜色也就发生了轻微变化，这样看起来便有了
  * 一种深度。例如，你可以看到在每个砖块的顶部，颜色倾向于偏绿，这是因为
  * 砖块的顶部的法线偏向于指向正y轴方向（0, 1, 0），这样它就是绿色的了。
- * 
+ *
  * 在一个简单的朝向正z轴的平面上，我们可以用这个diffuse纹理和这个法线贴图
  * 来渲染前面部分的图片。要注意的是这个链接里的法线贴图和上面展示的那个
  * 不一样。原因是OpenGL读取的纹理的y（或V）坐标和纹理通常被创建的方式相反。
@@ -512,4 +548,36 @@ void renderTextureToScreen(const GLuint screenVAO, const GLuint textureToShow, S
  * 如果你没考虑这个，光照就不正确了（译注：如果你现在不再使用SOIL了，
  * 那就不要用链接里的那个法线贴图，这个问题是SOIL载入纹理上下颠倒所致，
  * 它也会把法线在y方向上颠倒）。
+ *
+ * 你可以看到所有法线都指向z方向，它们本该朝着表面法线指向y方向的。
+ 一个可行方案是为每个表面制作一个单独的法线贴图。如果是一个立方体的话我们就需要6个法线贴图，
+ 但是如果模型上有无数的朝向不同方向的表面，这就不可行了
+ （译注：实际上对于复杂模型可以把朝向各个方向的法线储存在同一张贴图上，
+ 你可能看到过不只是蓝色的法线贴图，不过用那样的法线贴图有个问题是你必须记住模型的起始朝向，
+ 如果模型运动了还要记录模型的变换，这是非常不方便的；此外就像作者所说的，
+ 如果把一个diffuse纹理应用在同一个物体的不同表面上，就像立方体那样的，
+ 就需要做6个法线贴图，这也不可取）。
+ *
+ * 另一个稍微有点难的解决方案是，在一个不同的坐标空间中进行光照，
+ 这个坐标空间里，法线贴图向量总是指向这个坐标空间的正z方向；所有的光照向量都相对
+ 与这个正z方向进行变换。这样我们就能始终使用同样的法线贴图，不管朝向问题。
+ 这个坐标空间叫做切线空间（tangent space）。
+
+ * NOTE - 切线空间
+ 法线贴图中的法线向量定义在切线空间中，在切线空间中，法线永远指着正z方向。
+ 切线空间是位于三角形表面之上的空间：法线相对于单个三角形的局部坐标系。
+ 它就像法线贴图向量的局部空间；它们都被定义为指向正z方向，无论最终变换到什么方向。
+ 使用一个特定的矩阵我们就能将本地/切线空间中的法线向量转成世界或视图空间下，
+ 使它们转向到最终的贴图表面的方向。
+
+我们可以说，上个部分那个朝向正y的法线贴图错误的贴到了表面上。法线贴图被定义在切线空间中，
+所以一种解决问题的方式是计算出一种矩阵，把法线从切线空间变换到一个不同的空间，
+这样它们就能和表面法线方向对齐了：法线向量都会指向正y方向。切线空间的一大好处是
+我们可以为任何类型的表面计算出一个这样的矩阵，由此我们可以把切线空间的z方向和表面的
+法线方向对齐。
+
+这种矩阵叫做TBN矩阵这三个字母分别代表tangent、bitangent和normal向量。
+这是建构这个矩阵所需的向量。要建构这样一个把切线空间转变为不同空间的变异矩阵，
+我们需要三个相互垂直的向量，它们沿一个表面的法线贴图对齐于：上、右、前；
+这和我们在摄像机教程中做的类似。
  */
