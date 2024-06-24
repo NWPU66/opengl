@@ -90,4 +90,5 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoImportCompletions": true,
     "cmake.generator": "MinGW Makefiles",
+    "C_Cpp.intelliSenseEngine": "disabled",
 }
