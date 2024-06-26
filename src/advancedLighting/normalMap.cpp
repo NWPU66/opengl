@@ -1,4 +1,6 @@
+#include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include "glm/trigonometric.hpp"
 #include <glad/glad.h>
 // GLAD first
@@ -15,8 +17,8 @@ using namespace std;
 
 /**NOTE - 全局变量、摄像机、全局时钟以及函数
  */
-const GLint CAMERA_WIDTH = 800;
-const GLint CAMERA_HEIGH = 600;
+const GLint CAMERA_WIDTH = 1920;
+const GLint CAMERA_HEIGH = 1080;
 const float cameraAspect = static_cast<float>(CAMERA_WIDTH) / static_cast<float>(CAMERA_HEIGH);
 Camera*     camera       = new Camera(vec3(0.0F, 0.0F, 2.0F), vec3(0.0F, 1.0F, 0.0F), -90.0F, 0.0F);
 float       mouseLastX = 0.0f, mouseLastY = 0.0f;  // 记录鼠标的位置
@@ -30,6 +32,13 @@ int    initGLFWWindow(GLFWwindow*& window);
 GLuint createImageObjrct(const char* imagePath,
                          const bool  autoGammaCorrection = true,
                          const bool  flip_texture        = true);
+/**FIXME - 错题本：关于要不要反转图像的y轴
+opengl纹理坐标uv(0, 0)位于图像的左下角，采样是（0，0）位置上的纹理会从图像的左下角读出
+opengl要求纹理数据的第一个元素位于纹理的左下角，而DX要求纹理数据的第一个元素位于纹理的左上角
+stb_image.h读取图像的规则是：
+默认从图像的右上角开始读取，也就是说，它会将左上角当作data的第一个元素
+换言之，data[0][0]将会是左上角的像素，而data[h-1][0]将会是图像左下角的像素
+ */
 GLuint createSkyboxTexture(const char* imageFolder, const bool autoGammaCorrection = true);
 void   createFBO(GLuint& fbo, GLuint& texAttachment, GLuint& rbo, const char* hint = "null");
 void   createObjFromHardcode(GLuint&         vao,
@@ -57,7 +66,12 @@ int main(int /*argc*/, char** /*argv*/)
     glEnable(GL_CULL_FACE);                             // 启用面剔除
     glClearColor(0.2F, 0.3F, 0.3F, 1.0F);               // 设置清空颜色
     glEnable(GL_MULTISAMPLE);                           // 启用多重采样
-    glEnable(GL_FRAMEBUFFER_SRGB);                      // 自动Gamme矫正
+    /**NOTE - 文档中GL_MULTISAMPLE时默认启动的（true） */
+    // glEnable(GL_FRAMEBUFFER_SRGB);                      // 自动Gamme矫正
+    /**NOTE - 关闭自动gamma矫正
+    输入纹理的gamma矫正，还是OpenGL自动完成的
+    gamma矫正由我们自己在hdr_shader中完成
+    */
 
     /**NOTE - 模型和着色器、纹理
      */
@@ -67,12 +81,21 @@ int main(int /*argc*/, char** /*argv*/)
     Shader phongShader("./shader/stdVerShader.vs.glsl", "./shader/stdPhongLighting.fs.glsl");
     Shader phongLightingWithNormal("./shader/stdVerShader.vs.glsl",
                                    "./shader/normalMapShader.fs.glsl");
+    Shader phongLightingWithDepth("./shader/stdVerShader.vs.glsl",
+                                  "./shader/ParallaxMapping.fs.glsl");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl");
     Shader lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
-    GLuint brickwallDiffuseTexture = createImageObjrct("./texture/brickwall.jpg", true);
-    GLuint brickwallNormalTexture  = createImageObjrct("./texture/brickwall_normal.jpg", false);
-    GLuint cubeTexture             = createSkyboxTexture("./texture/", true);
-    GLuint woodTexture             = createImageObjrct("./texture/wood.jpg");
+    GLuint brickwallDiffuseTexture = createImageObjrct("./texture/brickwall.jpg", true, false);
+    GLuint brickwallNormalTexture =
+        createImageObjrct("./texture/brickwall_normal.jpg", false, false);
+    GLuint cubeTexture = createSkyboxTexture("./texture/", true);
+    GLuint woodTexture = createImageObjrct("./texture/wood.jpg", true);
+
+    GLuint depthBrick_diffuseMap = createImageObjrct("./texture/bricks2.jpg", true, false);
+    GLuint depthBrick_normalMap  = createImageObjrct("./texture/toy_box_normal.png", false, false);
+    GLuint depthBrick_depthMap   = createImageObjrct("./texture/toy_box_disp.png", false, false);
+
+    Shader hdr_shader("./shader/stdScreenShader.vs.glsl", "./shader/hdrScreenShader.fs.glsl");
 
     /**NOTE - 灯光组
      */
@@ -87,6 +110,41 @@ int main(int /*argc*/, char** /*argv*/)
      */
     DebugTool debugTool;
 
+    /**NOTE - 帧缓冲对象
+     */
+    GLuint hdr_FBO;
+    glGenFramebuffers(1, &hdr_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, hdr_FBO);
+    // 创建一个纹理缓冲作为颜色缓冲
+    GLuint hdr_frameTexture;
+    glGenTextures(1, &hdr_frameTexture);
+    glBindTexture(GL_TEXTURE_2D, hdr_frameTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
+                 nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdr_frameTexture,
+                           0);
+    // 创建深度缓冲和模板缓冲
+    GLuint hdr_RBO;
+    glGenRenderbuffers(1, &hdr_RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, hdr_RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, CAMERA_WIDTH, CAMERA_HEIGH);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                              hdr_RBO);
+    //  检查帧缓冲状态
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Framebuffer is  complete!" << std::endl;
+    }
+    else { std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl; }
+    // 解绑
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
     // 渲染循环
     while (glfwWindowShouldClose(window) == 0)
     {
@@ -98,6 +156,7 @@ int main(int /*argc*/, char** /*argv*/)
         // SECTION - 渲染循环
         /**NOTE - 清空屏幕
          */
+        glBindFramebuffer(GL_FRAMEBUFFER, hdr_RBO);
         glViewport(0, 0, CAMERA_WIDTH, CAMERA_HEIGH);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
                 GL_STENCIL_BUFFER_BIT);  // 清除颜色、深度和模板缓冲
@@ -137,13 +196,31 @@ int main(int /*argc*/, char** /*argv*/)
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
         phongLightingWithNormal.setParameter("skybox", 2);
         phongLightingWithNormal.setParameter(
-            "model",
-            rotate(rotate(translate(mat4(1), vec3(0, 1, -1)), radians(90.0F), vec3(1, 0, 0)),
-                   radians(180.0F), vec3(0, 1, 0)));
+            "model", rotate(translate(mat4(1), vec3(-1, 1, -2)), radians(90.0f), vec3(1, 0, 0)));
         phongLightingWithNormal.setParameter("view", view);
         phongLightingWithNormal.setParameter("projection", projection);
         phongLightingWithNormal.setParameter("cameraPos", camera->Position);
         plane.Draw(&phongLightingWithNormal);
+        // 带由深度贴图的墙
+        phongLightingWithDepth.use();
+        phongLightingWithDepth.setParameter(
+            "model", rotate(translate(mat4(1), vec3(1, 1, -2)), radians(90.0f), vec3(1, 0, 0)));
+        phongLightingWithDepth.setParameter("view", view);
+        phongLightingWithDepth.setParameter("projection", projection);
+        phongLightingWithDepth.setParameter("cameraPos", camera->Position);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, depthBrick_diffuseMap);
+        phongLightingWithDepth.setParameter("diffuseMap", 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, depthBrick_normalMap);
+        phongLightingWithDepth.setParameter("normalMap", 1);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, depthBrick_depthMap);
+        phongLightingWithDepth.setParameter("depthMap", 2);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        phongLightingWithDepth.setParameter("skybox", 3);
+        plane.Draw(&phongLightingWithDepth);
 
         /**NOTE - 渲染灯光
          */
@@ -173,11 +250,24 @@ int main(int /*argc*/, char** /*argv*/)
         skyboxShader.setParameter("skybox", 0);
         box.Draw(&skyboxShader);
         glFrontFace(GL_CCW);
+
+        /**NOTE - 将RBO中的色彩绘制到屏幕上
+         */
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, CAMERA_WIDTH, CAMERA_HEIGH);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+                GL_STENCIL_BUFFER_BIT);  // 清除颜色、深度和模板缓冲
+        // render
+        // hdr_shader.use();
+        // hdr_shader.setParameter("exposure", 1.0F);
+        debugTool.renderTextureToScreen(hdr_frameTexture, &hdr_shader);
+        // FIXME - renderTextureToScreen()这个函数默认设置的纹理名称不对（screenTexture）
+        // 但是一样能用，很奇怪。。。
         //~SECTION
 
         /**NOTE - 渲染阴影贴图的内容到屏幕上
          */
-        // debugTool.renderTextureToScreen(depthMapTexture);
+        // debugTool.renderTextureToScreen(hdr_frameTexture);
 
         // 处理事件、交换缓冲区
         glfwSwapBuffers(window);
@@ -599,5 +689,166 @@ model矩阵。然后我们创建实际的TBN矩阵，直接把相应的向量应
  */
 
 /**REVIEW - 视差贴图
+视差贴图(Parallax Mapping)技术和法线贴图差不多，但它有着不同的原则。和法线贴图一样
+视差贴图能够极大提升表面细节，使之具有深度感。它也是利用了视错觉，然而对深度有着更好的表达，
+与法线贴图一起用能够产生难以置信的效果。视差贴图和光照无关，我在这里是作为法线贴图的
+技术延续来讨论它的。需要注意的是在开始学习视差贴图之前强烈建议先对法线贴图，
+特别是切线空间有较好的理解。
 
+视差贴图属于位移贴图(Displacement Mapping)技术的一种，它对根据储存在纹理中的几何信息
+对顶点进行位移或偏移。一种实现的方式是比如有1000个顶点，根据纹理中的数据对平面特定区域
+的顶点的高度进行位移。这样的每个纹理像素包含了高度值纹理叫做高度贴图。一张简单的砖块
+表面的高度贴图如下所示：
+
+整个平面上的每个顶点都根据从高度贴图采样出来的高度值进行位移，根据材质的几何
+属性平坦的平面变换成凹凸不平的表面。例如一个平坦的平面利用上面的高度贴图进行
+置换能得到以下结果：
+![](https://learnopengl-cn.github.io/img/05/05/parallax_mapping_plane_heightmap.png)
+
+置换顶点有一个问题就是平面必须由很多顶点组成才能获得具有真实感的效果，
+否则看起来效果并不会很好。一个平坦的表面上有1000个顶点计算量太大了。
+我们能否不用这么多的顶点就能取得相似的效果呢？事实上，上面的表面就是用
+6个顶点渲染出来的（两个三角形）。上面的那个表面使用视差贴图技术渲染，
+位移贴图技术不需要额外的顶点数据来表达深度，它像法线贴图一样采用一种
+聪明的手段欺骗用户的眼睛。
+
+视差贴图背后的思想是修改纹理坐标使一个fragment的表面看起来比实际的更高或者更低，
+所有这些都根据观察方向和高度贴图。为了理解它如何工作，看看下面砖块表面的图片：
+![](https://learnopengl-cn.github.io/img/05/05/parallax_mapping_plane_height.png)
+
+PS：这个问题好像没有合适的解析解，他用的是经验公式
+
+* NOTE - 视差贴图
+我们将使用一个简单的2D平面，在把它发送给GPU之前我们先计算它的切线和副切线向量；
+和法线贴图教程做的差不多。我们将向平面贴diffuse纹理、法线贴图以及一个位移贴图，
+你可以点击链接下载。这个例子中我们将视差贴图和法线贴图连用。因为视差贴图生成表面
+位移了的幻觉，当光照不匹配时这种幻觉就被破坏了。法线贴图通常根据高度贴图生成，
+法线贴图和高度贴图一起用能保证光照能和位移相匹配。
+
+你可能已经注意到，上面链接上的那个位移贴图和教程一开始的那个高度贴图相比是
+颜色是相反的。这是因为使用反色高度贴图（也叫深度贴图）去模拟深度比模拟高度更容易。
+下图反映了这个轻微的改变：
+![](https://learnopengl-cn.github.io/img/05/05/parallax_mapping_depth.png)
+
+有一个地方需要注意，就是viewDir.xy除以viewDir.z那里。因为viewDir向量是经过了标准化的，
+viewDir.z会在0.0到1.0之间的某处。当viewDir大致平行于表面时，它的z元素接近于0.0，
+除法会返回比viewDir垂直于表面的时候更大的P¯
+向量。所以，从本质上，相比正朝向表面，当带有角度地看向平面时，我们会更大程度地缩放P¯
+的大小，从而增加纹理坐标的偏移；这样做在视角上会获得更大的真实度。
+
+有些人更喜欢不在等式中使用viewDir.z，因为普通的视差贴图会在角度上产生不尽如人意的结果；
+这个技术叫做有偏移量限制的视差贴图（Parallax Mapping with Offset Limiting）。
+选择哪一个技术是个人偏好问题，但我倾向于普通的视差贴图。
+
+问题的原因是这只是一个大致近似的视差映射。
+还有一些技巧让我们在陡峭的高度上能够获得几乎完美的结果，
+即使当以一定角度观看的时候。例如，我们不再使用单一样本，
+取而代之使用多样本来找到最近点B
+会得到怎样的结果？
+
+* NOTE - 陡峭视差映射
+陡峭视差映射(Steep Parallax Mapping)是视差映射的扩展，
+原则是一样的，但不是使用一个样本而是多个样本来确定向量P¯
+到B
+。即使在陡峭的高度变化的情况下，它也能得到更好的结果，
+原因在于该技术通过增加采样的数量提高了精确性。
+
+陡峭视差映射的基本思想是将总深度范围划分为同一个深度/高度的多个层。从每个层中我们沿着P¯
+方向移动采样纹理坐标，直到我们找到一个采样低于当前层的深度值。看看下面的图片：
+![](https://learnopengl-cn.github.io/img/05/05/parallax_mapping_steep_parallax_mapping_diagram.png)
+
+我们从上到下遍历深度层，我们把每个深度层和储存在深度贴图中的它的深度值进行对比。
+如果这个层的深度值小于深度贴图的值，就意味着这一层的P¯
+向量部分在表面之下。我们继续这个处理过程直到有一层的深度高于储存在深度贴图中的值：
+这个点就在（经过位移的）表面下方。
+
+这个例子中我们可以看到第二层(D(2) = 0.73)的深度贴图的值仍低于第二层的深度值0.4，
+所以我们继续。下一次迭代，这一层的深度值0.6大于深度贴图中采样的深度值(D(3) = 0.37)。
+我们便可以假设第三层向量P¯
+是可用的位移几何位置。我们可以用从向量P3¯
+的纹理坐标偏移T3
+来对fragment的纹理坐标进行位移。你可以看到随着深度曾的增加精确度也在提高。
+
+两种最流行的解决方法叫做Relief Parallax Mapping和Parallax Occlusion Mapping，
+Relief Parallax Mapping更精确一些，但是比Parallax Occlusion Mapping性能开销更多。
+因为Parallax Occlusion Mapping的效果和前者差不多但是效率更高，
+因此这种方式更经常使用，所以我们将在下面讨论一下。
+
+* NOTE - 视差遮蔽映射
+视差遮蔽映射(Parallax Occlusion Mapping)和陡峭视差映射的原则相同，
+但不是用触碰的第一个深度层的纹理坐标，而是在触碰之前和之后，在深度层之间进行线性插值。
+我们根据表面的高度距离啷个深度层的深度层值的距离来确定线性插值的大小。
+看看下面的图片就能了解它是如何工作的：
+![](https://learnopengl-cn.github.io/img/05/05/parallax_mapping_parallax_occlusion_mapping_diagram.png)
+
+
+在对（位移的）表面几何进行交叉，找到深度层之后，我们获取交叉前的纹理坐标。
+然后我们计算来自相应深度层的几何之间的深度之间的距离，并在两个值之间进行插值。
+线性插值的方式是在两个层的纹理坐标之间进行的基础插值。函数最后返回最终的经过插值的纹理坐标。
+
+视差遮蔽映射的效果非常好，尽管有一些可以看到的轻微的不真实和锯齿的问题，
+这仍是一个好交易，因为除非是放得非常大或者观察角度特别陡，否则也看不到。
+
+视差贴图是提升场景细节非常好的技术，但是使用的时候还是要考虑到它会带来一点不自然。
+大多数时候视差贴图用在地面和墙壁表面，这种情况下查明表面的轮廓并不容易，
+同时观察角度往往趋向于垂直于表面。这样视差贴图的不自然也就很难能被注意到了，
+对于提升物体的细节可以起到难以置信的效果。
+*/
+
+/**REVIEW - HDR
+一般来说，当存储在帧缓冲(Framebuffer)中时，亮度和颜色的值是默认被限制在0.0到1.0之间的。
+这个看起来无辜的语句使我们一直将亮度与颜色的值设置在这个范围内，尝试着与场景契合。
+这样是能够运行的，也能给出还不错的效果。但是如果我们遇上了一个特定的区域，
+其中有多个亮光源使这些数值总和超过了1.0，又会发生什么呢？答案是这些片段中超过1.0
+的亮度或者颜色值会被约束在1.0，从而导致场景混成一片，难以分辨：
+![](https://learnopengl-cn.github.io/img/05/06/hdr_clamped.png)
+
+这是由于大量片段的颜色值都非常接近1.0，在很大一个区域内每一个亮的片段都有相同的白色。
+这损失了很多的细节，使场景看起来非常假。
+
+解决这个问题的一个方案是减小光源的强度从而保证场景内没有一个片段亮于1.0。
+然而这并不是一个好的方案，因为你需要使用不切实际的光照参数。
+一个更好的方案是让颜色暂时超过1.0，然后将其转换至0.0到1.0的区间内，从而防止损失细节。
+
+显示器被限制为只能显示值为0.0到1.0间的颜色，但是在光照方程中却没有这个限制。
+通过使片段的颜色超过1.0，我们有了一个更大的颜色范围，这也被称作HDR(High
+Dynamic Range, 高动态范围)。有了HDR，亮的东西可以变得非常亮，暗的东西可以变得非常暗，
+而且充满细节。
+
+HDR原本只是被运用在摄影上，摄影师对同一个场景采取不同曝光拍多张照片，捕捉大范围的色彩值。
+这些图片被合成为HDR图片，从而综合不同的曝光等级使得大范围的细节可见。看下面这个例子，
+左边这张图片在被光照亮的区域充满细节，但是在黑暗的区域就什么都看不见了；
+但是右边这张图的高曝光却可以让之前看不出来的黑暗区域显现出来。
+![](https://learnopengl-cn.github.io/img/05/06/hdr_image.png)
+
+这与我们眼睛工作的原理非常相似，也是HDR渲染的基础。当光线很弱的啥时候，
+人眼会自动调整从而使过暗和过亮的部分变得更清晰，就像人眼有一个能自动根据场景亮度调整的自动曝光滑块。
+
+HDR渲染和其很相似，我们允许用更大范围的颜色值渲染从而获取大范围的黑暗与明亮的场景细节，
+最后将所有HDR值转换成在[0.0, 1.0]范围的LDR(Low Dynamic Range,低动态范围)。
+转换HDR值到LDR值得过程叫做色调映射(Tone Mapping)，现在现存有很多的色调映射算法，
+这些算法致力于在转换过程中保留尽可能多的HDR细节。这些色调映射算法经常会包含一个
+选择性倾向黑暗或者明亮区域的参数。
+
+在实时渲染中，HDR不仅允许我们超过LDR的范围[0.0, 1.0]与保留更多的细节，
+同时还让我们能够根据光源的真实强度指定它的强度。比如太阳有比闪光灯之类的东西更高的强度，
+那么我们为什么不这样子设置呢?(比如说设置一个10.0的漫亮度) 这允许我们用更现实的光照参数
+恰当地配置一个场景的光照，而这在LDR渲染中是不能实现的，因为他们会被上限约束在1.0。
+
+因为显示器只能显示在0.0到1.0范围之内的颜色，我们肯定要做一些转换从而使得当前的HDR
+颜色值符合显示器的范围。简单地取平均值重新转换这些颜色值并不能很好的解决这个问题，
+因为明亮的地方会显得更加显著。我们能做的是用一个不同的方程与/或曲线来转换这些HDR值到LDR值
+从而给我们对于场景的亮度完全掌控，这就是之前说的色调变换，也是HDR渲染的最终步骤。
+
+* NOTE - 浮点帧缓冲
+在实现HDR渲染之前，我们首先需要一些防止颜色值在每一个片段着色器运行后被限制约束的方法。
+当帧缓冲使用了一个标准化的定点格式(像GL_RGB)为其颜色缓冲的内部格式，
+OpenGL会在将这些值存入帧缓冲前自动将其约束到0.0到1.0之间。
+这一操作对大部分帧缓冲格式都是成立的，除了专门用来存放被拓展范围值的浮点格式。
+
+当一个帧缓冲的颜色缓冲的内部格式被设定成了GL_RGB16F, GL_RGBA16F, GL_RGB32F
+或者GL_RGBA32F时，这些帧缓冲被叫做浮点帧缓冲(Floating Point Framebuffer)，
+浮点帧缓冲可以存储超过0.0到1.0范围的浮点值，所以非常适合HDR渲染。
+
+想要创建一个浮点帧缓冲，我们只需要改变颜色缓冲的内部格式参数就行了（注意GL_FLOAT参数)：
 */

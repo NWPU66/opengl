@@ -1,4 +1,5 @@
 #include "debugTool.hpp"
+#include "util/class_shader.hpp"
 
 void DebugTool::createObjFromHardcode()
 {
@@ -46,9 +47,13 @@ GLuint DebugTool::getScreenVAO() const
     return screenVAO;
 }
 
-void DebugTool::renderTextureToScreen(const GLuint textureToShow) const
+void DebugTool::renderTextureToScreen(const GLuint textureToShow, Shader* user_define_shader) const
 {
-    if (!screenShader)
+    Shader* shader = nullptr;
+    if (user_define_shader != nullptr) { shader = user_define_shader; }
+    else { shader = screenShader.get(); }
+
+    if (!shader)
     {
         throw std::runtime_error("DebugTool::renderTextureToScreen: screenShader is nullptr");
     }
@@ -58,9 +63,9 @@ void DebugTool::renderTextureToScreen(const GLuint textureToShow) const
 
     // 绘制屏幕几何对象
     glBindVertexArray(screenVAO);
-    screenShader->use();
+    shader->use();
     glBindTexture(GL_TEXTURE_2D, textureToShow);
-    screenShader->setParameter("screenTexture", 0);
+    shader->setParameter("screenTexture", 0);
     glDisable(GL_DEPTH_TEST);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

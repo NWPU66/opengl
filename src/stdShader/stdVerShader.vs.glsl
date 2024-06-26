@@ -23,7 +23,7 @@ void main(){
     vs_out.globalNormal=normalize(mat3(transpose(inverse(model)))*aNormal);
     vs_out.texCoord=aTexCoord;
     vs_out.globalTangent=normalize(mat3(transpose(inverse(model)))*aTangent);
-    vs_out.globalBitangent=-normalize(mat3(transpose(inverse(model)))*aBitangent);
+    vs_out.globalBitangent=normalize(mat3(transpose(inverse(model)))*aBitangent);
     
     vs_out.TBN=mat3(vs_out.globalTangent,vs_out.globalBitangent,vs_out.globalNormal);
     

@@ -194,6 +194,9 @@ int main(int /*argc*/, char** /*argv*/)
     glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    /**NOTE - 双pbo缓冲请参考：
+    https://www.jianshu.com/p/019a29a55352
+    */
 
     // 渲染循环
     while (glfwWindowShouldClose(window) == 0)

@@ -43,5 +43,6 @@ public:
     GLuint getScreenVAO() const;
 
     /// @brief 将指定texture绘制到屏幕上
-    void renderTextureToScreen(const GLuint textureToShow) const;
+    void renderTextureToScreen(const GLuint textureToShow,
+                               Shader*      user_define_shader = nullptr) const;
 };

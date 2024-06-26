@@ -20,8 +20,7 @@ void Model::loadModel(const string path)
 {
     Assimp::Importer import;
     // const aiScene*   scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-    const aiScene* scene =
-        import.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs);
+    const aiScene* scene = import.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         cout << "ERROR::ASSIMP::" << import.GetErrorString() << endl;

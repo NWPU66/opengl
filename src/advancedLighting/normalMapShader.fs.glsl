@@ -33,7 +33,7 @@ uniform samplerCube skybox;
 //output
 out vec4 fragColor;
 
-vec3 globalNormal=(gl_FragCoord.x<400)?normalize(fs_in.TBN*normalize(texture(texture_normal,fs_in.texCoord).xyz*2.f-1.f)):fs_in.globalNormal;
+vec3 globalNormal=(gl_FragCoord.x<960)?normalize(fs_in.TBN*normalize(texture(texture_normal,fs_in.texCoord).xyz*2.f-1.f)):fs_in.globalNormal;
 /**NOTE -
 可行的改进：在vertexshader中把所有要在fragmentshader中使用的变量都转换进tangent空间
 这样就不必再fragmentshader中使用昂贵的矩阵乘法来计算globalNormal
