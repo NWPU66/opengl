@@ -64,6 +64,7 @@ void DebugTool::renderTextureToScreen(const GLuint textureToShow, Shader* user_d
     // 绘制屏幕几何对象
     glBindVertexArray(screenVAO);
     shader->use();
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureToShow);
     shader->setParameter("screenTexture", 0);
     glDisable(GL_DEPTH_TEST);
