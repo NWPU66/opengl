@@ -2,6 +2,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/trigonometric.hpp"
+#include <array>
 #include <glad/glad.h>
 // GLAD first
 #define STB_IMAGE_IMPLEMENTATION
@@ -64,8 +65,9 @@ int main(int /*argc*/, char** /*argv*/)
     glEnable(GL_BLEND);                                 // 启用混合
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
     glEnable(GL_CULL_FACE);                             // 启用面剔除
-    glClearColor(0.2F, 0.3F, 0.3F, 1.0F);               // 设置清空颜色
-    glEnable(GL_MULTISAMPLE);                           // 启用多重采样
+    // glClearColor(0.2F, 0.3F, 0.3F, 1.0F);               // 设置清空颜色
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glEnable(GL_MULTISAMPLE);  // 启用多重采样
     /**NOTE - 文档中GL_MULTISAMPLE时默认启动的（true） */
     // glEnable(GL_FRAMEBUFFER_SRGB);                      // 自动Gamme矫正
     /**NOTE - 关闭自动gamma矫正
@@ -96,6 +98,7 @@ int main(int /*argc*/, char** /*argv*/)
     GLuint depthBrick_depthMap   = createImageObjrct("./texture/toy_box_disp.png", false, false);
 
     Shader hdr_shader("./shader/stdScreenShader.vs.glsl", "./shader/hdrScreenShader.fs.glsl");
+    Shader blur("./shader/stdScreenShader.vs.glsl", "./shader/gaussianBlur.fs.glsl");
 
     /**NOTE - 灯光组
      */
@@ -116,17 +119,26 @@ int main(int /*argc*/, char** /*argv*/)
     glGenFramebuffers(1, &hdr_FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, hdr_FBO);
     // 创建一个纹理缓冲作为颜色缓冲
-    GLuint hdr_frameTexture;
-    glGenTextures(1, &hdr_frameTexture);
-    glBindTexture(GL_TEXTURE_2D, hdr_frameTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
-                 nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdr_frameTexture,
-                           0);
+    std::array<GLuint, 2> hdr_frameTextures = {0, 0};  // 创建第二个纹理缓冲记录亮度大的片元
+    glGenTextures(2, hdr_frameTextures.data());
+    for (int i = 0; i < hdr_frameTextures.size(); i++)
+    {
+        glBindTexture(GL_TEXTURE_2D, hdr_frameTextures[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
+                     nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
+                               hdr_frameTextures[i], 0);
+    }
+    // 显式告知OpenGL我们正在通过glDrawBuffers渲染到多个颜色缓冲
+    std::array<GLuint, 2> attachments = {
+        GL_COLOR_ATTACHMENT0,
+        GL_COLOR_ATTACHMENT1,
+    };
+    glDrawBuffers(2, attachments.data());
     // 创建深度缓冲和模板缓冲
     GLuint hdr_RBO;
     glGenRenderbuffers(1, &hdr_RBO);
@@ -144,6 +156,35 @@ int main(int /*argc*/, char** /*argv*/)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    /**NOTE - 后期处理高斯模糊
+     */
+    std::array<GLuint, 2> pingpongFBO;
+    std::array<GLuint, 2> pingpongBuffer;
+    glGenFramebuffers(2, pingpongFBO.data());
+    glGenTextures(2, pingpongBuffer.data());
+    for (GLuint i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, pingpongBuffer[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
+                     nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                               pingpongBuffer[i], 0);
+        //  检查帧缓冲状态
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+        {
+            std::cout << "Framebuffer is  complete!" << std::endl;
+        }
+        else { std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl; }
+        // 解绑
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
     // 渲染循环
     while (glfwWindowShouldClose(window) == 0)
@@ -251,6 +292,27 @@ int main(int /*argc*/, char** /*argv*/)
         box.Draw(&skyboxShader);
         glFrontFace(GL_CCW);
 
+        /**NOTE - 高斯模糊辉光
+         */
+        blur.use();
+        glViewport(0, 0, CAMERA_WIDTH, CAMERA_HEIGH);
+        glBindVertexArray(debugTool.getScreenVAO());
+        bool horizontal = true, first_iteration = true;
+        for (int i = 0; i < 10; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+            blur.setParameter("horizontal", horizontal);
+            glBindTexture(GL_TEXTURE_2D,
+                          (first_iteration) ? hdr_frameTextures[1] : pingpongBuffer[!horizontal]);
+            // draw
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+                    GL_STENCIL_BUFFER_BIT);  // 清除颜色、深度和模板缓冲
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+            horizontal      = !horizontal;
+            first_iteration = false;
+        }
+
         /**NOTE - 将RBO中的色彩绘制到屏幕上
          */
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -261,9 +323,12 @@ int main(int /*argc*/, char** /*argv*/)
         glBindVertexArray(debugTool.getScreenVAO());
         hdr_shader.use();
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, hdr_frameTexture);
+        glBindTexture(GL_TEXTURE_2D, hdr_frameTextures[0]);
         hdr_shader.setParameter("hdr_frameTexture", 0);
-        hdr_shader.setParameter("exposure", 5.0f);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, pingpongBuffer[1]);
+        hdr_shader.setParameter("bloomBlur", 1);
+        hdr_shader.setParameter("exposure", 2.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // 解绑
         glBindVertexArray(0);
@@ -915,4 +980,46 @@ HDR渲染的真正优点在庞大和复杂的场景中应用复杂光照算法�
 泛光使场景中所有明亮的区域都具有类似发光的效果。
 下面是带有或不带有辉光的场景示例(图片由Epic Games提供)：
 ![](https://learnopengl-cn.github.io/img/05/07/bloom_example.png)
+
+泛光提供了一种针对物体明亮度的视觉效果。当用优雅微妙的方式实现泛光效果
+(有些游戏完全没能做到)，将会显著增强您的场景光照并能提供更加有张力的效果。
+
+泛光和HDR结合使用效果最好。很多人以为HDR和泛光是一样的，认为两种技术是可以互换的，
+这是一种常见误解。它们是两种完全不同的技术，用于各自不同的目的。可以使用默认的8位
+精确度的帧缓冲来实现泛光效果，也可以只使用HDR效果而不使用泛光效果。只不过在有了
+HDR之后再实现泛光就更简单了(正如我们稍后会看到的)。
+
+为实现泛光，我们像平时那样渲染一个有光场景，提取出场景的HDR颜色缓冲以及只有这个
+场景明亮区域可见的图片。然后对提取的亮度图像进行模糊处理，并将结果添加到原始HDR
+场景图像的上面。
+
+我们来一步一步解释这个处理过程。我们在场景中渲染一个带有4个立方体形式不同颜色的
+明亮的光源。带有颜色的发光立方体的亮度在1.5到15.0之间。如果我们将其渲染至HDR
+颜色缓冲，场景看起来会是这样的：
+
+我们得到这个HDR颜色缓冲纹理，提取所有超出一定亮度的fragment。
+这样我们就会获得一个只有fragment超过了一定阈限的颜色区域：
+
+我们将这个超过一定亮度阈限的纹理进行模糊处理。
+泛光效果的强度很大程度上是由模糊过滤器的范围和强度决定的。
+
+最终的被模糊化的纹理就是我们用来获得发出光晕效果的东西。
+这个已模糊的纹理要添加到原来的HDR场景纹理之上。由于模糊滤镜的作用，
+明亮的区域在宽度和高度上都得到了扩展，因此场景中的明亮区域看起来会发光或流光。
+
+泛光本身并不是个复杂的技术，但很难获得正确的效果。
+它的品质很大程度上取决于所用的模糊过滤器的质量和类型。
+简单地改改模糊过滤器就会极大的改变泛光效果的品质。
+![](https://learnopengl-cn.github.io/img/05/07/bloom_steps.png)
+
+有颜色的立方体看起来仿佛更亮，它向外发射光芒，的确是一个更好的视觉效果。
+这个场景比较简单，所以泛光效果不算十分令人瞩目，但在更充足照明的场景中
+合理配置之后效果会有明显的不同。你可以在这里找到这个简单示例的源代码。
+
+这个教程我们只是用了一个相对简单的高斯模糊过滤器，它在每个方向上只有5个样本。
+通过沿着更大的半径或重复更多次数的模糊，进行采样我们就可以提升模糊的效果。
+因为模糊的质量与泛光效果的质量正相关，提升模糊效果就能够提升泛光效果。
+有些提升将模糊过滤器与不同大小的模糊kernel或采用多个高斯曲线来选择性
+地结合权重结合起来使用。来自Kalogirou和EpicGames的附加资源讨论了
+如何通过提升高斯模糊来显著提升泛光效果。
 */

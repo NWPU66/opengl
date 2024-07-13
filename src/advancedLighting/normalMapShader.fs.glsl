@@ -31,7 +31,8 @@ uniform sampler2D texture_normal;
 uniform samplerCube skybox;
 
 //output
-out vec4 fragColor;
+layout(location=0)out vec4 fragColor;
+layout(location=1)out vec4 brightColor;
 
 vec3 globalNormal=(gl_FragCoord.x<960)?normalize(fs_in.TBN*normalize(texture(texture_normal,fs_in.texCoord).xyz*2.f-1.f)):fs_in.globalNormal;
 /**NOTE -
@@ -61,6 +62,7 @@ void main(){
     fragColor=vec4(vec3(fr),1);
     
     fragColor=vec4(outputColor+ambient*fr,1.f);
+    brightColor=vec4(vec3(0),1);
     
     // fragColor=vec4(globalNormal,1);
 }

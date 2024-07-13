@@ -4,14 +4,16 @@
 in vec2 TexCoords;
 uniform float exposure;
 uniform sampler2D hdr_frameTexture;
+uniform sampler2D bloomBlur;
 
 //output
-out vec4 frag_color;
+layout(location=0)out vec4 frag_color;
 
 const float gamma=2.2;
 
 void main(){
     vec3 hdr_color=texture(hdr_frameTexture,TexCoords).rgb;
+    hdr_color+=texture(bloomBlur,TexCoords).rgb;
     
     // 曝光色调映射
     vec3 mapped=hdr_color*exposure;

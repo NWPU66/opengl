@@ -30,7 +30,7 @@ uniform sampler2D texture0;
 uniform samplerCube skybox;
 
 //output
-out vec4 fragColor;
+layout(location=0)out vec4 fragColor;
 
 vec3 Lighting(int i);
 

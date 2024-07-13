@@ -24,8 +24,11 @@ layout(std140,binding=0)uniform lightGroup{
 uniform vec3 lightColor;
 
 //output
-out vec4 fragColor;
+layout(location=0)out vec4 fragColor;
+layout(location=1)out vec4 brightColor;
 
 void main(){
     fragColor=vec4(lightColor,1);
+    // if(dot(lightColor,vec3(.2126f,.7152f,.0722f))/3.f>.95f){brightColor=vec4(fragColor.rgb,1.);}
+    brightColor=vec4(fragColor.rgb,1.);
 }

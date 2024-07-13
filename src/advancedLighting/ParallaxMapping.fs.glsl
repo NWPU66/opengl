@@ -34,7 +34,8 @@ uniform samplerCube skybox;
 float height_scale=.1f;
 
 //output
-out vec4 fragColor;
+layout(location=0)out vec4 fragColor;
+layout(location=1)out vec4 brightColor;
 
 vec3 Lighting(int i);
 vec2 ParallaxMapping(vec3 viewDir);
@@ -60,6 +61,7 @@ void main(){
     float fr=pow(1-max(dot(fragToCamera,normal),0.f),8);
     
     fragColor=vec4(outputColor+ambient*fr,1.f);
+    brightColor=vec4(vec3(0),1);
     
     // fragColor=vec4(texCoord,0,1);
 }
