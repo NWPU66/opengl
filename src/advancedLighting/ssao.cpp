@@ -1,19 +1,21 @@
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/vector_float3.hpp"
 #include <array>
-#include <glad/glad.h>
+#include <functional>
 #include <limits>
 #include <random>
 #include <tuple>
+
+#include <glad/glad.h>
 // GLAD first
+
 #define STB_IMAGE_IMPLEMENTATION
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+
 #include "util/class_camera.hpp"
 #include "util/class_model.hpp"
 #include "util/class_shader.hpp"
 #include "util/debugTool.hpp"
 #include "util/lightGroup.hpp"
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 
 using namespace glm;
 using namespace std;
@@ -57,11 +59,12 @@ int main(int /*argc*/, char** /*argv*/)
     glDepthFunc(GL_LEQUAL);     // 修改深度测试的标准
     glEnable(GL_STENCIL_TEST);  // 启用模板缓冲
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glEnable(GL_BLEND);                                 // 启用混合
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
-    glEnable(GL_CULL_FACE);                             // 启用面剔除
-    glClearColor(0.2F, 0.3F, 0.3F, 1.0F);               // 设置清空颜色
-    glDisable(GL_MULTISAMPLE);                          // 启用多重采样
+    // glEnable(GL_BLEND);                                 // 启用混合
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
+    glEnable(GL_CULL_FACE);  // 启用面剔除
+    // glClearColor(0.2F, 0.3F, 0.3F, 1.0F);  // 设置清空颜色
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glDisable(GL_MULTISAMPLE);  // 启用多重采样
     /**NOTE - 文档中GL_MULTISAMPLE时默认启动的（true）
      */
     glEnable(GL_FRAMEBUFFER_SRGB);  // 自动Gamme矫正
@@ -79,6 +82,12 @@ int main(int /*argc*/, char** /*argv*/)
     Shader lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
     GLuint cubeTexture = createSkyboxTexture("./texture/", true);
     GLuint woodTexture = createImageObjrct("./texture/wood.jpg", true);
+    // G-Buffer shader
+    Shader gBuffer_geomProcess("./shader/calculateViewSpaceData.vs.glsl",
+                               "./shader/gBuffer_geomProcess2.fs.glsl");
+    // ssao
+    Shader ssaoShader("./shader/stdScreenShader.vs.glsl", "./shader/ssao.fs.glsl");
+    Shader ssaoBlurShader("./shader/stdScreenShader.vs.glsl", "./shader/simpleBlur.fs.glsl");
 
     /**NOTE - 灯光组
      */
@@ -93,8 +102,135 @@ int main(int /*argc*/, char** /*argv*/)
      */
     DebugTool debugTool;
 
-    /**NOTE - 创建G缓冲
+    /**NOTE - G缓冲
      */
+    GLuint gBuffer;
+    glGenFramebuffers(1, &gBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    GLuint gPosition, gNormal, gAlbedoSpec;
+    // position
+    glGenTextures(1, &gPosition);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
+                 nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+    // normal
+    glGenTextures(1, &gNormal);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
+                 nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+    // color specularity
+    glGenTextures(1, &gAlbedoSpec);
+    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGBA, GL_FLOAT,
+                 nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+    // draw buffer
+    std::array<GLuint, 3> attachments = {
+        GL_COLOR_ATTACHMENT0,
+        GL_COLOR_ATTACHMENT1,
+        GL_COLOR_ATTACHMENT2,
+    };
+    // depth buffer
+    GLuint rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, CAMERA_WIDTH, CAMERA_HEIGH);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                              rboDepth);
+    //  检查帧缓冲状态
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Framebuffer is  complete!" << std::endl;
+    }
+    else { std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl; }
+    // 解绑
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    /**NOTE - 采样核心
+     */
+    std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
+    std::default_random_engine              generator;
+    std::vector<glm::vec3>                  ssaoKernel;
+    for (GLuint i = 0; i < 64; ++i)
+    {
+        glm::vec3 sample = {
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator),
+        };
+        sample = glm::normalize(sample);
+        sample *= randomFloats(generator);
+        GLfloat scale = GLfloat(i) / 64.0;
+
+        std::function<GLfloat(GLfloat, GLfloat, GLfloat)> lerp =
+            [](GLfloat a, GLfloat b, GLfloat f) { return a + f * (b - a); };
+        scale = lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
+        ssaoKernel.push_back(sample);
+    }
+    // 随机核心旋转
+    std::vector<glm::vec3> ssaoNoise;
+    for (GLuint i = 0; i < 16; i++)
+    {
+        glm::vec3 noise = {
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator) * 2.0 - 1.0,
+            0.0f,
+        };
+        ssaoNoise.push_back(noise);
+    }
+    GLuint noiseTexture;
+    glGenTextures(1, &noiseTexture);
+    glBindTexture(GL_TEXTURE_2D, noiseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 4, 4, 0, GL_RGB, GL_FLOAT, ssaoNoise.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    /**NOTE - SSAO帧缓冲
+     */
+    GLuint ssaoFBO;
+    glGenFramebuffers(1, &ssaoFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+    GLuint ssaoColorBuffer;
+    glGenTextures(1, &ssaoColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
+                 nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
+
+    /**NOTE - 模糊SSAO帧缓冲
+     */
+    GLuint ssaoBlurFBO, ssaoColorBufferBlur;
+    glGenFramebuffers(1, &ssaoBlurFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+    glGenTextures(1, &ssaoColorBufferBlur);
+    glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
+                 nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur,
+                           0);
 
     // 渲染循环
     while (glfwWindowShouldClose(window) == 0)
@@ -116,48 +252,90 @@ int main(int /*argc*/, char** /*argv*/)
         mat4 view       = camera->GetViewMatrix();
         mat4 projection = perspective(radians(camera->Zoom), cameraAspect, 0.1f, 100.0f);
 
-        /**NOTE - 渲染
+        /**NOTE - 延迟渲染几何处理
          */
-        phongShader.use();
-        phongShader.setParameter("model", mat4(1));
-        phongShader.setParameter("view", view);
-        phongShader.setParameter("projection", projection);
+        glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+        glDrawBuffers(3, attachments.data());
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+                GL_STENCIL_BUFFER_BIT);  // 清除颜色、深度和模板缓冲
+        gBuffer_geomProcess.use();
+        gBuffer_geomProcess.setParameter("model", mat4(1));
+        gBuffer_geomProcess.setParameter("view", view);
+        gBuffer_geomProcess.setParameter("projection", projection);
+        testScene.Draw(&gBuffer_geomProcess);
+
+        /**NOTE - 计算SSAO
+         */
+        glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ssaoShader.use();
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture);
-        phongShader.setParameter("skybox", 0);
-        phongShader.setParameter("cameraPos", camera->Position);
-        phongShader.setParameter("albedoMap", vec3(1));
-        testScene.Draw(&phongShader, 1, GL_TEXTURE1);
-
-        /**NOTE - 渲染灯光
-         */
-        for (const auto& light : lightGroup.getLights())
+        glBindTexture(GL_TEXTURE_2D, gPosition);
+        ssaoShader.setParameter("gPosition", 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, gNormal);
+        ssaoShader.setParameter("gNormal", 1);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, noiseTexture);
+        ssaoShader.setParameter("texNoise", 2);
+        for (int i = 0; i < 64; i++)
         {
-            if (light.getLightType() != 1)  // 日光不渲染实体
-            {
-                lightObjShader.use();
-                lightObjShader.setParameter(
-                    "model", scale(translate(mat4(1), light.getPostion()), vec3(0.1)));
-                lightObjShader.setParameter("view", view);
-                lightObjShader.setParameter("projection", projection);
-                lightObjShader.setParameter("lightColor", light.getColor());
-                sphere.Draw(&lightObjShader);
-                // FIXME - 常量对象只能调用它的常函数
-            }
+            ssaoShader.setParameter("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
         }
+        ssaoShader.setParameter("projection", projection);
+        ssaoShader.setParameter("screenWidth", float(CAMERA_WIDTH));
+        ssaoShader.setParameter("screenHeight", float(CAMERA_HEIGH));
+        glBindVertexArray(debugTool.getScreenVAO());
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // 模糊ssao
+        glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ssaoBlurShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+        ssaoBlurShader.setParameter("ssaoInput", 0);
+        glBindVertexArray(debugTool.getScreenVAO());
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        /**NOTE - 最后渲染天空盒
+        /**NOTE - 延迟渲染光照处理
          */
-        glFrontFace(GL_CW);  // 把顺时针的面设置为“正面”。
-        skyboxShader.use();
-        skyboxShader.setParameter("view",
-                                  mat4(mat3(view)));  // 除去位移，相当于锁头
-        skyboxShader.setParameter("projection", projection);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
-        skyboxShader.setParameter("skybox", 0);
-        box.Draw(&skyboxShader);
-        glFrontFace(GL_CCW);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // glDrawBuffer();
+        // glClear();
+
+        // /**NOTE - 渲染灯光
+        //  */
+        // for (const auto& light : lightGroup.getLights())
+        // {
+        //     if (light.getLightType() != 1)  // 日光不渲染实体
+        //     {
+        //         lightObjShader.use();
+        //         lightObjShader.setParameter(
+        //             "model", scale(translate(mat4(1), light.getPostion()), vec3(0.1)));
+        //         lightObjShader.setParameter("view", view);
+        //         lightObjShader.setParameter("projection", projection);
+        //         lightObjShader.setParameter("lightColor", light.getColor());
+        //         sphere.Draw(&lightObjShader);
+        //         // FIXME - 常量对象只能调用它的常函数
+        //     }
+        // }
+
+        // /**NOTE - 最后渲染天空盒
+        //  */
+        // glFrontFace(GL_CW);  // 把顺时针的面设置为“正面”。
+        // skyboxShader.use();
+        // skyboxShader.setParameter("view",
+        //                           mat4(mat3(view)));  // 除去位移，相当于锁头
+        // skyboxShader.setParameter("projection", projection);
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+        // skyboxShader.setParameter("skybox", 0);
+        // box.Draw(&skyboxShader);
+        // glFrontFace(GL_CCW);
         // ~SECTION
+
+        debugTool.renderTextureToScreen(ssaoColorBuffer);
 
         // 处理事件、交换缓冲区
         glfwSwapBuffers(window);
@@ -555,4 +733,47 @@ SSAO需要获取几何体的信息，因为我们需要一些方式来确定一�
 我们之后再会将此数据发送到SSAO着色器中，之后我们就能访问到这些几何体数据了。如果你
 看了前面一篇教程，你会发现这和延迟渲染很相似。这也就是说SSAO和延迟渲染能完美地兼容，
 因为我们已经存位置和法线向量到G缓冲中了。
+
+提取出来的线性深度是在观察空间中的，所以之后的运算也是在观察空间中。
+确保G缓冲中的位置和法线都在观察空间中(乘上观察矩阵也一样)。观察空间线性深度值之
+后会被保存在gPositionDepth颜色缓冲的alpha分量中，省得我们再声明一个新的颜色缓冲纹理。
+
+这给我们了一个线性深度纹理，我们可以用它来对每一个核心样本获取深度值。
+注意我们把线性深度值存储为了浮点数据；这样从0.1到50.0范围深度值都不会被限制在
+[0.0, 1.0]之间了。如果你不用浮点值存储这些深度数据，确保你首先将值除以FAR来标准化它们，
+再存储到gPositionDepth纹理中，并在以后的着色器中用相似的方法重建它们。
+同样需要注意的是GL_CLAMP_TO_EDGE的纹理封装方法。这保证了我们不会不小心
+采样到在屏幕空间中纹理默认坐标区域之外的深度值。
+
+接下来我们需要真正的半球采样核心和一些方法来随机旋转它。
+
+* NOTE - 法向半球
+我们需要沿着表面法线方向生成大量的样本。就像我们在这个教程的开始介绍的那样，
+我们想要生成形成半球形的样本。由于对每个表面法线方向生成采样核心非常困难，
+也不合实际，我们将在切线空间(Tangent Space)内生成采样核心，法向量将指向正z方向。
+![](https://learnopengl-cn.github.io/img/05/09/ssao_hemisphere.png)
+
+假设我们有一个单位半球，我们可以获得一个拥有最大64样本值的采样核心：
+
+我们在切线空间中以-1.0到1.0为范围变换x和y方向，并以0.0和1.0为范围变换样本的z方向
+(如果以-1.0到1.0为范围，取样核心就变成球型了)。由于采样核心将会沿着表面法线对齐，
+所得的样本矢量将会在半球里。
+
+目前，所有的样本都是平均分布在采样核心里的，但是我们更愿意将更多的注意放在靠近
+真正片段的遮蔽上，也就是将核心样本靠近原点分布。我们可以用一个加速插值函数实现它：
+![](https://learnopengl-cn.github.io/img/05/09/ssao_kernel_weight.png)
+
+每个核心样本将会被用来偏移观察空间片段位置从而采样周围的几何体。我们在教程开始的时候看到，
+如果没有变化采样核心，我们将需要大量的样本来获得真实的结果。通过引入一个随机的转动到采样
+核心中，我们可以很大程度上减少这一数量。
+
+* NOTE - 随机核心旋转
+通过引入一些随机性到采样核心上，我们可以大大减少获得不错结果所需的样本数量。
+我们可以对场景中每一个片段创建一个随机旋转向量，但这会很快将内存耗尽。所以，
+更好的方法是创建一个小的随机旋转向量纹理平铺在屏幕上。
+
+* NOTE - 环境遮蔽模糊
+在SSAO阶段和光照阶段之间，我们想要进行模糊SSAO纹理的处理，
+所以我们又创建了一个帧缓冲对象来储存模糊结果。
+
 */

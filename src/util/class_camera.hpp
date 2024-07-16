@@ -26,7 +26,10 @@ public:
     /**NOTE - 摄像机构造函数
      * 在C++中，可以使用成员初始化列表来初始化类的成员变量
      */
-    Camera(vec3 position, vec3 up, float yaw, float pitch);
+    Camera(vec3  position = vec3(0.0f, 0.0f, 0.0f),
+           vec3  up       = vec3(0.0f, 1.0f, 0.0f),
+           float yaw      = YAW,
+           float pitch    = PITCH);
     ~Camera();
 
     /**NOTE - 实用函数

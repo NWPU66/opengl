@@ -111,7 +111,7 @@ int main(int /*argc*/, char** /*argv*/)
     // position
     glGenTextures(1, &gPosition);
     glBindTexture(GL_TEXTURE_2D, gPosition);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, CAMERA_WIDTH, CAMERA_HEIGH, 0, GL_RGB, GL_FLOAT,
                  nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

@@ -14,10 +14,7 @@
  * @param pitch
  * “Camera”构造函数中的“pitch”参数表示相机的垂直旋转角度（以度为单位）。它通常用于控制相机视图的上下移动。正的俯仰值使相机的视角向上倾斜，而负的俯仰值则使相机的视角向下倾斜。
  */
-Camera::Camera(vec3  position = vec3(0.0f, 0.0f, 0.0f),
-               vec3  up       = vec3(0.0f, 1.0f, 0.0f),
-               float yaw      = YAW,
-               float pitch    = PITCH)
+Camera::Camera(vec3 position, vec3 up, float yaw, float pitch)
     : Front(vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY),
       Zoom(ZOOM)
 {
@@ -86,11 +83,7 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean consta
     this->updateCameraVectors();
 }
 
-void Camera::ProcessMouseScroll(float yoffset)
-{
-
-
-}
+void Camera::ProcessMouseScroll(float yoffset) {}
 
 void Camera::SpeedUp(GLboolean speedUp)
 {
