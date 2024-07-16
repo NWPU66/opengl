@@ -19,18 +19,25 @@ struct Light{
     vec3 position,rotation;
     float innerCutOff,outerCutOff;// for spot light
 };
-
 layout(std140,binding=0)uniform lightGroup{
     int numLights;
     Light lights[MAX_LIGHTS_NUM];
 };
 
+struct Material{
+    sampler2D texture_diffuse1;
+    sampler2D texture_specular1;
+    sampler2D texture_normal1;
+};
+
 uniform vec3 cameraPos;
-uniform sampler2D texture0;
+uniform Material material;
 uniform samplerCube skybox;
 
 //output
 layout(location=0)out vec4 fragColor;
+
+uniform vec3 albedo=vec3(1);
 
 vec3 Lighting(int i);
 
@@ -74,13 +81,13 @@ vec3 Lighting(int i){
     
     //diffusion
     float diffuseFac=max(dot(dirToLight,fs_in.globalNormal),0.f);
-    vec3 diffuseColor=lights[i].color*texture(texture0,fs_in.texCoord).rgb;
+    vec3 diffuseColor=lights[i].color*albedo;
     vec3 diffuse=diffuseColor*diffuseFac;
     
     //specular
     vec3 halfVec=normalize(dirToLight+viewDir);
     float specularFac=pow(max(dot(halfVec,fs_in.globalNormal),0.f),64);
-    vec3 specularColor=texture(texture0,fs_in.texCoord).rgb*lights[i].color;
+    vec3 specularColor=albedo*lights[i].color;
     vec3 specular=specularColor*specularFac;
     
     //ambient

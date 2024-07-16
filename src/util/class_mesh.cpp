@@ -62,14 +62,14 @@ void Mesh::setupMesh()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Mesh::Draw(Shader* shader, GLuint instanceNum)
+void Mesh::Draw(Shader* shader, GLuint instanceNum, GLenum startTextureSlot)
 {
     GLuint diffuseNr  = 1;
     GLuint specularNr = 1;
     GLuint normalNr   = 1;
     for (int i = 0; i < textures.size(); i++)
     {
-        glActiveTexture(GL_TEXTURE0 + i);  // 在绑定纹理之前激活相应的纹理单元
+        glActiveTexture(startTextureSlot + i);  // 在绑定纹理之前激活相应的纹理单元
         glBindTexture(GL_TEXTURE_2D,
                       textures[i].id);  // FIXME - 启动槽之后记得要绑定纹理啊
 

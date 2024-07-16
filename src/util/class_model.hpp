@@ -23,7 +23,7 @@ class Model {
 public:
     Model(const string path);
     ~Model();
-    void Draw(Shader* shader, GLuint instanceNum = 1);
+    void Draw(Shader* shader, GLuint instanceNum = 1, GLenum startTextureSlot = GL_TEXTURE0);
     void SetInstanceArray(GLuint      instanceVBO,
                           GLuint      vaoSlot,
                           GLuint      vecSize,

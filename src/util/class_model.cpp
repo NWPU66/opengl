@@ -9,7 +9,7 @@ Model::Model(const string path)
 
 Model::~Model() {}
 
-void Model::Draw(Shader* shader, GLuint instanceNum)
+void Model::Draw(Shader* shader, GLuint instanceNum, GLenum startTextureSlot)
 {
     shader->use();
     for (int i = 0; i < meshes.size(); i++)
@@ -165,7 +165,8 @@ GLuint TextureFromFile(const char* path, const string& directory, bool gamma)
     glBindTexture(GL_TEXTURE_2D, textureID);  // 绑定
 
     // 读取图片
-    int            width, height, nrComponents;
+    int width, height, nrComponents;
+    stbi_set_flip_vertically_on_load(1);  // 加载图片时翻转y轴
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
