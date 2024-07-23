@@ -71,20 +71,28 @@ int main(int /*argc*/, char** /*argv*/)
     /**NOTE - gamma矫正关闭
     我们在pbrShader中手动矫正gamma
     */
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);  // 在立方体贴图的面之间进行正确过滤
 
     /**NOTE - 模型和着色器、纹理
      */
-    Model  box("./box/box.obj");
-    Model  plane("./plane/plane.obj");
-    Model  sphere("./sphere/sphere.obj");
-    Model  geosphere("./geosphere/geosphere.obj");
-    Model  testScene("./testScene/scene.obj");
+    // Model
+    Model box("./box/box.obj");
+    Model plane("./plane/plane.obj");
+    Model sphere("./sphere/sphere.obj");
+    Model geosphere("./geosphere/geosphere.obj");
+    Model testScene("./testScene/scene.obj");
+    // Shader
     Shader phongShader("./shader/stdVerShader.vs.glsl", "./shader/simpleWritePhongLighting.fs.glsl");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl");
     Shader lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
     Shader myCubeHDR("./shader/myCubeHDR.vs.glsl", "./shader/myCubeHDR.fs.glsl");
     Shader generateCubeHDR("./shader/generateCubeHDR.vs.glsl", "./shader/generateCubeHDR.fs.glsl",
                            "./shader/generateCubeHDR.gs.glsl");
+    Shader preCalculateSpecularIBL("./shader/myCubeHDR.vs.glsl", "./shader/preCalculateSpecularIBL.fs.glsl");
+    Shader preCalculateSpecularIBL2("./shader/stdScreenShader.vs.glsl", "./shader/preCalculateSpecularIBL2.fs.glsl");
+    Shader shadowShader("./shader/PointShadowVShader.vs.glsl", "./shader/PointShadowFShader.fs.glsl",
+                        "./shader/PointShadowGShader.gs.glsl");
+    // Texture
     GLuint cubeTexture = createSkyboxTexture("./texture/", true);
     GLuint woodTexture = createImageObjrct("./texture/wood.jpg", true);
     // pbr texture
@@ -131,7 +139,7 @@ int main(int /*argc*/, char** /*argv*/)
     }
     else { std::cout << "Failed to load HDR image." << std::endl; }
 
-    /**NOTE - 从等距柱状投影到立方体贴图
+    /**NOTE - IBL漫反射项：从等距柱状投影到立方体贴图
      */
     GLuint captureFBO;
     glGenFramebuffers(1, &captureFBO);
@@ -174,7 +182,6 @@ int main(int /*argc*/, char** /*argv*/)
         lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f)),
         lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f)),
     };
-
     /**NOTE - 将HDR存入CubeMap
      */
     glDisable(GL_CULL_FACE);
@@ -195,6 +202,176 @@ int main(int /*argc*/, char** /*argv*/)
     box.Draw(&myCubeHDR);
     //  恢复现场
     glEnable(GL_CULL_FACE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    /**NOTE - IBL镜面光照项
+     */
+    unsigned int prefilterMap;
+    glGenTextures(1, &prefilterMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    /**NOTE - 将HDR存入CubeMap
+     */
+    glDisable(GL_CULL_FACE);
+    preCalculateSpecularIBL.use();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, hdrTexture);
+    preCalculateSpecularIBL.setParameter("equirectangularMap", 0);
+    preCalculateSpecularIBL.setParameter("projection", captureProjection);
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glDrawBuffers(6, colorAttachments.data());
+    for (int i : {0, 1, 2, 3, 4, 5})
+    {
+        preCalculateSpecularIBL.setParameter("view[" + std::to_string(i) + "]", captureViews[i]);
+    }
+    GLuint maxMipLevels = 5;
+    for (GLuint mip = 0; mip < maxMipLevels; ++mip)
+    {
+        // reisze framebuffer according to mip-level size.
+        GLuint mipWidth  = 128 * pow(0.5, mip);
+        GLuint mipHeight = 128 * pow(0.5, mip);
+        // 管理阴影的captureRBO我暂时就不设置了
+        glViewport(0, 0, mipWidth, mipHeight);
+
+        float roughness = (float)mip / (float)(maxMipLevels - 1);
+        preCalculateSpecularIBL.setParameter("roughness", roughness);
+
+        for (int i : {0, 1, 2, 3, 4, 5})
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                                   prefilterMap, mip);
+        }
+        glClear(GL_COLOR_BUFFER_BIT);
+        box.Draw(&preCalculateSpecularIBL);
+    }
+    //  恢复现场
+    glEnable(GL_CULL_FACE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    /**NOTE - IBL镜面材质项
+     */
+    GLuint brdfLUTTexture;
+    glGenTextures(1, &brdfLUTTexture);
+    // pre-allocate enough memory for the LUT texture.
+    glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    /**NOTE - 预计算材质项
+     */
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    for (int i : {0, 1, 2, 3, 4, 5})
+    {
+        // 把所有的DrawBuffer都解除掉
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
+    }
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+    glDrawBuffers(1, colorAttachments.data());
+    glViewport(0, 0, 512, 512);
+    glClear(GL_COLOR_BUFFER_BIT);
+    preCalculateSpecularIBL2.use();
+    glBindVertexArray(debugTool.getScreenVAO());
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    /**FIXME - 关于多个drawBuffer
+    glviewport的最终写入大小好像和最小的drawBuffer有关
+    原本这里有6个drawBuffer，attach0512大小，其余5个attach8pixel大小
+    glviewport的大小是512，最终渲染出来的大小只有8X8像素的区域
+     */
+
+    /**NOTE - light shadow map
+     */
+    // shadowMap FBO
+    GLuint shadowMapFBO;
+    glGenFramebuffers(1, &shadowMapFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+    glCullFace(GL_FRONT);  // 正面剔除，深度会稍微大一些，但仍然再阴影得前面
+    //
+    const GLuint shadowMapSize = 2048;
+    // 光空间的变换
+    GLfloat               near              = 1.0F;
+    GLfloat               far               = 100.0F;
+    GLfloat               aspect            = static_cast<GLfloat>(shadowMapSize) / static_cast<GLfloat>(shadowMapSize);
+    glm::mat4             shadow_projection = glm::perspective(glm::radians(90.0F), aspect, near, far);
+    std::array<GLuint, 4> shadowMaps        = {0, 0, 0, 0};
+    for (GLuint i : {0, 1, 2, 3})
+    {
+        glGenTextures(1, &shadowMaps[i]);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, shadowMaps[i]);
+        for (int face : {0, 1, 2, 3, 4, 5})
+        {
+            // glTextureStorage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_DEPTH_COMPONENT, shadowMapSize,
+            //                    shadowMapSize);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_DEPTH_COMPONENT, shadowMapSize, shadowMapSize, 0,
+                         GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        }
+        // 设置纹理参数
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        //
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowMaps[i], 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+        //  检查帧缓冲状态
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+        {
+            std::cout << "Framebuffer is  complete!" << std::endl;
+        }
+        else { std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl; }
+
+        // 计算阴影
+        shadowShader.use();
+        glViewport(0, 0, shadowMapSize, shadowMapSize);
+        // uniform
+        shadowShader.setParameter("model", mat4(1.0F));
+        std::array<glm::mat4, 6> shadow_transforms = {
+            shadow_projection * glm::lookAt(lights[i].getPostion(), lights[i].getPostion() + glm::vec3(1.0, 0.0, 0.0),
+                                            glm::vec3(0.0, -1.0, 0.0)),
+            shadow_projection * glm::lookAt(lights[i].getPostion(), lights[i].getPostion() + glm::vec3(-1.0, 0.0, 0.0),
+                                            glm::vec3(0.0, -1.0, 0.0)),
+            shadow_projection * glm::lookAt(lights[i].getPostion(), lights[i].getPostion() + glm::vec3(0.0, 1.0, 0.0),
+                                            glm::vec3(0.0, 0.0, 1.0)),
+            shadow_projection * glm::lookAt(lights[i].getPostion(), lights[i].getPostion() + glm::vec3(0.0, -1.0, 0.0),
+                                            glm::vec3(0.0, 0.0, -1.0)),
+            shadow_projection * glm::lookAt(lights[i].getPostion(), lights[i].getPostion() + glm::vec3(0.0, 0.0, 1.0),
+                                            glm::vec3(0.0, -1.0, 0.0)),
+            shadow_projection * glm::lookAt(lights[i].getPostion(), lights[i].getPostion() + glm::vec3(0.0, 0.0, -1.0),
+                                            glm::vec3(0.0, -1.0, 0.0)),
+        };
+        for (int j = 0; j < 6; j++)
+        {
+            shadowShader.setParameter("shadowMatrices[" + to_string(j) + "]", shadow_transforms[j]);
+        }
+        shadowShader.setParameter("lightPos", lights[i].getPostion());
+        shadowShader.setParameter("far_plane", far);
+        // render
+        glClear(GL_DEPTH_BUFFER_BIT);
+        const int xNum = 5;
+        const int yNum = 5;
+        for (int k = 0; k <= xNum; k++)
+        {
+            for (int j = 0; j <= yNum; j++)
+            {
+                shadowShader.setParameter("model", scale(translate(mat4(1), vec3(k * 1, 0, j * 1)), vec3(0.5)));
+                geosphere.Draw(&shadowShader);
+            }
+        }
+    }
+    // 恢复现场
+    glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // 渲染循环
@@ -223,6 +400,8 @@ int main(int /*argc*/, char** /*argv*/)
         pbrShader.setParameter("view", view);
         pbrShader.setParameter("projection", projection);
         pbrShader.setParameter("cameraPos", camera->Position);
+        pbrShader.setParameter("near", near);
+        pbrShader.setParameter("far", far);
         // material
         pbrShader.setParameter("albedo", vec3(0.5, 0, 0));
         pbrShader.setParameter("ao", 1.0f);
@@ -242,14 +421,27 @@ int main(int /*argc*/, char** /*argv*/)
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
         pbrShader.setParameter("irradianceMap", 4);
-        //
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+        pbrShader.setParameter("prefilterMap", 5);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+        pbrShader.setParameter("brdfLUT", 6);
+        // shadowMaps
+        for (int i : {0, 1, 2, 3})
+        {
+            glActiveTexture(GL_TEXTURE7 + i);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, shadowMaps[i]);
+            pbrShader.setParameter("shadowMaps[" + to_string(i) + "]", 7 + i);
+        }
+        // rendering
         const int xNum = 5;
         const int yNum = 5;
         for (int i = 0; i <= xNum; i++)
         {
             for (int j = 0; j <= yNum; j++)
             {
-                pbrShader.setParameter("model", scale(translate(mat4(1), vec3(i * 1, j * 1, 0)), vec3(0.5)));
+                pbrShader.setParameter("model", scale(translate(mat4(1), vec3(i * 1, 0, j * 1)), vec3(0.5)));
                 //
                 pbrShader.setParameter("metallic", (float)i / (float)xNum);
                 pbrShader.setParameter("roughness", (float)j / (float)yNum);
@@ -281,7 +473,7 @@ int main(int /*argc*/, char** /*argv*/)
         skyboxShader.setParameter("view",
                                   mat4(mat3(view)));  // 除去位移，相当于锁头
         skyboxShader.setParameter("projection", projection);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
         skyboxShader.setParameter("skybox", 0);
         box.Draw(&skyboxShader);
         glFrontFace(GL_CCW);
@@ -727,5 +919,154 @@ vec3 irradiance = texture(irradianceMap, N);
 */
 
 /**REVIEW -  镜面反射 IBL
+你会注意到 Cook-Torrance 镜面部分（乘以ks
+）在整个积分上不是常数，不仅受入射光方向影响，还受视角影响。如果试图解算所有入射光方向加所有可能的视角方向的积分，二者组合数会极其庞大，实时计算太昂贵。Epic
+Games 提出了一个解决方案，他们预计算镜面部分的卷积，为实时计算作了一些妥协，这种方案被称为分割求和近似法（split sum
+approximation）。 分割求和近似将方程的镜面部分分割成两个独立的部分，我们可以单独求卷积，然后在 PBR
+着色器中求和，以用于间接镜面反射部分 IBL。分割求和近似法类似于我们之前求辐照图预卷积的方法，需要 HDR
+环境贴图作为其卷积输入。为了理解，我们回顾一下反射方程，但这次只关注镜面反射部分（在上一节教程中已经剥离了漫反射部分）：
+
+由于与辐照度卷积相同的（性能）原因，我们无法以合理的性能实时求解积分的镜面反射部分。因此，我们最好预计算这个积分，以得到像镜面
+IBL
+贴图这样的东西，用片段的法线对这张图采样并计算。但是，有一个地方有点棘手：我们能够预计算辐照度图，是因为其积分仅依赖于ωi
+，并且可以将漫反射反射率常数项移出积分，但这一次，积分不仅仅取决于ωi
+，从 BRDF 可以看出
+
+这次积分还依赖ωo
+，我们无法用两个方向向量采样预计算的立方体图。如前一个教程中所述，位置p
+与此处无关。在实时状态下，对每种可能的ωi
+和ωo
+的组合预计算该积分是不可行的。 Epic Games
+的分割求和近似法将预计算分成两个单独的部分求解，再将两部分组合起来得到后文给出的预计算结果。分割求和近似法将镜面反射积分拆成两个独立的积分：
+
+卷积的第一部分被称为预滤波环境贴图，它类似于辐照度图，是预先计算的环境卷积贴图，但这次考虑了粗糙度。因为随着粗糙度的增加，参与环境贴图卷积的采样向量会更分散，导致反射更模糊，所以对于卷积的每个粗糙度级别，我们将按顺序把模糊后的结果存储在预滤波贴图的
+mipmap 中。例如，预过滤的环境贴图在其 5 个 mipmap 级别中存储 5 个不同粗糙度值的预卷积结果，如下图所示：
+
+我们使用 Cook-Torrance BRDF
+的法线分布函数(NDF)生成采样向量及其散射强度，该函数将法线和视角方向作为输入。由于我们在卷积环境贴图时事先不知道视角方向，因此
+Epic Games 假设视角方向——也就是镜面反射方向——总是等于输出采样方向ωo ，以作进一步近似。翻译成代码如下：
+
+这样，预过滤的环境卷积就不需要关心视角方向了。这意味着当从如下图的角度观察表面的镜面反射时，得到的掠角镜面反射效果不是很好（图片来自文章《Moving
+Frostbite to PBR》）。然而，通常可以认为这是一个体面的妥协：
+
+等式的第二部分等于镜面反射积分的 BRDF 部分。如果我们假设每个方向的入射辐射度都是白色的（因此L(p,x)=1.0
+ ），就可以在给定粗糙度、光线 ωi
+ 法线 n
+ 夹角 n⋅ωi
+ 的情况下，预计算 BRDF 的响应结果。Epic Games 将预计算好的 BRDF 对每个粗糙度和入射角的组合的响应结果存储在一张 2D
+查找纹理(LUT)上，称为BRDF积分贴图。2D 查找纹理存储是菲涅耳响应的系数（R 通道）和偏差值（G
+通道），它为我们提供了分割版镜面反射积分的第二个部分：
+
+生成查找纹理的时候，我们以 BRDF 的输入n⋅ωi
+（范围在 0.0 和 1.0 之间）作为横坐标，以粗糙度作为纵坐标。有了此 BRDF
+积分贴图和预过滤的环境贴图，我们就可以将两者结合起来，以获得镜面反射积分的结果：
+
+float lod             = getMipLevelFromRoughness(roughness);
+vec3 prefilteredColor = textureCubeLod(PrefilteredEnvMap, refVec, lod);
+vec2 envBRDF          = texture2D(BRDFIntegrationMap, vec2(NdotV, roughness)).xy;
+vec3 indirectSpecular = prefilteredColor * (F * envBRDF.x + envBRDF.y)
+
+至此，你应该对 Epic Games
+的分割求和近似法的原理，以及它如何近似求解反射方程的间接镜面反射部分有了一些基本印象。让我们现在尝试一下自己构建预卷积部分。
+
+* NOTE - 预滤波HDR环境贴图
+注意，因为我们计划采样 prefilterMap 的 mipmap，所以需要确保将其缩小过滤器设置为 GL_LINEAR_MIPMAP_LINEAR
+以启用三线性过滤。它存储的是预滤波的镜面反射，基础 mip 级别的分辨率是每面
+128×128，对于大多数反射来说可能已经足够了，但如果场景里有大量光滑材料（想想汽车上的反射），可能需要提高分辨率。
+
+在上一节教程中，我们使用球面坐标生成均匀分布在半球 Ω
+ 上的采样向量，以对环境贴图进行卷积。虽然这个方法非常适用于辐照度，但对于镜面反射效果较差。镜面反射依赖于表面的粗糙度，反射光线可能比较松散，也可能比较紧密，但是一定会围绕着反射向量r
+，除非表面极度粗糙：
+
+所有可能出射的反射光构成的形状称为镜面波瓣。随着粗糙度的增加，镜面波瓣的大小增加；随着入射光方向不同，形状会发生变化。因此，镜面波瓣的形状高度依赖于材质。
+在微表面模型里给定入射光方向，则镜面波瓣指向微平面的半向量的反射方向。考虑到大多数光线最终会反射到一个基于半向量的镜面波瓣内，采样时以类似的方式选取采样向量是有意义的，因为大部分其余的向量都被浪费掉了，这个过程称为重要性采样。
+
+* NOTE - 蒙特卡洛积分和重要性采样
+为了充分理解重要性采样，我们首先要了解一种数学结构，称为蒙特卡洛积分。蒙特卡洛积分主要是统计和概率理论的组合。蒙特卡洛可以帮助我们离散地解决人口统计问题，而不必考虑所有人。
+
+例如，假设您想要计算一个国家所有公民的平均身高。为了得到结果，你可以测量每个公民并对他们的身高求平均，这样会得到你需要的确切答案。但是，由于大多数国家人海茫茫，这个方法不现实：需要花费太多精力和时间。
+
+另一种方法是选择一个小得多的完全随机（无偏）的人口子集，测量他们的身高并对结果求平均。可能只测量 100
+人，虽然答案并非绝对精确，但会得到一个相对接近真相的答案，这个理论被称作大数定律。我们的想法是，如果从总人口中测量一组较小的真正随机样本的N
+，结果将相对接近真实答案，并随着样本数 N
+ 的增加而愈加接近。
+
+蒙特卡罗积分建立在大数定律的基础上，并采用相同的方法来求解积分。不为所有可能的（理论上是无限的）样本值 x
+ 求解积分，而是简单地从总体中随机挑选样本 N
+ 生成采样值并求平均。随着 N
+ 的增加，我们的结果会越来越接近积分的精确结果：
+
+ 为了求解这个积分，我们在 a
+ 到 b
+ 上采样 N
+ 个随机样本，将它们加在一起并除以样本总数来取平均。pdf
+ 代表概率密度函数 (probability density function)，它的含义是特定样本在整个样本集上发生的概率。例如，人口身高的 pdf
+看起来应该像这样
+
+从该图中我们可以看出，如果我们对人口任意随机采样，那么挑选身高为 1.70 的人口样本的可能性更高，而样本身高为 1.50
+的概率较低。
+
+当涉及蒙特卡洛积分时，某些样本可能比其他样本具有更高的生成概率。这就是为什么对于任何一般的蒙特卡洛估计，我们都会根据 pdf
+将采样值除以或乘以采样概率。到目前为止，我们每次需要估算积分的时候，生成的样本都是均匀分布的，概率完全相等。到目前为止，我们的估计是无偏的，这意味着随着样本数量的不断增加，我们最终将收敛到积分的精确解。
+
+但是，某些蒙特卡洛估算是有偏的，这意味着生成的样本并不是完全随机的，而是集中于特定的值或方向。这些有偏的蒙特卡洛估算具有更快的收敛速度，它们会以更快的速度收敛到精确解，但是由于其有偏性，可能永远不会收敛到精确解。通常来说，这是一个可以接受的折衷方案，尤其是在计算机图形学中。因为只要结果在视觉上可以接受，解决方案的精确性就不太重要。下文我们将会提到一种（有偏的）重要性采样，其生成的样本偏向特定的方向，在这种情况下，我们会将每个样本乘以或除以相应的
+pdf 再求和。
+
+蒙特卡洛积分在计算机图形学中非常普遍，因为它是一种以高效的离散方式对连续的积分求近似而且非常直观的方法：对任何面积/体积进行采样——例如半球
+Ω ——在该面积/体积内生成数量 N 的随机采样，权衡每个样本对最终结果的贡献并求和。
+
+蒙特卡洛积分是一个庞大的数学主题，在此不再赘述，但有一点需要提到：生成随机样本的方法也多种多样。默认情况下，每次采样都是我们熟悉的完全（伪）随机，不过利用半随机序列的某些属性，我们可以生成虽然是随机样本但具有一些有趣性质的样本向量。例如，我们可以对一种名为低差异序列的东西进行蒙特卡洛积分，该序列生成的仍然是随机样本，但样本分布更均匀：
+
+![](https://learnopengl-cn.github.io/img/07/03/02/ibl_low_discrepancy_sequence.png)
+
+当使用低差异序列生成蒙特卡洛样本向量时，该过程称为拟蒙特卡洛积分。拟蒙特卡洛方法具有更快的收敛速度，这使得它对于性能繁重的应用很有用。
+
+鉴于我们新获得的有关蒙特卡洛（Monte Carlo）和拟蒙特卡洛（Quasi-Monte
+Carlo）积分的知识，我们可以使用一个有趣的属性来获得更快的收敛速度，这就是重要性采样。我们在前文已经提到过它，但是在镜面反射的情况下，反射的光向量被限制在镜面波瓣中，波瓣的大小取决于表面的粗糙度。既然镜面波瓣外的任何（拟）随机生成的样本与镜面积分无关，因此将样本集中在镜面波瓣内生成是有意义的，但代价是蒙特卡洛估算会产生偏差。
+
+本质上来说，这就是重要性采样的核心：只在某些区域生成采样向量，该区域围绕微表面半向量，受粗糙度限制。通过将拟蒙特卡洛采样与低差异序列相结合，并使用重要性采样偏置样本向量的方法，我们可以获得很高的收敛速度。因为我们求解的速度更快，所以要达到足够的近似度，我们所需要的样本更少。因此，这套组合方法甚至可以允许图形应用程序实时求解镜面积分，虽然比预计算结果还是要慢得多。
+
+* NOTE - 低差异序列
+
+在本教程中，我们将使用重要性采样来预计算间接反射方程的镜面反射部分，该采样基于拟蒙特卡洛方法给出了随机的低差异序列。我们将使用的序列被称为
+Hammersley 序列，Holger Dammertz 曾仔细描述过它。Hammersley 序列是基于 Van Der Corput
+序列，该序列是把十进制数字的二进制表示镜像翻转到小数点右边而得。（译注：原文为 Van Der Corpus 疑似笔误，下文各处同）
+
+给出一些巧妙的技巧，我们可以在着色器程序中非常有效地生成 Van Der Corput 序列，我们将用它来获得 Hammersley
+序列，设总样本数为 N，样本索引为 i：
+
+* NOTE - GGX 重要性采样
+
+有别于均匀或纯随机地（比如蒙特卡洛）在积分半球 Ω
+ 产生采样向量，我们的采样会根据粗糙度，偏向微表面的半向量的宏观反射方向。采样过程将与我们之前看到的过程相似：开始一个大循环，生成一个随机（低差异）序列值，用该序列值在切线空间中生成样本向量，将样本向量变换到世界空间并对场景的辐射度采样。不同之处在于，我们现在使用低差异序列值作为输入来生成采样向量：
+
+ 此外，要构建采样向量，我们需要一些方法定向和偏移采样向量，以使其朝向特定粗糙度的镜面波瓣方向。我们可以如理论教程中所述使用
+NDF，并将 GGX NDF 结合到 Epic Games 所述的球形采样向量的处理中：
+
+基于特定的粗糙度输入和低差异序列值 Xi，我们获得了一个采样向量，该向量大体围绕着预估的微表面的半向量。注意，根据迪士尼对
+PBR 的研究，Epic Games 使用了平方粗糙度以获得更好的视觉效果。
+
+使用低差异 Hammersley 序列和上述定义的样本生成方法，我们可以最终完成预滤波器卷积着色器：
+
+* NOTE - 预过滤卷积的伪像
+
+* NOTE - 高粗糙度的立方体贴图接缝
+
+在具有粗糙表面的表面上对预过滤贴图采样，也就等同于在较低的 mip
+级别上对预过滤贴图采样。在对立方体贴图进行采样时，默认情况下，OpenGL不会在立方体面之间进行线性插值。由于较低的 mip
+级别具有更低的分辨率，并且预过滤贴图代表了与更大的采样波瓣卷积，因此缺乏立方体的面和面之间的滤波的问题就更明显：
+
+* NOTE - 预过滤卷积的亮点
+
+由于镜面反射中光强度的变化大，高频细节多，所以对镜面反射进行卷积需要大量采样，才能正确反映 HDR
+环境反射的混乱变化。我们已经进行了大量的采样，但是在某些环境下，在某些较粗糙的 mip
+级别上可能仍然不够，导致明亮区域周围出现点状图案：
+![](https://learnopengl-cn.github.io/img/07/03/02/ibl_prefilter_dots.png)
+
+一种解决方案是进一步增加样本数量，但在某些情况下还是不够。另一种方案如 Chetan Jags
+所述，我们可以在预过滤卷积时，不直接采样环境贴图，而是基于积分的 PDF 和粗糙度采样环境贴图的 mipmap ，以减少伪像：
+
+* NOTE - 预计算 BRDF
+
 
 */

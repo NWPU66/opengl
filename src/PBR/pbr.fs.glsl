@@ -22,8 +22,12 @@ uniform sampler2D roughnessMap;
 uniform sampler2D normalMap;
 
 uniform vec3 cameraPos;
+uniform float near,far;
+uniform samplerCube shadowMaps[4];
 
-uniform samplerCube irradianceMap;
+uniform samplerCube irradianceMap;//IBL漫反射项
+uniform samplerCube prefilterMap;//IBL镜面光照项
+uniform sampler2D brdfLUT;//IBL镜面材质项
 
 struct Light{
     int lightType;
@@ -80,6 +84,35 @@ float G_term(vec3 N,vec3 V,vec3 L,float roughness){
     return ggx1*ggx2;
 }
 
+float screenDepth2globalDepth(float screenDepth){
+    screenDepth=screenDepth*2-1;
+    return(2*near*far)/(near+far+screenDepth*(near-far));
+}
+
+float calculatePointShadow(int i){
+    // vec3 displacementToLight=lights[i].position-fs_in.globalPos;
+    // float distanceToLight=length(displacementToLight)/far;
+    
+    // float bias=.0001,s_col=0,l_col=1;
+    // float offset=.01,samples=4.,shadow=0.;
+    // for(float x=-offset;x<+offset;x+=offset/(samples*.5)){
+        //     for(float y=-offset;y<offset;y+=offset/(samples*.5)){
+            //         for(float z=-offset;z<offset;z+=offset/(samples*.5)){
+                //             float cloestDepth=texture(shadowMaps[i],-displacementToLight+vec3(x,y,z)).r;
+                //             shadow+=(distanceToLight+bias>cloestDepth)?s_col:l_col;
+            //         }
+        //     }
+    // }
+    // return shadow/pow(samples,3);
+    
+    // int i=2;
+    vec3 displacementToLight=lights[i].position-fs_in.globalPos;
+    float distanceToLight=length(displacementToLight)/far;
+    float cloestDepth=texture(shadowMaps[i],-normalize(displacementToLight)).r;
+    float shadow=(distanceToLight+.0001>cloestDepth)?0:1.;
+    return shadow;
+}
+
 void main(){
     vec3 albedo=texture(albedoMap,fs_in.texCoord).rgb;
     float ao=texture(aoMap,fs_in.texCoord).r;
@@ -91,6 +124,7 @@ void main(){
     // vec3 N=normalize(fs_in.globalNormal);
     vec3 N=normal;
     vec3 V=normalize(cameraPos-fs_in.globalPos);
+    vec3 R=reflect(-V,N);
     
     vec3 Lo=vec3(0.);
     for(int i=0;i<numLights;++i){
@@ -122,25 +156,35 @@ void main(){
         vec3 kD=vec3(1.)-kS;
         kD*=1.-metallic;
         
+        //calculate shadow
+        float shadowFac=calculatePointShadow(i);
+        
         //渲染方程
         float NoL=max(dot(N,L),0.);
-        Lo+=(kD*albedo/PI+specular)*radiance*NoL;
+        Lo+=(kD*albedo/PI+specular)*radiance*NoL*shadowFac;
     }
     
-    vec3 kS=F_term(max(dot(N,V),0.),mix(vec3(.04),albedo,metallic),roughness);
+    //环境光照
+    vec3 F0=mix(vec3(.04),albedo,metallic);
+    vec3 kS=F_term(max(dot(N,V),0.),F0,roughness);
     vec3 kD=1.-kS;
+    kD*=1.-metallic;//金属没有漫射
     vec3 irradiance=texture(irradianceMap,N).rgb;
-    vec3 diffuse=irradiance*albedo/PI;//环境照明漫射部分
-    //环境照明镜面部分
-    vec3 ambient=(kD*diffuse+kS*vec3(0))*ao;
+    vec3 ambient_diffuse=irradiance*albedo/PI;//环境照明漫射部分
+    const float MAX_REFLECTION_LOD=4.;
+    vec3 prefilteredColor=textureLod(prefilterMap,R,roughness*MAX_REFLECTION_LOD).rgb;
+    vec2 envBRDF=texture(brdfLUT,vec2(max(dot(N,V),0.),roughness)).rg;
+    vec3 ambient_specular=prefilteredColor*(F0*envBRDF.x+envBRDF.y);//环境照明镜面部分
+    vec3 ambient=(kD*ambient_diffuse+ambient_specular)*ao;
     
-    vec3 color=(ambient+Lo);
+    vec3 color=(Lo+ambient);
     //色调映射
     color=color/(color+vec3(1.));
     //gamma矫正
     color=pow(color,vec3(1./2.2));
     
     fragColor=vec4(color,1.);
+    
 }
 
 /**REVIEW -
