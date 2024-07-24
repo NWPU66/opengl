@@ -140,6 +140,11 @@ void Shader::setParameter(const std::string& name, mat4 value) const
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value_ptr(value));
 }
 
+void Shader::setParameter(const std::string& name, vec4 value) const
+{
+    glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, value_ptr(value));
+}
+
 /**
  * 该函数设置着色器中材质的环境光、漫反射、镜面反射和光泽度值的参数。
  *

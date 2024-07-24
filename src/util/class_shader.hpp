@@ -29,6 +29,7 @@ public:
     void setParameter(const std::string& name, vec3 value) const;
     void setParameter(const std::string& name, vec2 value) const;
     void setParameter(const std::string& name, mat4 value) const;
+    void setParameter(const std::string& name, vec4 value) const;
     // void setParameter(const std::string& name, Material value) const;
     // void setParameter(const std::string& name, Light value) const;
     // const表示该函数为常量成员函数，即不能修改成员变量的值，是只读函数。
