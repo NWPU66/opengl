@@ -60,22 +60,16 @@ int main(int /*argc*/, char** /*argv*/)
 
     /**NOTE - OpenGL基本设置
      */
-    glEnable(GL_DEPTH_TEST);    // 启用深度缓冲
-    glDepthFunc(GL_LEQUAL);     // 修改深度测试的标准
-    glEnable(GL_STENCIL_TEST);  // 启用模板缓冲
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glEnable(GL_BLEND);                                 // 启用混合
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
-    glEnable(GL_CULL_FACE);                             // 启用面剔除
-    // glClearColor(0.2F, 0.3F, 0.3F, 1.0F);  // 设置清空颜色
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glDisable(GL_MULTISAMPLE);  // 启用多重采样
-    /**NOTE - 文档中GL_MULTISAMPLE时默认启动的（true）
-     */
-    glEnable(GL_FRAMEBUFFER_SRGB);  // 自动Gamme矫正
-    /**NOTE - gamma矫正关闭
-    我们在pbrShader中手动矫正gamma
-    */
+    glEnable(GL_DEPTH_TEST);  // 启用深度缓冲
+    glDepthFunc(GL_LEQUAL);   // 修改深度测试的标准
+    // glEnable(GL_STENCIL_TEST);  // 启用模板缓冲
+    // glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    // glEnable(GL_BLEND);                                 // 启用混合
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 设置混合函数
+    glEnable(GL_CULL_FACE);  // 启用面剔除
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    // glDisable(GL_MULTISAMPLE);               // NOTE - 文档中GL_MULTISAMPLE时默认启动的（true）
+    glEnable(GL_FRAMEBUFFER_SRGB);           // 自动Gamme矫正
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);  // 在立方体贴图的面之间进行正确过滤
 
     /**NOTE - 模型和着色器、纹理
@@ -90,7 +84,7 @@ int main(int /*argc*/, char** /*argv*/)
     Shader phongShader("./shader/stdVerShader.vs.glsl", "./shader/simpleWritePhongLighting.fs.glsl");
     Shader skyboxShader("./shader/skyboxShader.vs.glsl", "./shader/skyboxShader.fs.glsl");
     Shader lightObjShader("./shader/stdVerShader.vs.glsl", "./shader/stdPureColor.fs.glsl");
-    Shader areaLightShader("./shader/stdVerShader.vs.glsl", "./shader/areaLight2.fs.glsl");
+    Shader areaLightShader("./shader/7area_light.vs", "./shader/areaLight.fs.glsl");
     // Texture
     GLuint cubeTexture = createSkyboxTexture("./texture/", true);
     GLuint woodTexture = createImageObjrct("./texture/wood.jpg", true);
@@ -140,7 +134,7 @@ int main(int /*argc*/, char** /*argv*/)
         // area light geometry
         static const vec3 areaLightColor = vec3(0.2, 0.6, 0.7);
         static const mat4 areaLightModel = rotate(
-            rotate(translate(mat4(1), vec3(0, 1.5, 5)), radians(-90.0f), vec3(1, 0, 0)), radians(0.0f), vec3(0, 1, 0));
+            rotate(translate(mat4(1), vec3(0, 1.5, 8)), radians(-90.0f), vec3(1, 0, 0)), radians(0.0f), vec3(0, 1, 0));
         static const vector<vec3> areaLightVertices = {
             vec3(1.0f, 0.0f, 1.0f),
             vec3(1.0f, 0.0f, -1.0f),
@@ -151,6 +145,7 @@ int main(int /*argc*/, char** /*argv*/)
         areaLightShader.use();
         // vertex shader
         areaLightShader.setParameter("model", mat4(1.0f));
+        areaLightShader.setParameter("normalMatrix", mat3(1.0f));
         areaLightShader.setParameter("view", view);
         areaLightShader.setParameter("projection", projection);
         // fragment shader
@@ -158,13 +153,13 @@ int main(int /*argc*/, char** /*argv*/)
         areaLightShader.setParameter("areaLight.color", areaLightColor);
         for (int i : {0, 1, 2, 3})
         {
-            vec3 globalPos = areaLightModel * vec4(areaLightVertices[i], 1);
+            auto globalPos = vec3(areaLightModel * vec4(areaLightVertices[i], 1));
             areaLightShader.setParameter("areaLight.points[" + to_string(i) + "]", globalPos);
         }
         areaLightShader.setParameter("areaLight.twoSided", false);
         areaLightShader.setParameter("areaLightTranslate", vec3(0));
-        areaLightShader.setParameter("material.albedoRoughness", vec4(0.5f));
-        areaLightShader.setParameter("viewPosition`", camera->Position);
+        areaLightShader.setParameter("material.albedoRoughness", vec4(0.2f));
+        areaLightShader.setParameter("viewPosition", camera->Position);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m1);
         areaLightShader.setParameter("LTC1", 0);
@@ -178,18 +173,22 @@ int main(int /*argc*/, char** /*argv*/)
 
         /**NOTE - 渲染灯光
          */
+        // int i = 0;
         // for (const auto& light : lightGroup.getLights())
         // {
+        //     auto globalPos = vec3(areaLightModel * vec4(areaLightVertices[i], 1));
+
         //     if (light.getLightType() != 1)  // 日光不渲染实体
         //     {
         //         lightObjShader.use();
-        //         lightObjShader.setParameter("model", scale(translate(mat4(1), light.getPostion()), vec3(0.1)));
+        //         lightObjShader.setParameter("model", scale(translate(mat4(1), globalPos), vec3(0.1)));
         //         lightObjShader.setParameter("view", view);
         //         lightObjShader.setParameter("projection", projection);
         //         lightObjShader.setParameter("lightColor", light.getColor());
         //         sphere.Draw(&lightObjShader);
         //         // FIXME - 常量对象只能调用它的常函数
         //     }
+        //     i++;
         // }
         lightObjShader.use();
         lightObjShader.setParameter("model", areaLightModel);

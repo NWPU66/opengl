@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.25)
 project(opengl)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # opengl
 set(INCLUDES ${INCLUDES} E:/mingw64/x86_64-w64-mingw32/include)
@@ -84,7 +86,10 @@ endforeach()
 
 # install
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
-file(GLOB_RECURSE SHADER_SRC "${CMAKE_SOURCE_DIR}/src/*.glsl")
+file(GLOB_RECURSE SHADER_SRC 
+    "${CMAKE_SOURCE_DIR}/src/*.glsl" 
+    "${CMAKE_SOURCE_DIR}/src/*.vs" 
+    "${CMAKE_SOURCE_DIR}/src/*.fs")
 file(GLOB_RECURSE TEXTURE_SRC 
     "${CMAKE_SOURCE_DIR}/src/*.jpg"
     "${CMAKE_SOURCE_DIR}/src/*.png")
